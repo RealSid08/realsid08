@@ -4,7 +4,7 @@ import { SYSTEM_INSTRUCTION_CHAT, SYSTEM_INSTRUCTION_LIVE } from "../constants";
 // --- Chat Service ---
 
 export const createChatSession = () => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_API_KEY });
   return ai.chats.create({
     model: 'gemini-2.5-flash',
     config: {
@@ -78,14 +78,14 @@ export class LiveSessionManager {
   private processor: ScriptProcessorNode | null = null;
   private sourceNode: MediaStreamAudioSourceNode | null = null;
   private onVolumeChange: (volume: number) => void;
-  
+
   // Analysers for visualization
   private outputAnalyser: AnalyserNode | null = null;
   private animationFrameId: number | null = null;
 
   constructor(onVolumeChange: (volume: number) => void) {
     // Use v1alpha to support affective dialog
-    this.ai = new GoogleGenAI({ apiKey: process.env.API_KEY, apiVersion: 'v1alpha' });
+    this.ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_API_KEY, apiVersion: 'v1alpha' });
     this.onVolumeChange = onVolumeChange;
   }
 
@@ -93,7 +93,7 @@ export class LiveSessionManager {
     // 1. Initialize AudioContexts immediately to be ready
     this.inputAudioContext = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 16000 });
     this.outputAudioContext = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
-    
+
     this.outputAnalyser = this.outputAudioContext.createAnalyser();
     this.outputAnalyser.fftSize = 32;
     this.outputAnalyser.smoothingTimeConstant = 0.1;
@@ -114,7 +114,7 @@ export class LiveSessionManager {
           const base64EncodedAudioString = message.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
           if (base64EncodedAudioString && this.outputAudioContext && this.outputAnalyser) {
             this.nextStartTime = Math.max(this.nextStartTime, this.outputAudioContext.currentTime);
-            
+
             const audioBuffer = await decodeAudioData(
               decode(base64EncodedAudioString),
               this.outputAudioContext,
@@ -124,10 +124,10 @@ export class LiveSessionManager {
 
             const source = this.outputAudioContext.createBufferSource();
             source.buffer = audioBuffer;
-            
+
             source.connect(this.outputAnalyser);
             this.outputAnalyser.connect(this.outputAudioContext.destination);
-            
+
             source.addEventListener('ended', () => {
               this.sources.delete(source);
             });
@@ -161,9 +161,9 @@ export class LiveSessionManager {
     this.sessionPromise.then(async (session) => {
       try {
         // Send a dummy user turn to force the model to speak its instruction
-        await (session as any).sendClientContent({ 
-          turns: [{ role: 'user', parts: [{ text: "." }] }], 
-          turnComplete: true 
+        await (session as any).sendClientContent({
+          turns: [{ role: 'user', parts: [{ text: "." }] }],
+          turnComplete: true
         });
       } catch (e) {
         console.warn("Failed to trigger initial greeting:", e);
@@ -175,7 +175,7 @@ export class LiveSessionManager {
       this.stream = stream;
       this.startAudioStreaming();
     }).catch((err) => {
-       console.error("Microphone access denied or failed:", err);
+      console.error("Microphone access denied or failed:", err);
     });
 
     // Return as soon as the session connection is established
@@ -192,7 +192,7 @@ export class LiveSessionManager {
     this.processor.onaudioprocess = (e) => {
       const inputData = e.inputBuffer.getChannelData(0);
       const pcmBlob = createBlob(inputData);
-      
+
       if (this.sessionPromise) {
         this.sessionPromise.then((session) => {
           session.sendRealtimeInput({ media: pcmBlob });
@@ -216,10 +216,10 @@ export class LiveSessionManager {
         outputVol = sum / data.length / 255;
       }
 
-      this.onVolumeChange(outputVol * 1.5); 
+      this.onVolumeChange(outputVol * 1.5);
       this.animationFrameId = requestAnimationFrame(analyze);
     };
-    
+
     analyze();
   }
 
@@ -244,7 +244,7 @@ export class LiveSessionManager {
     }
 
     this.stopAudioPlayback();
-    
+
     if (this.sourceNode) {
       this.sourceNode.disconnect();
       this.sourceNode = null;
@@ -265,7 +265,7 @@ export class LiveSessionManager {
       this.outputAudioContext.close();
       this.outputAudioContext = null;
     }
-    
+
     this.outputAnalyser = null;
   }
 }
