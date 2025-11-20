@@ -29,6 +29,10 @@ export const LiveDemo: React.FC = () => {
         setIsActive(true);
       } catch (error) {
         console.error("Failed to connect to Gemini Live", error);
+        if (sessionManager.current) {
+            await sessionManager.current.disconnect();
+            sessionManager.current = null;
+        }
         alert("Failed to connect to Gemini Live API. Check console/keys.");
       } finally {
         setIsConnecting(false);

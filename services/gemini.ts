@@ -69,6 +69,7 @@ function createBlob(data: Float32Array): { data: string; mimeType: string } {
 // Live Session Manager
 export class LiveSessionManager {
   private ai: GoogleGenAI;
+  private isConnected = false;
   private sessionPromise: Promise<any> | null = null;
   private inputAudioContext: AudioContext | null = null;
   private outputAudioContext: AudioContext | null = null;
@@ -78,7 +79,7 @@ export class LiveSessionManager {
   private processor: ScriptProcessorNode | null = null;
   private sourceNode: MediaStreamAudioSourceNode | null = null;
   private onVolumeChange: (volume: number) => void;
-
+  
   // Analysers for visualization
   private outputAnalyser: AnalyserNode | null = null;
   private animationFrameId: number | null = null;
@@ -93,6 +94,14 @@ export class LiveSessionManager {
     // 1. Initialize AudioContexts immediately to be ready
     this.inputAudioContext = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 16000 });
     this.outputAudioContext = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
+    
+    // Resume contexts if suspended (important for some browsers)
+    if (this.inputAudioContext.state === 'suspended') {
+      this.inputAudioContext.resume().catch(e => console.warn("Input AudioContext resume failed", e));
+    }
+    if (this.outputAudioContext.state === 'suspended') {
+      this.outputAudioContext.resume().catch(e => console.warn("Output AudioContext resume failed", e));
+    }
 
     this.outputAnalyser = this.outputAudioContext.createAnalyser();
     this.outputAnalyser.fftSize = 32;
@@ -107,6 +116,7 @@ export class LiveSessionManager {
       callbacks: {
         onopen: () => {
           console.log('Gemini Live Session Opened');
+          this.isConnected = true;
           // Start visuals immediately upon connection
           this.startVolumeAnalysis();
         },
@@ -114,7 +124,7 @@ export class LiveSessionManager {
           const base64EncodedAudioString = message.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
           if (base64EncodedAudioString && this.outputAudioContext && this.outputAnalyser) {
             this.nextStartTime = Math.max(this.nextStartTime, this.outputAudioContext.currentTime);
-
+            
             const audioBuffer = await decodeAudioData(
               decode(base64EncodedAudioString),
               this.outputAudioContext,
@@ -124,10 +134,10 @@ export class LiveSessionManager {
 
             const source = this.outputAudioContext.createBufferSource();
             source.buffer = audioBuffer;
-
+            
             source.connect(this.outputAnalyser);
             this.outputAnalyser.connect(this.outputAudioContext.destination);
-
+            
             source.addEventListener('ended', () => {
               this.sources.delete(source);
             });
@@ -143,8 +153,14 @@ export class LiveSessionManager {
             this.nextStartTime = 0;
           }
         },
-        onclose: () => console.log('Gemini Live Session Closed'),
-        onerror: (e) => console.error('Gemini Live Error', e),
+        onclose: (event) => {
+            console.log('Gemini Live Session Closed', event);
+            this.isConnected = false;
+        },
+        onerror: (e) => {
+            console.error('Gemini Live Error', e);
+            this.isConnected = false;
+        },
       },
       config: {
         responseModalities: [Modality.AUDIO],
@@ -159,11 +175,12 @@ export class LiveSessionManager {
 
     // 4. Trigger Initial Greeting IMMEDIATELY when session resolves
     this.sessionPromise.then(async (session) => {
+      if (!this.isConnected) return;
       try {
         // Send a dummy user turn to force the model to speak its instruction
-        await (session as any).sendClientContent({
-          turns: [{ role: 'user', parts: [{ text: "." }] }],
-          turnComplete: true
+        await (session as any).sendClientContent({ 
+          turns: [{ role: 'user', parts: [{ text: "Hello" }] }], 
+          turnComplete: true 
         });
       } catch (e) {
         console.warn("Failed to trigger initial greeting:", e);
@@ -175,12 +192,18 @@ export class LiveSessionManager {
       this.stream = stream;
       this.startAudioStreaming();
     }).catch((err) => {
-      console.error("Microphone access denied or failed:", err);
+       console.error("Microphone access denied or failed:", err);
     });
 
     // Return as soon as the session connection is established
     // We do NOT wait for the microphone stream here, allowing UI to show "connected" state instantly
-    await this.sessionPromise;
+    const session = await this.sessionPromise;
+    
+    if (!this.isConnected) {
+        throw new Error("Session closed immediately after connection");
+    }
+    
+    return session;
   }
 
   private startAudioStreaming() {
@@ -190,12 +213,20 @@ export class LiveSessionManager {
     this.processor = this.inputAudioContext.createScriptProcessor(4096, 1, 1);
 
     this.processor.onaudioprocess = (e) => {
+      if (!this.isConnected) return;
+
       const inputData = e.inputBuffer.getChannelData(0);
       const pcmBlob = createBlob(inputData);
-
+      
       if (this.sessionPromise) {
         this.sessionPromise.then((session) => {
-          session.sendRealtimeInput({ media: pcmBlob });
+          if (this.isConnected) {
+            try {
+              session.sendRealtimeInput({ media: pcmBlob });
+            } catch (e) {
+              console.error("Error sending audio", e);
+            }
+          }
         });
       }
     };
@@ -216,10 +247,10 @@ export class LiveSessionManager {
         outputVol = sum / data.length / 255;
       }
 
-      this.onVolumeChange(outputVol * 1.5);
+      this.onVolumeChange(outputVol * 1.5); 
       this.animationFrameId = requestAnimationFrame(analyze);
     };
-
+    
     analyze();
   }
 
@@ -231,6 +262,7 @@ export class LiveSessionManager {
   }
 
   async disconnect() {
+    this.isConnected = false;
     if (this.animationFrameId) {
       cancelAnimationFrame(this.animationFrameId);
       this.animationFrameId = null;
@@ -244,7 +276,7 @@ export class LiveSessionManager {
     }
 
     this.stopAudioPlayback();
-
+    
     if (this.sourceNode) {
       this.sourceNode.disconnect();
       this.sourceNode = null;
@@ -265,7 +297,7 @@ export class LiveSessionManager {
       this.outputAudioContext.close();
       this.outputAudioContext = null;
     }
-
+    
     this.outputAnalyser = null;
   }
 }
