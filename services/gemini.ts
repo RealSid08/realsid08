@@ -111,7 +111,7 @@ export class LiveSessionManager {
           this.startVolumeAnalysis();
         },
         onmessage: async (message: LiveServerMessage) => {
-          const base64EncodedAudioString = message.serverContent?.modelTurn?.parts[0]?.inlineData?.data;
+          const base64EncodedAudioString = message.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
           if (base64EncodedAudioString && this.outputAudioContext && this.outputAnalyser) {
             this.nextStartTime = Math.max(this.nextStartTime, this.outputAudioContext.currentTime);
             
