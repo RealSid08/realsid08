@@ -6,7 +6,7 @@ import { SYSTEM_INSTRUCTION_CHAT, SYSTEM_INSTRUCTION_LIVE } from "../constants";
 export const createChatSession = () => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   return ai.chats.create({
-    model: 'gemini-3-pro-preview',
+    model: 'gemini-2.5-flash',
     config: {
       systemInstruction: SYSTEM_INSTRUCTION_CHAT,
     },

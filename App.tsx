@@ -152,11 +152,11 @@ const App: React.FC = () => {
              <div className="flex flex-col items-center gap-4">
                 <h3 className="text-lg md:text-xl font-light tracking-widest">SIDHAARTH KRISHNAN</h3>
                 <p className="text-gray-600 text-xs font-mono px-4">
-                   24 Wakefield St, Hawthorn VIC | +61 0475 508 390
+                   +61 0475 508 390
                 </p>
                 <div className="flex flex-wrap justify-center gap-4 md:gap-6 text-xs uppercase tracking-widest text-gray-400 mt-4">
-                   <a href="#" className="hover:text-white transition-colors p-2 md:p-0">LinkedIn</a>
-                   <a href="#" className="hover:text-white transition-colors p-2 md:p-0">GitHub</a>
+                   <a href="https://www.linkedin.com/in/sidhaarth-krishnan-75b5971a7/" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors p-2 md:p-0">LinkedIn</a>
+                   <a href="https://github.com/RealSid08" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors p-2 md:p-0">GitHub</a>
                    <a href="mailto:krishnansidhaarth@gmail.com" className="hover:text-white transition-colors p-2 md:p-0">Email</a>
                 </div>
              </div>
