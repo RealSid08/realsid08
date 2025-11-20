@@ -1,0 +1,7 @@
+{
+  "name": "Sidhaarth Krishnan Portfolio",
+  "description": "A premium, interactive 3D portfolio featuring Gemini Live API voice demos and AI support chatbots.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
