@@ -1,17 +1,5 @@
 import { GoogleGenAI, LiveServerMessage, Modality, Type } from "@google/genai";
-import { SYSTEM_INSTRUCTION_CHAT, SYSTEM_INSTRUCTION_LIVE } from "../constants";
-
-// --- Chat Service ---
-
-export const createChatSession = () => {
-  const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_API_KEY });
-  return ai.chats.create({
-    model: 'gemini-2.5-flash',
-    config: {
-      systemInstruction: SYSTEM_INSTRUCTION_CHAT,
-    },
-  });
-};
+import { SYSTEM_INSTRUCTION_LIVE } from "../constants";
 
 // --- Live API Service Utils ---
 
@@ -68,7 +56,7 @@ function createBlob(data: Float32Array): { data: string; mimeType: string } {
 
 // Live Session Manager
 export class LiveSessionManager {
-  private ai: GoogleGenAI;
+  private ai: GoogleGenAI | null = null;
   private isConnected = false;
   private sessionPromise: Promise<any> | null = null;
   private inputAudioContext: AudioContext | null = null;
@@ -86,11 +74,33 @@ export class LiveSessionManager {
 
   constructor(onVolumeChange: (volume: number) => void) {
     // Use v1alpha to support affective dialog
-    this.ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_API_KEY, apiVersion: 'v1alpha' });
+    // We will initialize the AI client in connect() after fetching the ephemeral token
     this.onVolumeChange = onVolumeChange;
   }
 
   async connect() {
+    // 0. Fetch Ephemeral Token
+    let apiKey = import.meta.env.VITE_API_KEY; // Fallback for local dev if needed, though we prefer token
+    
+    try {
+        const response = await fetch('/api/token', { method: 'POST' });
+        if (response.ok) {
+            const data = await response.json();
+            if (data.token) {
+                apiKey = data.token;
+                console.log("Using Ephemeral Token for Live API");
+            }
+        }
+    } catch (e) {
+        console.warn("Failed to fetch ephemeral token, falling back to env key if available", e);
+    }
+    
+    if (!apiKey) {
+        throw new Error("No API Key or Token available");
+    }
+
+    this.ai = new GoogleGenAI({ apiKey, apiVersion: 'v1alpha' });
+
     // 1. Initialize AudioContexts immediately to be ready
     this.inputAudioContext = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 16000 });
     this.outputAudioContext = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });

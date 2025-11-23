@@ -1,8 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { createChatSession } from '../services/gemini';
 import { ChatMessage } from '../types';
 import { soundEffects } from '../services/sound';
-import { GenerateContentResponse } from '@google/genai';
 import ReactMarkdown from 'react-markdown';
 
 export const ChatBot: React.FC = () => {
@@ -14,8 +12,7 @@ export const ChatBot: React.FC = () => {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const chatSession = useRef<any>(null);
-
+  
   const hasAutoOpened = useRef(false);
 
   // Initialize chat session
@@ -24,10 +21,6 @@ export const ChatBot: React.FC = () => {
     const timer = setTimeout(() => {
       setIsMounted(true);
     }, 500);
-
-    if (!chatSession.current) {
-      chatSession.current = createChatSession();
-    }
 
     const handleScroll = () => {
       if (window.scrollY > 300 && !hasAutoOpened.current && !isOpen) {
@@ -67,34 +60,45 @@ export const ChatBot: React.FC = () => {
     const userMsg = input;
     setInput('');
 
+    // Prepare history (excluding the hardcoded greeting at index 0)
+    const history = messages.slice(1);
+
     setMessages(prev => [
       ...prev,
       { role: 'user', text: userMsg },
-      { role: 'model', text: '' }
+      { role: 'model', text: '' } // Placeholder for response
     ]);
     setIsLoading(true);
 
     try {
-      if (!chatSession.current) {
-        chatSession.current = createChatSession();
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: userMsg,
+          history: history
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`API Error: ${response.statusText}`);
       }
 
-      const result = await chatSession.current.sendMessageStream({ message: userMsg });
+      const data = await response.json();
+      const text = data.text;
+      
       soundEffects.playMessageReceived();
 
-      for await (const chunk of result) {
-        const c = chunk as GenerateContentResponse;
-        const text = c.text || '';
-
-        setMessages(prev => {
-          const newMessages = [...prev];
-          const lastMsg = newMessages[newMessages.length - 1];
-          if (lastMsg.role === 'model') {
-            lastMsg.text += text;
-          }
-          return newMessages;
-        });
-      }
+      setMessages(prev => {
+        const newMessages = [...prev];
+        const lastMsg = newMessages[newMessages.length - 1];
+        if (lastMsg.role === 'model') {
+          lastMsg.text = text;
+        }
+        return newMessages;
+      });
 
     } catch (error) {
       console.error("Chat error:", error);

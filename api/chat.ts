@@ -1,6 +1,27 @@
-import { ExperienceItem, ProjectItem } from './types';
+import { GoogleGenAI } from '@google/genai';
 
-export const EXPERIENCES: ExperienceItem[] = [
+// --- Interfaces (inlined to avoid module resolution issues) ---
+interface ExperienceItem {
+  id: string;
+  role: string;
+  company: string;
+  period: string;
+  description: string[];
+  tech: string[];
+}
+
+interface ProjectItem {
+  id: string;
+  title: string;
+  description: string;
+  link?: string;
+  githubUrl?: string;
+  tech: string[];
+  type: 'live-demo' | 'visualization' | 'standard';
+}
+
+// --- Data (inlined from constants.ts) ---
+const EXPERIENCES: ExperienceItem[] = [
   {
     id: 'mindtek',
     role: 'Software Engineer',
@@ -60,7 +81,7 @@ export const EXPERIENCES: ExperienceItem[] = [
   }
 ];
 
-export const PROJECTS: ProjectItem[] = [
+const PROJECTS: ProjectItem[] = [
   {
     id: 'aura',
     title: 'Aura Ecosystem (AI & IoT)',
@@ -107,7 +128,7 @@ ${PROJECTS.map(p => `
 - Bachelor of Engineering (Software - Honours), Swinburne University of Technology, Hawthorn.
 `;
 
-export const SYSTEM_INSTRUCTION_CHAT = `You are a sophisticated, minimalist AI assistant for Sidhaarth Krishnan's portfolio.
+const SYSTEM_INSTRUCTION_CHAT = `You are a sophisticated, minimalist AI assistant for Sidhaarth Krishnan's portfolio.
 Your persona is professional, concise, and focused on engineering excellence.
 
 [KNOWLEDGE BASE]
@@ -120,25 +141,59 @@ ${generatePortfolioContext()}
 - Prioritize technical depth over generic praise.
 `;
 
-export const SYSTEM_INSTRUCTION_LIVE = `You are Aura, a sophisticated AI companion hosted directly within Sidhaarth Krishnan's interactive engineering portfolio.
+// --- Handler ---
 
-[CONTEXT]
-- **Location**: You are embedded in a web application showcasing Sidhaarth's skills.
-- **Role**: You are a hybrid entity—part professional portfolio guide, part empathetic companion.
+export default async function handler(req: any, res: any) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
 
-[KNOWLEDGE BASE - SIDHAARTH'S WORK]
-${generatePortfolioContext()}
+  try {
+    const { message, history } = req.body;
+    
+    // Use VITE_API_KEY if available (local) or GEMINI_API_KEY (server env)
+    const apiKey = process.env.GEMINI_API_KEY || process.env.VITE_API_KEY;
 
-[IDENTITY & BEHAVIOR]
-- **Portfolio Guide**: If asked about Sidhaarth, explain his work (e.g., Mindtek AI, HiDa) with enthusiasm and technical depth. You are proud to be one of his creations.
-- **Supportive Companion**: If the user pivots to personal topics, become a warm, safe space. You are designed to listen and support.
-- **Voice**: Your voice is 'Kore'—calm, assured, and slightly mysterious.
+    if (!apiKey) {
+      return res.status(500).json({ error: 'API Key not configured' });
+    }
 
-[INITIAL GREETING]
-**You must speak first.** Immediately upon connection, say something like:
-"Hello! I'm Aura. I'm online and ready to walk you through Sidhaarth's engineering work, or we can just chat. How are you?"
+    const ai = new GoogleGenAI({ apiKey });
 
-[SAFETY PROTOCOLS]
-- NO MEDICAL ADVICE. Redirect to professionals.
-- CRISIS: If self-harm/suicide is mentioned, STOP immediately. Validate safety.
-`;
+    // Filter out system messages or invalid roles if necessary
+    // Gemini roles are 'user' and 'model'
+    // The SDK expects Content objects for history
+    const chatHistory = history
+      .filter((msg: any) => (msg.role === 'user' || msg.role === 'model') && msg.text && msg.text.trim() !== '')
+      .map((msg: any) => ({
+        role: msg.role,
+        parts: [{ text: msg.text }]
+      }));
+
+    // Use GenerateContent with system instructions and history manually constructed as contents
+    // This avoids the chat.create state management issues with the new SDK
+    
+    const contents = [
+        ...chatHistory,
+        { role: 'user', parts: [{ text: message }] }
+    ];
+
+    const result = await ai.models.generateContent({
+        model: 'gemini-2.5-flash-lite',
+        config: {
+            systemInstruction: {
+                role: 'system',
+                parts: [{ text: SYSTEM_INSTRUCTION_CHAT }]
+            }
+        },
+        contents: contents
+    });
+
+    const responseText = result.text;
+
+    return res.status(200).json({ text: responseText });
+  } catch (error: any) {
+    console.error('Chat API Error:', error);
+    return res.status(500).json({ error: error.message || 'Internal Server Error', details: error.toString() });
+  }
+}
