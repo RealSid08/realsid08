@@ -67,7 +67,7 @@ export class LiveSessionManager {
   private processor: ScriptProcessorNode | null = null;
   private sourceNode: MediaStreamAudioSourceNode | null = null;
   private onVolumeChange: (volume: number) => void;
-  
+
   // Analysers for visualization
   private outputAnalyser: AnalyserNode | null = null;
   private animationFrameId: number | null = null;
@@ -81,22 +81,22 @@ export class LiveSessionManager {
   async connect() {
     // 0. Fetch Ephemeral Token
     let apiKey = import.meta.env.VITE_API_KEY; // Fallback for local dev if needed, though we prefer token
-    
+
     try {
-        const response = await fetch('/api/token', { method: 'POST' });
-        if (response.ok) {
-            const data = await response.json();
-            if (data.token) {
-                apiKey = data.token;
-                console.log("Using Ephemeral Token for Live API");
-            }
+      const response = await fetch('/api/token', { method: 'POST' });
+      if (response.ok) {
+        const data = await response.json();
+        if (data.token) {
+          apiKey = data.token;
+          console.log("Using Ephemeral Token for Live API");
         }
+      }
     } catch (e) {
-        console.warn("Failed to fetch ephemeral token, falling back to env key if available", e);
+      console.warn("Failed to fetch ephemeral token, falling back to env key if available", e);
     }
-    
+
     if (!apiKey) {
-        throw new Error("No API Key or Token available");
+      throw new Error("No API Key or Token available");
     }
 
     this.ai = new GoogleGenAI({ apiKey, apiVersion: 'v1alpha' });
@@ -104,7 +104,7 @@ export class LiveSessionManager {
     // 1. Initialize AudioContexts immediately to be ready
     this.inputAudioContext = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 16000 });
     this.outputAudioContext = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
-    
+
     // Resume contexts if suspended (important for some browsers)
     if (this.inputAudioContext.state === 'suspended') {
       this.inputAudioContext.resume().catch(e => console.warn("Input AudioContext resume failed", e));
@@ -134,7 +134,7 @@ export class LiveSessionManager {
           const base64EncodedAudioString = message.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
           if (base64EncodedAudioString && this.outputAudioContext && this.outputAnalyser) {
             this.nextStartTime = Math.max(this.nextStartTime, this.outputAudioContext.currentTime);
-            
+
             const audioBuffer = await decodeAudioData(
               decode(base64EncodedAudioString),
               this.outputAudioContext,
@@ -144,10 +144,10 @@ export class LiveSessionManager {
 
             const source = this.outputAudioContext.createBufferSource();
             source.buffer = audioBuffer;
-            
+
             source.connect(this.outputAnalyser);
             this.outputAnalyser.connect(this.outputAudioContext.destination);
-            
+
             source.addEventListener('ended', () => {
               this.sources.delete(source);
             });
@@ -164,12 +164,12 @@ export class LiveSessionManager {
           }
         },
         onclose: (event) => {
-            console.log('Gemini Live Session Closed', event);
-            this.isConnected = false;
+          console.log('Gemini Live Session Closed', event);
+          this.isConnected = false;
         },
         onerror: (e) => {
-            console.error('Gemini Live Error', e);
-            this.isConnected = false;
+          console.error('Gemini Live Error', e);
+          this.isConnected = false;
         },
       },
       config: {
@@ -179,7 +179,7 @@ export class LiveSessionManager {
         },
         systemInstruction: SYSTEM_INSTRUCTION_LIVE,
         tools: [{ googleSearch: {} }],
-        enableAffectiveDialog: true
+        proactivity: { proactiveAudio: true }
       },
     });
 
@@ -188,9 +188,9 @@ export class LiveSessionManager {
       if (!this.isConnected) return;
       try {
         // Send a dummy user turn to force the model to speak its instruction
-        await (session as any).sendClientContent({ 
-          turns: [{ role: 'user', parts: [{ text: "Hello" }] }], 
-          turnComplete: true 
+        await (session as any).sendClientContent({
+          turns: [{ role: 'user', parts: [{ text: "Hello" }] }],
+          turnComplete: true
         });
       } catch (e) {
         console.warn("Failed to trigger initial greeting:", e);
@@ -202,17 +202,17 @@ export class LiveSessionManager {
       this.stream = stream;
       this.startAudioStreaming();
     }).catch((err) => {
-       console.error("Microphone access denied or failed:", err);
+      console.error("Microphone access denied or failed:", err);
     });
 
     // Return as soon as the session connection is established
     // We do NOT wait for the microphone stream here, allowing UI to show "connected" state instantly
     const session = await this.sessionPromise;
-    
+
     if (!this.isConnected) {
-        throw new Error("Session closed immediately after connection");
+      throw new Error("Session closed immediately after connection");
     }
-    
+
     return session;
   }
 
@@ -227,7 +227,7 @@ export class LiveSessionManager {
 
       const inputData = e.inputBuffer.getChannelData(0);
       const pcmBlob = createBlob(inputData);
-      
+
       if (this.sessionPromise) {
         this.sessionPromise.then((session) => {
           if (this.isConnected) {
@@ -257,10 +257,10 @@ export class LiveSessionManager {
         outputVol = sum / data.length / 255;
       }
 
-      this.onVolumeChange(outputVol * 1.5); 
+      this.onVolumeChange(outputVol * 1.5);
       this.animationFrameId = requestAnimationFrame(analyze);
     };
-    
+
     analyze();
   }
 
@@ -286,7 +286,7 @@ export class LiveSessionManager {
     }
 
     this.stopAudioPlayback();
-    
+
     if (this.sourceNode) {
       this.sourceNode.disconnect();
       this.sourceNode = null;
@@ -307,7 +307,7 @@ export class LiveSessionManager {
       this.outputAudioContext.close();
       this.outputAudioContext = null;
     }
-    
+
     this.outputAnalyser = null;
   }
 }

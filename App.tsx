@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { ThreeBackground } from './components/ThreeBackground';
 import { LiveDemo } from './components/LiveDemo';
 import { ChatBot } from './components/ChatBot';
@@ -9,6 +9,21 @@ import { PROJECTS } from './constants';
 import { FadeInSection } from './components/FadeInSection';
 
 const App: React.FC = () => {
+  const [showScrollIndicator, setShowScrollIndicator] = useState(true);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 50) {
+        setShowScrollIndicator(false);
+      } else {
+        setShowScrollIndicator(true);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   return (
     <div className="min-h-screen text-white selection:bg-white selection:text-black relative font-sans animate-appear">
       <ThreeBackground />
@@ -42,11 +57,11 @@ const App: React.FC = () => {
           </div>
         </FadeInSection>
 
-        <div className="absolute bottom-12 flex flex-col items-center gap-2 hidden md:flex">
+        <div className={`absolute bottom-12 flex flex-col items-center gap-2 md:flex transition-opacity duration-500 ${showScrollIndicator ? 'opacity-100' : 'opacity-0'}`}>
           <FadeInSection delay={1000}>
-            <div className="flex flex-col items-center gap-2 animate-bounce opacity-50">
-              <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-gray-400">Scroll Down</span>
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 text-gray-400">
+            <div className="flex flex-col items-center gap-2 animate-bounce">
+              <span className="text-xs font-mono uppercase tracking-[0.2em] text-gray-300 font-medium">Scroll Down</span>
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5 text-gray-300">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
               </svg>
             </div>
