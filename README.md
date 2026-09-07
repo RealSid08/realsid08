@@ -1,56 +1,24 @@
 # Sidhaarth Krishnan
 
-Interactive portfolio for a full-stack software engineer in Melbourne. Live at [realsid08.vercel.app](https://realsid08.vercel.app).
+Full-stack software engineer in Melbourne. Final-year Software Engineering student at Swinburne. Available for full-time graduate roles from December 2026.
 
-The page is built as a control plane: current contracts as running worktrees, a skill graph, project exhibits (Foodly, ParkAlong, TBRGS, RAG), and two live AI surfaces at the bottom.
+I ship production web, mobile, and AI-enabled products. I treat AI as an engineering system: decompose work across parallel agents, isolate changes in Git worktrees, and validate outputs through human review, automated tests, and real app interaction.
 
-## What’s on the site
+**[realsid08.vercel.app](https://realsid08.vercel.app)** · [LinkedIn](https://www.linkedin.com/in/sidhaarth-krishnan-75b5971a7/) · [Email](mailto:krishnansidhaarth@gmail.com)
 
-- **Workstreams** — Besmak, Complete Leader, Kenspire, plus an archive of earlier roles
-- **Skill graph** — languages through agentic engineering, cloud, and delivery
-- **Project exhibits** — canvas visualizers for Foodly, ParkAlong, traffic routing, and RAG
-- **Voice Hub** — browser WebRTC session against OpenAI Realtime (`gpt-realtime-2.1-mini`)
-- **Assistant** — streaming chat with GPT 5.6 Luna via the Vercel AI SDK, with resume lookup tools
+## Now
 
-## Stack
+- **Besmak Components** — independent contractor. Web + React Native operations platform for 600 users. Self-hosted Convex on AWS.
+- **Complete Leader** — casual. Turning in-person psychometric testing into a Next.js / Supabase client platform.
+- **Kenspire Advisors** — contract. TanStack Start + Convex, access control, migrations, CI/CD, aimed at a 500-org rollout.
 
-React, TypeScript, Vite, Three.js, Vercel serverless routes, Vercel AI SDK, OpenAI Realtime + Responses APIs.
+## Building
 
-## Local
+- **[Foodly](https://realsid08.vercel.app/#projects)** — final-year project. Instagram / TikTok links become mapped restaurant places.
+- **[ParkAlong](https://github.com/OpenRenderKit/ParkAlong)** — Victorian parking finder with live City of Melbourne occupancy and 34k integrity-manifested records.
 
-Needs Node 18+.
+## Stack I actually use
 
-```bash
-npm install
-```
+TypeScript, JavaScript, Python, SQL, Swift, C++, Go. React, Next.js, TanStack Start, Convex, PostgreSQL, Supabase. AWS, Playwright, Vitest, GitHub Actions.
 
-Create `.env.local`:
-
-```
-OPENAI_API_KEY=sk-...
-```
-
-The key stays on the server. Vite exposes `/api/token` (ephemeral Realtime secret) and `/api/chat` (Luna stream). The browser never sees the secret key.
-
-```bash
-npm run dev
-```
-
-Then open the printed local URL (often `http://localhost:5173`).
-
-```bash
-npm run build
-npm start
-```
-
-Production on Vercel also needs `OPENAI_API_KEY` set in the project environment.
-
-## Layout
-
-```
-api/chat.ts      Luna chat stream
-api/token.ts     Realtime client secret
-components/      page sections + Voice Hub + Beautiful UI chat primitives
-lib/             OpenAI Realtime + portfolio chat tools
-services/        WebRTC session + local resume fallback
-```
+This repository is the source for the portfolio site.
