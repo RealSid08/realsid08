@@ -76,7 +76,7 @@ export const EXPERIENCES: ExperienceItem[] = [
     company: 'Besmak Components',
     period: 'Jul 2026 – Present',
     location: 'Remote',
-    employmentType: 'Independent Contractor',
+    employmentType: 'Freelance Contract',
     lane: 'active',
     description: [
       'Own hands-on delivery of a web and mobile operations platform for 600 users across TanStack Start, React Native/Expo, and tenant-safe real-time backend workflows.',
@@ -104,7 +104,7 @@ export const EXPERIENCES: ExperienceItem[] = [
     company: 'Kenspire Advisors',
     period: 'Oct 2025 – Present',
     location: 'Remote',
-    employmentType: 'Contract',
+    employmentType: 'Freelance Contract',
     lane: 'active',
     description: [
       'Use Codex and Claude Code to audit authorization and performance, design bounded Convex migrations and backfills, and pressure-test changes while retaining human ownership of architecture, schema cutovers, and releases.',

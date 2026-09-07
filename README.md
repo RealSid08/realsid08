@@ -8,9 +8,9 @@ I ship production web, mobile, and AI-enabled products. I treat AI as an enginee
 
 ## Now
 
-- **Besmak Components** — independent contractor. Web + React Native operations platform for 600 users. Self-hosted Convex on AWS.
+- **Besmak Components** — freelance contract. Web + React Native operations platform for 600 users. Self-hosted Convex on AWS.
 - **Complete Leader** — casual. Turning in-person psychometric testing into a Next.js / Supabase client platform.
-- **Kenspire Advisors** — contract. TanStack Start + Convex, access control, migrations, CI/CD, aimed at a 500-org rollout.
+- **Kenspire Advisors** — freelance contract. TanStack Start + Convex, access control, migrations, CI/CD, aimed at a 500-org rollout.
 
 ## Building
 
