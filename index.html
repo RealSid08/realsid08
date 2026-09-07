@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
     <title>Sidhaarth Krishnan | Software Engineer</title>
+    <meta name="description" content="Full-stack software engineer in Melbourne. Student visa with work rights. Available for full-time graduate employment from December 2026." />
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
@@ -21,6 +22,7 @@
             fontFamily: {
               sans: ['Inter', 'sans-serif'],
               mono: ['Fira Code', 'monospace'],
+              display: ['Syne', 'Inter', 'sans-serif'],
             },
             animation: {
               'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
@@ -41,9 +43,13 @@
         },
       }
     </script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;800&family=Fira+Code:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;800&family=Fira+Code:wght@300;400;600&family=Syne:wght@700;800&display=swap" rel="stylesheet">
     <style>
+      html { scroll-behavior: smooth; }
       body { margin: 0; background-color: #050505; color: white; overflow-x: hidden; }
+      @media (prefers-reduced-motion: reduce) {
+        html { scroll-behavior: auto; }
+      }
       /* Custom scrollbar */
       ::-webkit-scrollbar { width: 6px; }
       ::-webkit-scrollbar-track { background: #050505; }

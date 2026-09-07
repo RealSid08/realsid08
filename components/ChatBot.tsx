@@ -1,13 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ChatMessage } from '../types';
 import { soundEffects } from '../services/sound';
+import { localPortfolioAnswer } from '../services/localKnowledge';
 import ReactMarkdown from 'react-markdown';
 
 export const ChatBot: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([
-    { role: 'model', text: "System Online. I am the portfolio assistant. How can I help you navigate Sidhaarth's engineering background?" }
+    { role: 'model', text: "System online. I can brief you on Sidhaarth's active contracts (Besmak, Complete Leader, Kenspire), Foodly, ParkAlong, or availability from December 2026." }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -87,7 +88,7 @@ export const ChatBot: React.FC = () => {
       }
 
       const data = await response.json();
-      const text = data.text;
+      const text = data.text || localPortfolioAnswer(userMsg);
       
       soundEffects.playMessageReceived();
 
@@ -102,11 +103,12 @@ export const ChatBot: React.FC = () => {
 
     } catch (error) {
       console.error("Chat error:", error);
+      const fallback = localPortfolioAnswer(userMsg);
       setMessages(prev => {
         const newMessages = [...prev];
         const lastMsg = newMessages[newMessages.length - 1];
-        if (lastMsg.role === 'model' && lastMsg.text === '') {
-          lastMsg.text = "Connection Error. Please retry.";
+        if (lastMsg.role === 'model') {
+          lastMsg.text = fallback;
         }
         return newMessages;
       });

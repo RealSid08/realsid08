@@ -1,144 +1,83 @@
 import { GoogleGenAI } from '@google/genai';
 
-// --- Interfaces (inlined to avoid module resolution issues) ---
-interface ExperienceItem {
-  id: string;
-  role: string;
-  company: string;
-  period: string;
-  description: string[];
-  tech: string[];
-}
-
-interface ProjectItem {
-  id: string;
-  title: string;
-  description: string;
-  link?: string;
-  githubUrl?: string;
-  tech: string[];
-  type: 'live-demo' | 'visualization' | 'standard';
-}
-
-// --- Data (inlined from constants.ts) ---
-const EXPERIENCES: ExperienceItem[] = [
-  {
-    id: 'mindtek',
-    role: 'Software Engineer',
-    company: 'Mindtek AI',
-    period: 'May 2025 – Oct 2025',
-    description: [
-      'Architected a multi-tenant SaaS Chatbot Platform using Next.js and Supabase, implementing Vercel AI SDK v5 to orchestrate RAG pipelines.',
-      'Built a high-performance, drop-in chat widget using vanilla JavaScript and React with secure iframe resizing.',
-      'Developed a speech-to-speech AI Virtual Receptionist Kiosk using Gemini Live API and Zustand for state management.'
-    ],
-    tech: ['Next.js', 'Supabase', 'Gemini API', 'RAG', 'TanStack Query']
-  },
-  {
-    id: 'unieats',
-    role: 'Startup Contributor',
-    company: 'UniEats',
-    period: 'March 2024 – April 2025',
-    description: [
-      'Contributed to promotion, logistics, idea generation, and technological platform improvements.',
-      'Created digital marketing content (Final Cut/Premiere Pro) and pitched partnerships to local restaurants.'
-    ],
-    tech: ['Marketing', 'Video Editing', 'Operations', 'Logistics']
-  },
-  {
-    id: 'idhayam',
-    role: 'Market Researcher',
-    company: 'Idhayam',
-    period: 'Oct 2024 – Dec 2024',
-    description: [
-      'Conducted market research for edible oils in the Australian market (Melbourne & Sydney).',
-      'Analysed consumer preferences and distribution challenges through store visits and interviews.'
-    ],
-    tech: ['Data Analysis', 'Market Research', 'Strategy']
-  },
-  {
-    id: 'hida',
-    role: 'Founder',
-    company: 'HiDa',
-    period: 'Aug 2020 – May 2021',
-    description: [
-      'Engineered a real-time video conferencing application utilizing Enablex and Quickblox APIs for seamless peer-to-peer streaming.',
-      'Implemented dynamic room creation, screen sharing capabilities, and synchronized chat messaging.',
-      'Optimized connection stability and bandwidth usage for multi-participant calls.'
-    ],
-    tech: ['React', 'WebRTC', 'Enablex', 'Quickblox', 'Node.js']
-  },
-  {
-    id: 'imaginet',
-    role: 'Intern',
-    company: 'Imaginet Ventures Pvt. Ltd.',
-    period: 'June 2016 – July 2017',
-    description: [
-      'Worked with Python, PHP, mySQL and other database structure concepts.',
-      'Gained foundational knowledge in SaaS development within a B2B environment.'
-    ],
-    tech: ['Python', 'PHP', 'MySQL', 'SaaS']
-  }
-];
-
-const PROJECTS: ProjectItem[] = [
-  {
-    id: 'aura',
-    title: 'Aura Ecosystem (AI & IoT)',
-    description: 'Low-latency bidirectional voice interface connecting React frontends to Gemini Multimodal Live API. Integrates IoT tactile stress sensors (ESP32) via WebSockets.',
-    tech: ['React', 'Gemini Live API', 'WebSockets', 'AudioWorklet', 'ESP32', 'Python'],
-    type: 'live-demo',
-    githubUrl: 'https://github.com/RealSid08/AuraHub'
-  },
-  {
-    id: 'tbrgs',
-    title: 'Traffic-Based Route Guidance',
-    description: 'End-to-end traffic forecasting pipeline using LSTM and GRU neural networks trained on historical SCATS sensor data. Optimized A* algorithms for routing.',
-    tech: ['Python', 'TensorFlow', 'LSTM/GRU', 'Graph Theory', 'Tkinter'],
-    type: 'visualization',
-    githubUrl: 'https://github.com/RealSid08/IntroToAISquad/tree/2B'
-  },
-  {
-    id: 'rag-viz',
-    title: 'RAG Engine',
-    description: 'Interactive visualization of the Retrieval-Augmented Generation pipeline. Demonstrates how user queries are vectorized, matched with knowledge base chunks, and synthesized by the LLM.',
-    tech: ['React', 'Vercel AI SDK', 'Vector Embeddings', 'Supabase pgvector'],
-    type: 'visualization'
-  }
-];
-
-// Shared knowledge base generator
-const generatePortfolioContext = () => `
-[PROFESSIONAL EXPERIENCE]
-${EXPERIENCES.map(e => `
-- **${e.role}** at **${e.company}** (${e.period})
-  ${e.description.map(d => `  * ${d}`).join('\n')}
-  *Stack*: ${e.tech.join(', ')}
-`).join('\n')}
-
-[PROJECTS]
-${PROJECTS.map(p => `
-- **${p.title}** (${p.type})
-  ${p.description}
-  *Stack*: ${p.tech.join(', ')}
-  ${p.githubUrl ? `*Repo*: ${p.githubUrl}` : ''}
-`).join('\n')}
-
-[EDUCATION]
-- Bachelor of Engineering (Software - Honours), Swinburne University of Technology, Hawthorn.
-`;
-
+// Knowledge base inlined from constants.ts (serverless module resolution).
 const SYSTEM_INSTRUCTION_CHAT = `You are a sophisticated, minimalist AI assistant for Sidhaarth Krishnan's portfolio.
 Your persona is professional, concise, and focused on engineering excellence.
 
+Sidhaarth currently runs parallel commercial workstreams at Besmak Components, Complete Leader, and Kenspire Advisors, with prior work at Mindtek AI. Lead with those contracts, Foodly (final-year social-to-place discovery), ParkAlong, and availability from December 2026 when relevant — not only older roles like HiDa.
+
 [KNOWLEDGE BASE]
-${generatePortfolioContext()}
+
+[IDENTITY]
+- **Name**: Sidhaarth Krishnan
+- **Title**: Full-stack software engineer and final-year Software Engineering student
+- **Location**: Melbourne, VIC
+- **Visa**: Student visa with work rights
+- **Availability**: Available for full-time graduate employment from December 2026
+- **Phone**: +61 475 508 390
+- **Email**: krishnansidhaarth@gmail.com
+- **LinkedIn**: https://www.linkedin.com/in/sidhaarth-krishnan-75b5971a7/
+- **GitHub**: https://github.com/RealSid08
+- **Manifesto**: Treat AI as an engineering system: decompose work across parallel agents, isolate changes in Git worktrees, and validate outputs through human review, automated tests, and real app interaction.
+- **Experience**: 1+ year of commercial experience shipping production web, mobile, and AI-enabled products.
+
+[CORE SKILLS]
+- **Languages**: TypeScript, JavaScript, Python, SQL, Swift, C++, Go
+- **Frontend & Full Stack**: React, Next.js, TanStack Start, Node.js, HTML, CSS, REST APIs, WebSockets
+- **Backend & Data**: Convex, PostgreSQL, Supabase, Multi-tenant architecture, Indexed pagination, Background workflows
+- **Agentic Engineering**: Cursor Design mode, Parallel Codex and Claude Code agents, Git worktrees, Codex Computer Use, Human-led review and integration
+- **Cloud & Quality**: AWS, Self-hosted Convex, Playwright, Vitest, GitHub Actions, CI/CD, Production monitoring
+- **Delivery**: End-to-end feature ownership, Problem decomposition, Cross-functional collaboration, Production releases
+
+[ACTIVE CONTRACTS / CURRENT WORKSTREAMS]
+- **Software Engineer** at **Besmak Components** (Jul 2026 – Present) — Remote [Independent Contractor]
+  * Own hands-on delivery of a web and mobile operations platform for 600 users across TanStack Start, React Native/Expo, and tenant-safe real-time backend workflows.
+  * Coordinate parallel Codex and Claude Code agents in isolated Git worktrees for scoped implementation and review; use Cursor Design mode for interface iteration and Codex Computer Use to exercise logged-in product flows, reproduce defects, and verify fixes.
+  * Led adoption of self-hosted Convex on AWS; manage deployment, monitoring, backups, security, cost control, and scaling for backend and file services.
+  *Stack*: TanStack Start, React Native, Expo, Convex, AWS
+
+- **Software Engineer** at **Complete Leader** (Dec 2025 – Present) — Melbourne, VIC [Casual]
+  * Partner with the founder to turn in-person psychometric testing and manual reports into a Next.js and Supabase assessment, scoring, reporting, and role-based client platform.
+  *Stack*: Next.js, Supabase, Psychometrics
+
+- **Software Engineer** at **Kenspire Advisors** (Oct 2025 – Present) — Remote [Contract]
+  * Use Codex and Claude Code to audit authorization and performance, design bounded Convex migrations and backfills, and pressure-test changes while retaining human ownership of architecture, schema cutovers, and releases.
+  * Own full-stack delivery with TanStack Start and Convex, including access control, regression testing, CI/CD, production releases, and schema and data migrations across web and mobile products.
+  * Architect for a planned rollout to 500 client organisations, validating target workloads through end-to-end and backend stress tests.
+  *Stack*: TanStack Start, Convex, CI/CD, Migrations
+
+- **Software Engineer** at **Mindtek AI** (May 2025 – Oct 2025) — Melbourne, VIC
+  * Built a multi-tenant retrieval-augmented generation platform in Next.js and Supabase, then shipped an embeddable third-party chat widget and a real-time voice-receptionist kiosk using Gemini Live.
+  * Orchestrated RAG pipelines with Vercel AI SDK and implemented a drop-in chat widget using vanilla JavaScript and React with secure iframe resizing.
+  * Developed the speech-to-speech receptionist kiosk using Gemini Live API and Zustand for state management.
+  *Stack*: Next.js, Supabase, Gemini API, RAG, TanStack Query
+
+[ARCHIVE EXPERIENCE]
+- **Startup Contributor** at **UniEats** (March 2024 – April 2025)
+- **Market Researcher** at **Idhayam** (Oct 2024 – Dec 2024)
+- **Founder** at **HiDa** (Aug 2020 – May 2021) — real-time video conferencing with Enablex, Quickblox, WebRTC
+- **Intern** at **Imaginet Ventures Pvt. Ltd.** (June 2016 – July 2017)
+
+[PROJECTS]
+- **Foodly** — Social-to-Place Restaurant Discovery (Final-Year Project, Mar 2026 – Present)
+  * Co-built a web and React Native product that turns Instagram Reel and TikTok links into mapped restaurant places through Apify, Gemini, and Google Places, with shareable lists and community discovery.
+  * Engineered retry-safe ingestion, indexed cursor pagination, aggregate counters, resumable deletion and privacy workflows, and 102 automated tests across 19 backend test files.
+- **ParkAlong** — Trust-First Victorian Parking Finder
+  * Built and shipped a native parking product combining live City of Melbourne occupancy with 34,023 integrity-manifested Victorian records, backed by viewport-driven loading, generation-safe refreshes, CI, and deterministic unit and UI tests.
+  *Repo*: https://github.com/OpenRenderKit/ParkAlong
+- **Traffic-Based Route Guidance** — LSTM/GRU forecasting on SCATS data with optimized A*.
+- **RAG Engine** — retrieval-augmented generation visualization.
+- **Aura Ecosystem (AI & IoT)** — Gemini Live voice interface plus ESP32 tactile sensors.
+
+[EDUCATION]
+- Bachelor of Engineering (Honours), Software Engineering, Swinburne University of Technology, Hawthorn, VIC. Graduating: Dec 2026.
 
 [STYLE GUIDELINES]
 - Use Markdown for formatting (bold key terms, use lists).
 - Keep answers structurally organized.
 - Do not use excessive emojis; keep it sleek and monochrome.
 - Prioritize technical depth over generic praise.
+- If asked about availability, location, or work rights, state Melbourne, student visa with work rights, and full-time availability from December 2026.
 `;
 
 // --- Handler ---

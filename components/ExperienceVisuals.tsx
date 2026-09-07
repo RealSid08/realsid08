@@ -1,7 +1,9 @@
 import React, { useEffect, useRef } from 'react';
 
-const BaseCanvas: React.FC<{ draw: (ctx: CanvasRenderingContext2D, time: number) => void }> = ({ draw }) => {
+export const BaseCanvas: React.FC<{ draw: (ctx: CanvasRenderingContext2D, time: number) => void }> = ({ draw }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const drawRef = useRef(draw);
+  drawRef.current = draw;
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -9,30 +11,35 @@ const BaseCanvas: React.FC<{ draw: (ctx: CanvasRenderingContext2D, time: number)
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Handle High DPI screens
     const dpr = window.devicePixelRatio || 1;
-    // Set actual size in memory
     canvas.width = 600 * dpr;
     canvas.height = 400 * dpr;
-
-    // Normalize coordinate system
     ctx.scale(dpr, dpr);
-    
-    let animationId: number;
+
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const startTime = Date.now();
 
-    const render = () => {
-      const time = (Date.now() - startTime) / 1000;
-      // Clear using logical width/height
+    const paint = (time: number) => {
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, 600, 400);
-      draw(ctx, time);
+      drawRef.current(ctx, time);
+    };
+
+    if (reduced) {
+      paint(0);
+      return;
+    }
+
+    let animationId: number;
+    const render = () => {
+      paint((Date.now() - startTime) / 1000);
       animationId = requestAnimationFrame(render);
     };
     render();
     return () => cancelAnimationFrame(animationId);
-  }, [draw]);
+  }, []);
 
-  return <canvas ref={canvasRef} style={{width: '100%', height: '100%'}} className="object-cover opacity-80" />;
+  return <canvas ref={canvasRef} style={{ width: '100%', height: '100%' }} className="object-cover opacity-80" />;
 };
 
 export const MindtekVisual = () => {

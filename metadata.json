@@ -1,6 +1,6 @@
 {
   "name": "Sidhaarth Krishnan Portfolio",
-  "description": "A premium, interactive 3D portfolio featuring Gemini Live API voice demos and AI support chatbots.",
+  "description": "Concurrent-systems portfolio for Sidhaarth Krishnan: active contracts, Foodly, ParkAlong, Aura Gemini Live, and an engineering chatbot.",
   "requestFramePermissions": [
     "microphone"
   ]

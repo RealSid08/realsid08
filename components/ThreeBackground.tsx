@@ -22,6 +22,7 @@ function ParticleWave() {
 
   useFrame((state) => {
     if (!ref.current) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const time = state.clock.getElapsedTime();
     const positions = ref.current.geometry.attributes.position.array as Float32Array;
 
@@ -57,7 +58,7 @@ export const ThreeBackground: React.FC = () => {
         <ParticleWave />
         <ambientLight intensity={0.5} />
       </Canvas>
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-mono-base/60 to-mono-base pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-mono-base/20 to-mono-base pointer-events-none" />
     </div>
   );
 };
