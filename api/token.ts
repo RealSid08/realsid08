@@ -1,32 +1,30 @@
-import { GoogleGenAI } from '@google/genai';
+import { SYSTEM_INSTRUCTION_LIVE } from '../constants';
+import { createRealtimeClientSecret } from '../lib/openaiRealtime';
 
-export default async function handler(req: any, res: any) {
+type TokenRequest = {
+  method?: string;
+};
+
+type TokenResponse = {
+  status: (code: number) => TokenResponse;
+  json: (body: unknown) => unknown;
+};
+
+export default async function handler(req: TokenRequest, res: TokenResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    return res.status(500).json({ error: 'Voice session unavailable' });
+  }
+
   try {
-    // Use VITE_API_KEY if available (local) or GEMINI_API_KEY (server env)
-    const apiKey = process.env.GEMINI_API_KEY || process.env.VITE_API_KEY;
-
-    if (!apiKey) {
-      return res.status(500).json({ error: 'API Key not configured' });
-    }
-
-    const ai = new GoogleGenAI({ apiKey });
-
-    // Create ephemeral token
-    // Default expiration is 30 minutes for the token itself
-    // and 1 minute to start a new session.
-    const token = await (ai as any).authTokens.create({
-      config: {
-        httpOptions: { apiVersion: 'v1alpha' }
-      }
-    });
-
-    return res.status(200).json({ token: token.name });
-  } catch (error: any) {
-    console.error('Token Generation Error:', error);
-    return res.status(500).json({ error: error.message || 'Internal Server Error' });
+    const value = await createRealtimeClientSecret(apiKey, SYSTEM_INSTRUCTION_LIVE);
+    return res.status(200).json({ value });
+  } catch (error) {
+    console.error('Token Generation Error:', error instanceof Error ? error.message : 'unknown');
+    return res.status(500).json({ error: 'Voice session unavailable' });
   }
 }

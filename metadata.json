@@ -1,6 +1,6 @@
 {
   "name": "Sidhaarth Krishnan Portfolio",
-  "description": "Concurrent-systems portfolio for Sidhaarth Krishnan: active contracts, Foodly, ParkAlong, Aura Gemini Live, and an engineering chatbot.",
+  "description": "Concurrent-systems portfolio for Sidhaarth Krishnan: active contracts, Foodly, ParkAlong, Voice Hub (OpenAI Realtime), and an engineering chatbot.",
   "requestFramePermissions": [
     "microphone"
   ]

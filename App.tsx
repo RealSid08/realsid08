@@ -44,10 +44,7 @@ const App: React.FC = () => {
         <section id="aura" className="mb-24 md:mb-40 scroll-mt-16">
           <FadeInSection>
             <div className="mb-8 md:mb-12 border-l-2 border-white pl-4 md:pl-6">
-              <h2 className="text-3xl md:text-4xl font-bold mt-2">AURA HUB</h2>
-              <p className="text-gray-400 text-xs md:text-sm font-mono mt-2 uppercase">
-                Multimodal Voice AI + IoT Hardware Integration
-              </p>
+              <h2 className="text-3xl md:text-4xl font-bold mt-2">VOICE HUB</h2>
             </div>
             <LiveDemo />
           </FadeInSection>

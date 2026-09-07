@@ -200,7 +200,7 @@ export const Hero: React.FC = () => {
                 Projects
               </a>
               <a href="#aura" className="px-6 py-3 border border-white/10 text-gray-400 hover:text-white hover:border-white/40 transition-colors text-[11px] uppercase tracking-[0.2em] font-mono">
-                Aura
+                AI Voice Hub
               </a>
             </div>
           </FadeInSection>

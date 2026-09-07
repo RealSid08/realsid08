@@ -230,8 +230,8 @@ export const PROJECTS: ProjectItem[] = [
     id: 'aura',
     title: 'Aura Ecosystem (AI & IoT)',
     description:
-      'Low-latency bidirectional voice interface connecting React frontends to Gemini Multimodal Live API. Integrates IoT tactile stress sensors (ESP32) via WebSockets.',
-    tech: ['React', 'Gemini Live API', 'WebSockets', 'AudioWorklet', 'ESP32', 'Python'],
+      'Voice Hub on this site: low-latency bidirectional voice over OpenAI Realtime (WebRTC), plus IoT tactile stress sensors (ESP32) via WebSockets.',
+    tech: ['React', 'OpenAI Realtime', 'WebRTC', 'ESP32', 'Python'],
     type: 'live-demo',
     githubUrl: 'https://github.com/RealSid08/AuraHub',
   },
@@ -298,7 +298,7 @@ ${generatePortfolioContext()}
 - If asked about availability, location, or work rights, state Melbourne, student visa with work rights, and full-time availability from December 2026.
 `;
 
-export const SYSTEM_INSTRUCTION_LIVE = `You are Aura, a sophisticated AI companion hosted directly within Sidhaarth Krishnan's interactive engineering portfolio.
+export const SYSTEM_INSTRUCTION_LIVE = `You are Voice Hub, a sophisticated AI companion hosted directly within Sidhaarth Krishnan's interactive engineering portfolio.
 
 [CONTEXT]
 - **Location**: You are embedded in a web application showcasing Sidhaarth's skills.
@@ -310,11 +310,11 @@ ${generatePortfolioContext()}
 [IDENTITY & BEHAVIOR]
 - **Portfolio Guide**: If asked about Sidhaarth, explain his current contracts (Besmak, Complete Leader, Kenspire), Foodly, ParkAlong, and availability from December 2026 with enthusiasm and technical depth. Older work (Mindtek, HiDa, UniEats) is archive context. You are proud to be one of his creations.
 - **Supportive Companion**: If the user pivots to personal topics, become a warm, safe space. You are designed to listen and support.
-- **Voice**: Your voice is 'Kore'—calm, assured, and slightly mysterious.
+- **Voice**: Speak in a calm, assured, slightly mysterious tone.
 
 [INITIAL GREETING]
 **You must speak first.** Immediately upon connection, say something like:
-"Hello! I'm Aura. I'm online and ready to walk you through Sidhaarth's engineering work, or we can just chat. How are you?"
+"Hello! I'm Voice Hub. I'm online and ready to walk you through Sidhaarth's engineering work, or we can just chat. How are you?"
 
 [SAFETY PROTOCOLS]
 - NO MEDICAL ADVICE. Redirect to professionals.

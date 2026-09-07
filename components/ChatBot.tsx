@@ -1,245 +1,263 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { ChatMessage } from '../types';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { DefaultChatTransport, type UIMessage } from 'ai';
+import { useChat } from '@ai-sdk/react';
 import { soundEffects } from '../services/sound';
-import { localPortfolioAnswer } from '../services/localKnowledge';
-import ReactMarkdown from 'react-markdown';
+import { EXPERIENCES, PROJECTS } from '../constants';
+import { ChatShell, type ChatTab } from './beautiful-ui/ChatShell';
+import { PixelLoader } from './beautiful-ui/PixelLoader';
+import { ThinkingTrace, type ThinkingStep } from './beautiful-ui/ThinkingTrace';
+import { ToolChips, type ToolChip } from './beautiful-ui/ToolChips';
+import { ContextCards, type ContextChunk } from './beautiful-ui/ContextCards';
+import { StreamingAnswer } from './beautiful-ui/StreamingAnswer';
+import { PromptBar } from './beautiful-ui/PromptBar';
+import { SearchEmpty } from './beautiful-ui/SearchEmpty';
+import { RecommendationCard } from './beautiful-ui/RecommendationCard';
+
+const ASK_QUERIES = [
+  'What is Sidhaarth working on right now?',
+  'Walk me through Foodly',
+  'Why does ParkAlong matter?',
+  'When is he available full-time?',
+];
+
+const SLASH_PROMPTS: Record<string, string> = {
+  '/work': 'Summarize Sidhaarth\'s active workstreams.',
+  '/projects': 'Summarize Foodly and ParkAlong.',
+  '/contact': 'How can I contact Sidhaarth, and when is he available?',
+};
+
+type MessagePart = {
+  type: string;
+  text?: string;
+  state?: string;
+  input?: unknown;
+  output?: unknown;
+  toolName?: string;
+};
+
+function asParts(message: UIMessage): MessagePart[] {
+  return (message.parts ?? []) as MessagePart[];
+}
+
+function textFrom(parts: MessagePart[]): string {
+  return parts.filter((part) => part.type === 'text').map((part) => part.text ?? '').join('');
+}
+
+function thinkingFrom(parts: MessagePart[], running: boolean): ThinkingStep[] {
+  const steps: ThinkingStep[] = [];
+  parts.forEach((part, index) => {
+    if (part.type === 'reasoning' && part.text) {
+      steps.push({
+        id: `reason-${index}`,
+        kind: 'reasoning',
+        title: 'Reasoning',
+        detail: part.text,
+        running,
+      });
+    }
+    if (part.type.startsWith('tool-')) {
+      const name = part.type.replace(/^tool-/, '');
+      const input = part.input && typeof part.input === 'object' ? JSON.stringify(part.input) : '';
+      steps.push({
+        id: `tool-step-${index}`,
+        kind: 'tool',
+        title: name,
+        detail: input,
+        running: part.state === 'input-streaming' || part.state === 'input-available' || part.state === 'running',
+      });
+    }
+  });
+  return steps;
+}
+
+function chipsFrom(parts: MessagePart[]): ToolChip[] {
+  return parts.flatMap((part, index) => {
+    if (!part.type.startsWith('tool-')) return [];
+    const name = part.type.replace(/^tool-/, '');
+    const input = part.input && typeof part.input === 'object' ? Object.values(part.input as Record<string, unknown>)[0] : '';
+    const state: ToolChip['state'] =
+      part.state === 'output-error' ? 'error' : part.state === 'output-available' ? 'done' : 'running';
+    return [{
+      id: `${name}-${index}`,
+      name,
+      label: String(input ?? 'resume'),
+      state,
+    }];
+  });
+}
+
+function chunksFrom(parts: MessagePart[]): ContextChunk[] {
+  return parts.flatMap((part, index) => {
+    if (!part.type.startsWith('tool-') || part.state !== 'output-available') return [];
+    const name = part.type.replace(/^tool-/, '');
+    const body = typeof part.output === 'string' ? part.output : JSON.stringify(part.output ?? '');
+    return [{
+      id: `chunk-${index}`,
+      title: name,
+      source: 'Resume',
+      body,
+    }];
+  });
+}
+
+function followUpsFor(text: string): string[] {
+  const lower = text.toLowerCase();
+  if (lower.includes('foodly')) return ['How does ParkAlong compare?', 'What is he building at Besmak?'];
+  if (lower.includes('parkalong')) return ['Tell me about Foodly', 'What stack does he use?'];
+  if (lower.includes('besmak') || lower.includes('kenspire') || lower.includes('complete leader')) {
+    return ['What are the featured projects?', 'When is he available?'];
+  }
+  return ['Summarize active workstreams', 'Show contact details'];
+}
 
 export const ChatBot: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    { role: 'model', text: "System online. I can brief you on Sidhaarth's active contracts (Besmak, Complete Leader, Kenspire), Foodly, ParkAlong, or availability from December 2026." }
-  ]);
+  const [tab, setTab] = useState<ChatTab>('ask');
   const [input, setInput] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  
   const hasAutoOpened = useRef(false);
+  const bottomRef = useRef<HTMLDivElement>(null);
 
-  // Initialize chat session
+  const transport = useMemo(() => new DefaultChatTransport({ api: '/api/chat' }), []);
+  const { messages, sendMessage, status, error } = useChat({ transport });
+
+  const busy = status === 'submitted' || status === 'streaming';
+
   useEffect(() => {
-    // Delay enabling transitions to prevent "start open then close" visual glitch on load
-    const timer = setTimeout(() => {
-      setIsMounted(true);
-    }, 500);
-
-    const handleScroll = () => {
-      if (window.scrollY > 300 && !hasAutoOpened.current && !isOpen) {
+    const timer = window.setTimeout(() => setIsMounted(true), 400);
+    const onScroll = () => {
+      if (window.scrollY > 300 && !hasAutoOpened.current) {
         setIsOpen(true);
         hasAutoOpened.current = true;
         soundEffects.playClick();
       }
     };
-
-    window.addEventListener('scroll', handleScroll);
-
+    window.addEventListener('scroll', onScroll);
     return () => {
-      clearTimeout(timer);
-      window.removeEventListener('scroll', handleScroll);
+      window.clearTimeout(timer);
+      window.removeEventListener('scroll', onScroll);
     };
-  }, [isOpen]);
+  }, []);
 
   useEffect(() => {
-    if (isOpen) {
-      scrollToBottom();
-    }
-  }, [messages, isOpen]);
+    if (isOpen) bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, isOpen, status]);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  const toggleChat = () => {
-    soundEffects.playClick();
-    setIsOpen(!isOpen);
-  };
-
-  const handleSend = async () => {
-    if (!input.trim() || isLoading) return;
-
+  const submitPrompt = (raw: string) => {
+    const trimmed = raw.trim();
+    if (!trimmed || busy) return;
+    const text = SLASH_PROMPTS[trimmed] ?? trimmed.replace(/@resume/g, 'from the resume').replace(/@besmak/g, 'Besmak').replace(/@foodly/g, 'Foodly');
     soundEffects.playMessageSent();
-    const userMsg = input;
+    void sendMessage({ text });
     setInput('');
-
-    // Prepare history (excluding the hardcoded greeting at index 0)
-    const history = messages.slice(1);
-
-    setMessages(prev => [
-      ...prev,
-      { role: 'user', text: userMsg },
-      { role: 'model', text: '' } // Placeholder for response
-    ]);
-    setIsLoading(true);
-
-    try {
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          message: userMsg,
-          history: history
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`API Error: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      const text = data.text || localPortfolioAnswer(userMsg);
-      
-      soundEffects.playMessageReceived();
-
-      setMessages(prev => {
-        const newMessages = [...prev];
-        const lastMsg = newMessages[newMessages.length - 1];
-        if (lastMsg.role === 'model') {
-          lastMsg.text = text;
-        }
-        return newMessages;
-      });
-
-    } catch (error) {
-      console.error("Chat error:", error);
-      const fallback = localPortfolioAnswer(userMsg);
-      setMessages(prev => {
-        const newMessages = [...prev];
-        const lastMsg = newMessages[newMessages.length - 1];
-        if (lastMsg.role === 'model') {
-          lastMsg.text = fallback;
-        }
-        return newMessages;
-      });
-    } finally {
-      setIsLoading(false);
-    }
+    setTab('ask');
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
-  };
+  const lastAssistant = [...messages].reverse().find((message) => message.role === 'assistant');
+  const lastText = lastAssistant ? textFrom(asParts(lastAssistant)) : '';
 
   return (
     <div className="fixed bottom-4 right-4 md:bottom-6 md:right-6 z-50 flex flex-col items-end pointer-events-none font-sans">
-
-      {/* Chat Window */}
       <div
         className={`
-          pointer-events-auto
-          w-[calc(100vw-2rem)] md:w-96 h-[450px] md:h-[500px] 
-          bg-black/95 border border-mono-border rounded-lg shadow-2xl 
-          flex flex-col overflow-hidden mb-4 
-          origin-bottom-right
           ${isMounted ? 'transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)]' : ''}
-          ${isOpen
-            ? 'opacity-100 scale-100 translate-y-0 visible'
-            : 'opacity-0 scale-75 translate-y-10 invisible'}
+          ${isOpen ? 'opacity-100 scale-100 translate-y-0 visible mb-4' : 'opacity-0 scale-75 translate-y-10 invisible h-0 mb-0'}
         `}
       >
-        {/* Header */}
-        <div className="bg-mono-paper p-4 border-b border-mono-border flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-white animate-pulse"></div>
-            <span className="font-mono text-xs uppercase tracking-widest text-white">Assistant V1.0</span>
-          </div>
-          <button onClick={toggleChat} className="text-gray-500 hover:text-white transition-colors p-1">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
+        <ChatShell
+          tab={tab}
+          onTab={setTab}
+          onClose={() => setIsOpen(false)}
+          footer={
+            <PromptBar
+              value={input}
+              onChange={setInput}
+              onSubmit={() => submitPrompt(input)}
+              disabled={busy}
+            />
+          }
+        >
+          {tab === 'work' && (
+            <ContextCards
+              chunks={EXPERIENCES.filter((exp) => exp.lane === 'active').map((exp) => ({
+                id: exp.id,
+                title: exp.company,
+                source: exp.period,
+                body: `${exp.role} · ${exp.description[0] ?? ''}`,
+              }))}
+            />
+          )}
+          {tab === 'projects' && (
+            <ContextCards
+              chunks={PROJECTS.filter((project) => project.featured || project.id === 'foodly' || project.id === 'parkalong').map((project) => ({
+                id: project.id,
+                title: project.title,
+                source: project.period ?? project.type,
+                body: project.bullets?.[0] ?? project.description,
+              }))}
+            />
+          )}
 
-        {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-6 custom-scrollbar">
-          {messages.map((msg, idx) => (
-            <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-              <div className={`max-w-[85%] p-3 text-sm border ${msg.role === 'user'
-                  ? 'bg-white text-black border-white'
-                  : 'bg-black text-gray-300 border-mono-border'
-                }`}>
-                {msg.role === 'model' ? (
-                  <div className="markdown-content">
-                    <ReactMarkdown
-                      components={{
-                        p: ({ node, ...props }) => <p className="mb-2 last:mb-0 leading-relaxed" {...props} />,
-                        ul: ({ node, ...props }) => <ul className="list-disc ml-4 mb-2 space-y-1" {...props} />,
-                        ol: ({ node, ...props }) => <ol className="list-decimal ml-4 mb-2 space-y-1" {...props} />,
-                        li: ({ node, ...props }) => <li className="pl-1" {...props} />,
-                        strong: ({ node, ...props }) => <strong className="font-semibold text-white" {...props} />,
-                        a: ({ node, ...props }) => <a className="text-blue-400 hover:underline" target="_blank" rel="noopener noreferrer" {...props} />,
-                        code: ({ node, ...props }) => <code className="bg-gray-800 px-1 py-0.5 rounded text-xs font-mono" {...props} />
-                      }}
-                    >
-                      {msg.text}
-                    </ReactMarkdown>
-                  </div>
+          {tab === 'ask' && messages.length === 0 && (
+            <SearchEmpty queries={ASK_QUERIES} onPick={submitPrompt} />
+          )}
+
+          {tab === 'ask' && messages.map((message) => {
+            const parts = asParts(message);
+            const chips = chipsFrom(parts);
+            const chunks = chunksFrom(parts);
+            const steps = thinkingFrom(parts, message.role === 'assistant' && busy);
+            const text = textFrom(parts);
+            const isLast = lastAssistant?.id === message.id;
+
+            return (
+              <div key={message.id} className={message.role === 'user' ? 'flex justify-end' : 'space-y-3'}>
+                {message.role === 'user' ? (
+                  <div className="max-w-[85%] bg-white text-black px-3 py-2 text-[13px]">{text}</div>
                 ) : (
-                  msg.text
-                )}
-
-                {/* Typing Indicator */}
-                {isLoading && idx === messages.length - 1 && msg.role === 'model' && !msg.text && (
-                  <span className={`inline-flex gap-1 items-center h-4 align-middle`}>
-                    <span className="w-1.5 h-1.5 bg-white animate-pulse"></span>
-                    <span className="w-1.5 h-1.5 bg-gray-500 animate-pulse" style={{ animationDelay: '0.2s' }}></span>
-                    <span className="w-1.5 h-1.5 bg-white animate-pulse" style={{ animationDelay: '0.4s' }}></span>
-                  </span>
+                  <>
+                    <ThinkingTrace steps={steps} running={isLast && busy} />
+                    <ToolChips chips={chips} />
+                    <ContextCards chunks={chunks} />
+                    <StreamingAnswer
+                      text={text}
+                      streaming={isLast && status === 'streaming' && Boolean(text)}
+                      followUps={isLast && !busy ? followUpsFor(text) : []}
+                      onFollowUp={submitPrompt}
+                    />
+                  </>
                 )}
               </div>
-            </div>
-          ))}
-          <div ref={messagesEndRef} />
-        </div>
+            );
+          })}
 
-        {/* Input */}
-        <div className="p-4 border-t border-mono-border bg-mono-paper">
-          <div className="relative">
-            <input
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Input query..."
-              className="w-full bg-black border border-mono-border py-3 pl-4 pr-10 text-base md:text-sm text-white focus:outline-none focus:border-white transition-colors font-mono"
+          {tab === 'ask' && status === 'submitted' && (
+            <PixelLoader label="Thinking" variant="drive" />
+          )}
+          {tab === 'ask' && error && (
+            <p className="text-[12px] text-gray-400">Chat stream failed. Try again, or ask about Besmak, Foodly, or availability.</p>
+          )}
+          {tab === 'ask' && lastText && !busy && (
+            <RecommendationCard
+              question="Want me to open the workstreams?"
+              suggestion="Jump to Besmak, Complete Leader, and Kenspire on the page."
+              href="#experience"
             />
-            <button
-              onClick={handleSend}
-              disabled={!input.trim() || isLoading}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white disabled:opacity-30 transition-colors p-2"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
-                <path d="M3.478 2.405a.75.75 0 00-.926.94l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.405z" />
-              </svg>
-            </button>
-          </div>
-        </div>
+          )}
+          <div ref={bottomRef} />
+        </ChatShell>
       </div>
 
-      {/* Toggle Button */}
       <button
-        onClick={toggleChat}
-        className="pointer-events-auto group relative w-14 h-14 bg-black border border-white hover:bg-white transition-all duration-300 flex items-center justify-center"
+        type="button"
+        onClick={() => {
+          soundEffects.playClick();
+          setIsOpen((open) => !open);
+        }}
+        className="pointer-events-auto w-14 h-14 bg-black border border-white hover:bg-white hover:text-black transition-colors flex items-center justify-center"
+        aria-label="Open assistant"
       >
-        <div className="group-hover:invert transition-all duration-300">
-          {isOpen ? (
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="white" className="w-6 h-6">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-            </svg>
-          ) : (
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="white" className="w-7 h-7">
-              <rect x="4" y="8" width="16" height="12" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M8 8V6a4 4 0 0 1 8 0v2" />
-              <circle cx="9" cy="14" r="1" fill="currentColor" />
-              <circle cx="15" cy="14" r="1" fill="currentColor" />
-              <path d="M10 17h4" strokeLinecap="round" />
-            </svg>
-          )}
-        </div>
+        <span className="font-mono text-[10px] tracking-[0.14em]">{isOpen ? 'CLS' : 'ASK'}</span>
       </button>
     </div>
   );

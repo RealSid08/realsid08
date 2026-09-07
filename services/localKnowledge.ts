@@ -1,6 +1,6 @@
 import { EDUCATION, EXPERIENCES, PROFILE, PROJECTS, SKILLS } from '../constants';
 
-function formatRole(id: string): string | null {
+export function formatRole(id: string): string | null {
   const role = EXPERIENCES.find((exp) => exp.id === id);
   if (!role) return null;
   const meta = [role.period, role.location, role.employmentType].filter(Boolean).join(', ');
@@ -11,7 +11,7 @@ function formatRole(id: string): string | null {
   ].join('\n');
 }
 
-function formatProject(id: string): string | null {
+export function formatProject(id: string): string | null {
   const project = PROJECTS.find((item) => item.id === id);
   if (!project) return null;
   return [
