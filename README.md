@@ -1,20 +1,56 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Sidhaarth Krishnan
 
-# Run and deploy your AI Studio app
+Interactive portfolio for a full-stack software engineer in Melbourne. Live at [realsid08.vercel.app](https://realsid08.vercel.app).
 
-This contains everything you need to run your app locally.
+The page is built as a control plane: current contracts as running worktrees, a skill graph, project exhibits (Foodly, ParkAlong, TBRGS, RAG), and two live AI surfaces at the bottom.
 
-View your app in AI Studio: https://ai.studio/apps/drive/1qaJxhQBQWlQwb_qhzDQngP_B3W7jCUBp
+## What’s on the site
 
-## Run Locally
+- **Workstreams** — Besmak, Complete Leader, Kenspire, plus an archive of earlier roles
+- **Skill graph** — languages through agentic engineering, cloud, and delivery
+- **Project exhibits** — canvas visualizers for Foodly, ParkAlong, traffic routing, and RAG
+- **Voice Hub** — browser WebRTC session against OpenAI Realtime (`gpt-realtime-2.1-mini`)
+- **Assistant** — streaming chat with GPT 5.6 Luna via the Vercel AI SDK, with resume lookup tools
 
-**Prerequisites:**  Node.js
+## Stack
 
+React, TypeScript, Vite, Three.js, Vercel serverless routes, Vercel AI SDK, OpenAI Realtime + Responses APIs.
 
-1. Install dependencies:
-   `npm install`
-2. Set the `VITE_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+## Local
+
+Needs Node 18+.
+
+```bash
+npm install
+```
+
+Create `.env.local`:
+
+```
+OPENAI_API_KEY=sk-...
+```
+
+The key stays on the server. Vite exposes `/api/token` (ephemeral Realtime secret) and `/api/chat` (Luna stream). The browser never sees the secret key.
+
+```bash
+npm run dev
+```
+
+Then open the printed local URL (often `http://localhost:5173`).
+
+```bash
+npm run build
+npm start
+```
+
+Production on Vercel also needs `OPENAI_API_KEY` set in the project environment.
+
+## Layout
+
+```
+api/chat.ts      Luna chat stream
+api/token.ts     Realtime client secret
+components/      page sections + Voice Hub + Beautiful UI chat primitives
+lib/             OpenAI Realtime + portfolio chat tools
+services/        WebRTC session + local resume fallback
+```
