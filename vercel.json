@@ -4,5 +4,20 @@
             "source": "/api/(.*)",
             "destination": "/api/$1"
         }
+    ],
+    "headers": [
+        {
+            "source": "/Sidhaarth_Krishnan_Resume.pdf",
+            "headers": [
+                {
+                    "key": "Content-Type",
+                    "value": "application/pdf"
+                },
+                {
+                    "key": "Content-Disposition",
+                    "value": "attachment; filename=\"Sidhaarth_Krishnan_Resume.pdf\""
+                }
+            ]
+        }
     ]
 }

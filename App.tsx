@@ -59,7 +59,11 @@ const App: React.FC = () => {
                 <a href={PROFILE.linkedin} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors p-2 md:p-0">LinkedIn</a>
                 <a href={PROFILE.github} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors p-2 md:p-0">GitHub</a>
                 <a href={`mailto:${PROFILE.email}`} className="hover:text-white transition-colors p-2 md:p-0">Email</a>
-                <a href={PROFILE.resumeUrl} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors p-2 md:p-0">Résumé</a>
+                <a
+                  href={PROFILE.resumeUrl}
+                  download="Sidhaarth_Krishnan_Resume.pdf"
+                  className="hover:text-white transition-colors p-2 md:p-0"
+                >Résumé</a>
               </div>
             </div>
           </footer>
