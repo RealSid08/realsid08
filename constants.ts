@@ -33,7 +33,7 @@ export const SKILLS: SkillCluster[] = [
   {
     id: 'frontend',
     label: 'Frontend & Full Stack',
-    items: ['React', 'Next.js', 'TanStack Start', 'Node.js', 'HTML', 'CSS', 'REST APIs', 'WebSockets'],
+    items: ['React', 'React Native', 'Expo', 'Next.js', 'TanStack Start', 'Node.js', 'HTML', 'CSS', 'REST APIs', 'WebSockets'],
   },
   {
     id: 'backend',

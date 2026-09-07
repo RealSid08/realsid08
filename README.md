@@ -19,6 +19,6 @@ I ship production web, mobile, and AI-enabled products. I treat AI as an enginee
 
 ## Stack I actually use
 
-TypeScript, JavaScript, Python, SQL, Swift, C++, Go. React, Next.js, TanStack Start, Convex, PostgreSQL, Supabase. AWS, Playwright, Vitest, GitHub Actions.
+TypeScript, JavaScript, Python, SQL, Swift, C++, Go. React, React Native, Expo, Next.js, TanStack Start, Convex, PostgreSQL, Supabase. AWS, Playwright, Vitest, GitHub Actions.
 
 This repository is the source for the portfolio site.
