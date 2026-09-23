@@ -7,6 +7,7 @@ import { Hero } from './components/Hero';
 import { SkillsMap } from './components/SkillsMap';
 import { ProjectExhibits } from './components/ProjectExhibits';
 import { FadeInSection } from './components/FadeInSection';
+import { ThemeToggle } from './components/ThemeToggle';
 import { EDUCATION, PROFILE } from './constants';
 
 const App: React.FC = () => {
@@ -14,6 +15,7 @@ const App: React.FC = () => {
     <div className="min-h-screen text-white selection:bg-white selection:text-black relative font-sans animate-appear">
       <ThreeBackground />
       <ChatBot />
+      <ThemeToggle />
       <Hero />
 
       <main className="relative z-10 container mx-auto px-4 md:px-6 pb-20 md:pb-32 max-w-7xl">
@@ -29,7 +31,7 @@ const App: React.FC = () => {
           <FadeInSection>
             <div className="border border-white/10 bg-black/50 p-6 md:p-10 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
               <div>
-                <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-gray-500 mb-3">/EDU/CURRENT</p>
+                <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-gray-500 mb-3">Education</p>
                 <h2 className="text-2xl md:text-4xl font-bold">{EDUCATION.school}</h2>
                 <p className="text-gray-400 mt-3 text-sm md:text-base">{EDUCATION.degree}</p>
               </div>
@@ -44,7 +46,7 @@ const App: React.FC = () => {
         <section id="aura" className="mb-24 md:mb-40 scroll-mt-16">
           <FadeInSection>
             <div className="mb-8 md:mb-12 border-l-2 border-white pl-4 md:pl-6">
-              <h2 className="text-3xl md:text-4xl font-bold mt-2">VOICE HUB</h2>
+              <h2 className="text-3xl md:text-4xl font-bold mt-2">Voice demo</h2>
             </div>
             <LiveDemo />
           </FadeInSection>

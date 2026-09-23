@@ -2,13 +2,13 @@ import React from 'react';
 import { CHAT_MODEL_LABEL } from '../../lib/chatModel';
 
 const COMMANDS = [
-  { id: '/work', label: 'Active workstreams' },
-  { id: '/projects', label: 'Foodly & ParkAlong' },
-  { id: '/contact', label: 'Contact + availability' },
+  { id: '/work', label: 'Experience' },
+  { id: '/projects', label: 'Projects' },
+  { id: '/contact', label: 'Contact' },
 ];
 
 const SOURCES = [
-  { id: '@resume', label: 'Resume' },
+  { id: '@resume', label: 'Résumé' },
   { id: '@besmak', label: 'Besmak' },
   { id: '@foodly', label: 'Foodly' },
 ];
@@ -60,9 +60,8 @@ export const PromptBar: React.FC<PromptBarProps> = ({ value, onChange, onSubmit,
             type="button"
             onClick={() => onChange(command.id)}
             className="font-mono text-[9px] uppercase tracking-[0.12em] border border-white/10 px-1.5 py-1 text-gray-500 hover:text-white"
-            title={command.label}
           >
-            {command.id}
+            {command.label}
           </button>
         ))}
         <span className="ml-auto font-mono text-[9px] uppercase tracking-[0.14em] text-gray-500">{CHAT_MODEL_LABEL}</span>

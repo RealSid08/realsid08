@@ -87,21 +87,19 @@ export const SkillsMap: React.FC = () => {
       <FadeInSection>
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-10 md:mb-16 border-b border-white/10 pb-6">
           <div className="flex flex-col md:flex-row md:items-end gap-2 md:gap-4">
-            <h2 className="text-3xl md:text-4xl font-bold">SKILL GRAPH</h2>
-            <span className="text-gray-500 font-mono text-xs md:mb-2">/CTL/CONSTELLATION</span>
+            <h2 className="text-3xl md:text-4xl font-bold">Skills</h2>
+            <span className="text-gray-500 font-mono text-xs md:mb-2">What I build with</span>
           </div>
           <div className="font-mono text-[10px] uppercase tracking-[0.25em] text-gray-500 flex flex-wrap gap-x-5 gap-y-1 md:justify-end md:mb-2">
-            <span>{String(SKILLS.length).padStart(2, '0')} nodes</span>
-            <span>{String(EDGES.length).padStart(2, '0')} edges</span>
-            <span className="text-white/70">
-              trace → node/<span className="text-white">{active}</span>
-            </span>
+            <span>{SKILLS.length} groups</span>
+            <span>{SKILLS.reduce((total, cluster) => total + cluster.items.length, 0)} skills and tools</span>
+            <span className="text-white/70">hover to highlight related groups</span>
           </div>
         </div>
       </FadeInSection>
 
       <FadeInSection delay={120}>
-        <div className="relative border border-white/10 bg-[#050505] overflow-hidden bg-[radial-gradient(rgba(255,255,255,0.06)_1px,transparent_1px)] [background-size:16px_16px]">
+        <div className="theme-dark relative border border-white/10 bg-[#050505] overflow-hidden bg-[radial-gradient(rgba(255,255,255,0.06)_1px,transparent_1px)] [background-size:16px_16px]">
           {/* ── mobile / tablet: git-log rail */}
           <ol className="relative lg:hidden p-4 pl-9 space-y-4">
             <span className="absolute left-[1.45rem] top-6 bottom-6 w-px bg-white/15" aria-hidden="true" />
@@ -157,8 +155,8 @@ export const SkillsMap: React.FC = () => {
               );
             })}
 
-            <div className="absolute left-4 bottom-3 font-mono text-[9px] uppercase tracking-[0.25em] text-gray-600">hover a node to trace its edges</div>
-            <div className="absolute right-4 bottom-3 font-mono text-[9px] uppercase tracking-[0.25em] text-gray-600">bus · elbow routing · 1px</div>
+            <div className="absolute left-4 bottom-3 font-mono text-[9px] uppercase tracking-[0.25em] text-gray-600">hover a group to highlight related work</div>
+            <div className="absolute right-4 bottom-3 font-mono text-[9px] uppercase tracking-[0.25em] text-gray-600">lines show where skills meet</div>
           </div>
         </div>
       </FadeInSection>
@@ -187,13 +185,13 @@ const SkillNode: React.FC<{
       <div className="flex items-center justify-between gap-3 px-3 py-1.5 border-b border-white/10 text-[9px] uppercase tracking-[0.25em]">
         <span className={`flex items-center gap-2 ${head ? 'text-white' : isOn ? 'text-gray-300' : 'text-gray-500'}`}>
           {head && <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse motion-reduce:animate-none" aria-hidden="true" />}
-          {head ? 'HEAD · node/agentic' : `node/${cluster.id}`}
+          {head ? 'Core strength' : 'Group'}
         </span>
-        <span className="text-gray-600">{String(cluster.items.length).padStart(2, '0')}</span>
+        <span className="text-gray-600">{cluster.items.length} skills</span>
       </div>
       <div className={head ? 'px-4 py-4' : 'px-3 py-3'}>
         <h3 className={`uppercase tracking-[0.2em] ${head ? 'text-[13px] font-semibold text-white' : 'text-[11px] text-white/90'}`}>{cluster.label}</h3>
-        {head && <p className="text-[9px] uppercase tracking-widest text-gray-500 mt-1.5">Parallel agents · Git worktrees · Human review</p>}
+        {head && <p className="text-[9px] uppercase tracking-widest text-gray-500 mt-1.5">Parallel AI agents · human review · verified releases</p>}
         <ul className={`mt-3 ${cluster.items.length > 6 ? 'grid grid-cols-2 gap-x-3 gap-y-1' : 'space-y-1'}`}>
           {cluster.items.map((item) => (
             <li key={item} className="text-[10.5px] text-gray-400 flex gap-2 leading-snug">

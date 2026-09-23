@@ -13,7 +13,7 @@ type ChatShellProps = {
 export const ChatShell: React.FC<ChatShellProps> = ({ tab, onTab, onClose, children, footer }) => {
   const tabs: Array<{ id: ChatTab; label: string }> = [
     { id: 'ask', label: 'Ask' },
-    { id: 'work', label: 'Work' },
+    { id: 'work', label: 'Experience' },
     { id: 'projects', label: 'Projects' },
   ];
 

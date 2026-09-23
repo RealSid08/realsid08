@@ -28,14 +28,131 @@ const ProjectVisual: React.FC<{ id: string }> = ({ id }) => {
   }
 };
 
+type Shot = {
+  src: string;
+  alt: string;
+  caption: string;
+  shape: 'wide' | 'phone';
+};
+
+/** Real captures from the shipped builds, labelled by platform and screen. */
+const SHOTS: Record<string, Shot[]> = {
+  foodly: [
+    {
+      src: '/work/foodly/foodly-web-place.jpg',
+      alt: 'Foodly web app showing a restaurant page beside a panel of the TikTok and Instagram posts that surfaced it',
+      caption: 'Web · a restaurant page with the social posts that put it on the map',
+      shape: 'wide',
+    },
+    {
+      src: '/work/foodly/foodly-web-collection.jpg',
+      alt: 'Foodly web app showing a shared collection of twelve Melbourne restaurants with the map behind it',
+      caption: 'Web · a shared collection of 12 saved places',
+      shape: 'wide',
+    },
+    {
+      src: '/work/foodly/foodly-ios-place.png',
+      alt: 'Foodly iOS app showing the Grazia Restaurant page above the Instagram reel it was saved from',
+      caption: 'iOS · a saved Reel resolves to the restaurant page',
+      shape: 'phone',
+    },
+    {
+      src: '/work/foodly/foodly-ios-discover.png',
+      alt: 'Foodly iOS discovery map over Melbourne with restaurant, collection and filter controls',
+      caption: 'iOS · discovery map with filters',
+      shape: 'phone',
+    },
+    {
+      src: '/work/foodly/foodly-android-place.png',
+      alt: 'Foodly Android app showing the Marmelo page with its source Reel and cuisine tags',
+      caption: 'Android · the same place page with its source post',
+      shape: 'phone',
+    },
+    {
+      src: '/work/foodly/foodly-android-add.png',
+      alt: 'Foodly Android add screen showing a pasted link moving through check, save, read, match and done',
+      caption: 'Android · pasting a link starts the match pipeline',
+      shape: 'phone',
+    },
+  ],
+  parkalong: [
+    {
+      src: '/work/parkalong/parkalong-map-light.png',
+      alt: 'ParkAlong map of Melbourne with live sensor availability pins, a suggested street and a stay-length track',
+      caption: 'Live City of Melbourne availability, with a 15m–8h+ stay track',
+      shape: 'phone',
+    },
+    {
+      src: '/work/parkalong/parkalong-map-dark.png',
+      alt: 'The same ParkAlong map in dark mode with prediction pins carrying warning badges',
+      caption: 'The same map in dark mode, with prediction pins flagged',
+      shape: 'phone',
+    },
+    {
+      src: '/work/parkalong/parkalong-zone-dark.png',
+      alt: 'ParkAlong zone detail showing four of seven bays available, a two hour time limit and a price prompt',
+      caption: 'A selected zone answers availability, time limit and price',
+      shape: 'phone',
+    },
+    {
+      src: '/work/parkalong/parkalong-search-dark.png',
+      alt: 'ParkAlong destination search listing Flinders Street Station',
+      caption: 'Destination search across Victoria',
+      shape: 'phone',
+    },
+  ],
+};
+
+const ShotCard: React.FC<{ shot: Shot }> = ({ shot }) => (
+  <figure className="m-0 border border-white/10 bg-mono-paper overflow-hidden">
+    <img
+      src={shot.src}
+      alt={shot.alt}
+      loading="lazy"
+      className={`block w-full object-cover object-top ${
+        shot.shape === 'wide' ? 'aspect-[16/9]' : 'aspect-[9/19.5]'
+      }`}
+    />
+    <figcaption className="px-3 py-2 border-t border-white/10 font-mono text-[10px] leading-snug text-gray-500">
+      {shot.caption}
+    </figcaption>
+  </figure>
+);
+
+const ShotGallery: React.FC<{ shots: Shot[] }> = ({ shots }) => {
+  const wide = shots.filter((shot) => shot.shape === 'wide');
+  const phone = shots.filter((shot) => shot.shape === 'phone');
+
+  return (
+    <div className="mb-6 space-y-3">
+      <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-gray-500">Screens from the shipped apps</p>
+      {wide.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {wide.map((shot) => (
+            <ShotCard key={shot.src} shot={shot} />
+          ))}
+        </div>
+      )}
+      {phone.length > 0 && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {phone.map((shot) => (
+            <ShotCard key={shot.src} shot={shot} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 const Exhibit: React.FC<{ project: ProjectItem; featured?: boolean }> = ({ project, featured }) => {
   const isCanvasViz = project.id === 'foodly' || project.id === 'parkalong';
+  const shots = SHOTS[project.id];
 
   return (
   <div className="group relative bg-black border border-white/10 hover:border-white transition-colors duration-500 h-full flex flex-col">
     <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 pointer-events-none" />
     {isCanvasViz && (
-      <div className={`relative overflow-hidden border-b border-white/10 bg-gray-900/20 ${featured ? 'h-[200px] md:h-[280px]' : 'h-[180px] md:h-[220px]'}`}>
+      <div className={`theme-dark relative overflow-hidden border-b border-white/10 bg-[#0a0a0a] ${featured ? 'h-[200px] md:h-[280px]' : 'h-[180px] md:h-[220px]'}`}>
         <div className="absolute inset-0 opacity-90 group-hover:opacity-100 transition-opacity">
           <ProjectVisual id={project.id} />
         </div>
@@ -71,6 +188,8 @@ const Exhibit: React.FC<{ project: ProjectItem; featured?: boolean }> = ({ proje
         ))}
       </div>
 
+      {shots && <ShotGallery shots={shots} />}
+
       {!isCanvasViz && (
         <div className="mb-8 opacity-90 group-hover:opacity-100 transition-opacity -mx-2 md:mx-0">
           <ProjectVisual id={project.id} />
@@ -98,8 +217,8 @@ export const ProjectExhibits: React.FC = () => {
     <section id="projects" className="mb-24 md:mb-40 scroll-mt-16">
       <FadeInSection>
         <div className="flex flex-col md:flex-row md:items-end gap-2 md:gap-4 mb-10 md:mb-16 border-b border-white/10 pb-6">
-          <h2 className="text-3xl md:text-4xl font-bold">PROJECT EXHIBITS</h2>
-          <span className="text-gray-500 font-mono text-xs md:mb-2">/DEV/BUILD</span>
+          <h2 className="text-3xl md:text-4xl font-bold">Projects</h2>
+          <span className="text-gray-500 font-mono text-xs md:mb-2">Selected work</span>
         </div>
       </FadeInSection>
 

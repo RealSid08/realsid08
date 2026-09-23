@@ -19,18 +19,9 @@ const getVisual = (id: string) => {
   }
 };
 
-const generateHash = (str: string) => {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    hash = (hash << 5) - hash + str.charCodeAt(i);
-    hash |= 0;
-  }
-  return Math.abs(hash).toString(16).substring(0, 7);
-};
-
 const ActiveCard: React.FC<{ exp: ExperienceItem; featured?: boolean }> = ({ exp, featured }) => (
   <div id={`exp-${exp.id}`} className="group relative flex flex-col h-full border border-white/10 bg-black hover:border-white/50 transition-colors duration-500 scroll-mt-20">
-    <div className={`relative overflow-hidden border-b border-white/10 bg-gray-900/20 ${featured ? 'h-[200px] md:h-[340px]' : 'h-[200px] md:h-[260px]'}`}>
+    <div className={`theme-dark relative overflow-hidden border-b border-white/10 bg-[#0a0a0a] ${featured ? 'h-[200px] md:h-[340px]' : 'h-[200px] md:h-[260px]'}`}>
       <div className="absolute inset-0 opacity-80 group-hover:opacity-100 transition-opacity duration-500">
         {getVisual(exp.id)}
       </div>
@@ -55,7 +46,9 @@ const ActiveCard: React.FC<{ exp: ExperienceItem; featured?: boolean }> = ({ exp
             <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-gray-500 mt-1">{exp.location}</p>
           )}
         </div>
-        <span className="font-mono text-[10px] text-gray-600">commit {generateHash(exp.id + exp.company)}</span>
+        {exp.employmentType && (
+          <span className="font-mono text-[10px] text-gray-500 uppercase tracking-wider">{exp.employmentType}</span>
+        )}
       </div>
 
       <ul className="space-y-3 mb-6">
@@ -80,7 +73,7 @@ const ActiveCard: React.FC<{ exp: ExperienceItem; featured?: boolean }> = ({ exp
 
 const ArchiveCard: React.FC<{ exp: ExperienceItem }> = ({ exp }) => (
   <div className="group relative flex flex-col h-full border border-white/10 bg-black hover:border-white/40 transition-colors duration-500">
-    <div className="relative h-[140px] md:h-[180px] overflow-hidden border-b border-white/10 bg-gray-900/20">
+    <div className="theme-dark relative h-[140px] md:h-[180px] overflow-hidden border-b border-white/10 bg-[#0a0a0a]">
       <div className="absolute inset-0 opacity-60 group-hover:opacity-100 transition-opacity duration-500">
         {getVisual(exp.id)}
       </div>
@@ -94,9 +87,9 @@ const ArchiveCard: React.FC<{ exp: ExperienceItem }> = ({ exp }) => (
 
     <div className="bg-black p-4 flex-grow font-mono text-[11px] md:text-xs text-gray-400">
       <div className="flex items-center gap-2 mb-2 text-gray-600 text-[10px] border-b border-white/5 pb-1">
-        <span>commit {generateHash(exp.id + exp.company)}</span>
-        <span className="flex-grow" />
         <span className="uppercase tracking-wider text-gray-500 truncate">{exp.company}</span>
+        <span className="flex-grow" />
+        <span>{exp.period}</span>
       </div>
       <div className="space-y-1.5">
         {exp.description.map((point) => (
@@ -120,8 +113,8 @@ export const Experience: React.FC = () => {
     <div className="relative max-w-7xl mx-auto">
       <FadeInSection>
         <div className="flex flex-col md:flex-row md:items-end gap-2 md:gap-4 mb-8 md:mb-12 border-b border-white/10 pb-6">
-          <h2 className="text-3xl md:text-4xl font-bold">ACTIVE WORKSTREAMS</h2>
-          <span className="text-gray-500 font-mono text-xs md:mb-2">/PROC/RUNNING</span>
+          <h2 className="text-3xl md:text-4xl font-bold">Experience</h2>
+          <span className="text-gray-500 font-mono text-xs md:mb-2">Where I work now</span>
         </div>
       </FadeInSection>
 
@@ -141,8 +134,8 @@ export const Experience: React.FC = () => {
 
       <FadeInSection>
         <div className="flex flex-col md:flex-row md:items-end gap-2 md:gap-4 mb-8 md:mb-12 border-b border-white/10 pb-6">
-          <h2 className="text-2xl md:text-3xl font-light">ARCHIVE</h2>
-          <span className="text-gray-500 font-mono text-xs md:mb-2">/SYS/HISTORY</span>
+          <h2 className="text-2xl md:text-3xl font-light">Earlier roles</h2>
+          <span className="text-gray-500 font-mono text-xs md:mb-2">2024 – 2017</span>
         </div>
       </FadeInSection>
 
