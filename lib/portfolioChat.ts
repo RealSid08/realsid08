@@ -13,9 +13,22 @@ import { z } from 'zod';
 import { EDUCATION, EXPERIENCES, PROFILE, SKILLS } from '../constants';
 import { formatProject, formatRole } from '../services/localKnowledge';
 import { CHAT_MODEL_ID } from './chatModel';
+import { formatRepoForModel, formatReposForModel, getPublicRepo, isAllowedAccount, listPublicRepos } from './github';
 
 const ROLE_IDS = ['besmak', 'complete-leader', 'kenspire', 'mindtek', 'unieats', 'idhayam', 'hida', 'imaginet'] as const;
 const PROJECT_IDS = ['foodly', 'parkalong', 'tbrgs', 'rag-viz', 'aura'] as const;
+
+/**
+ * Page-control tools run in the browser, not on the server. The server tool
+ * acknowledges the intent and the agent bar executes it against the page
+ * registry, which is also what the command palette and WebMCP call.
+ */
+const pageTool = <Shape extends z.ZodRawShape>(description: string, shape: Shape) =>
+  tool({
+    description: `${description} This drives the page the visitor is looking at.`,
+    inputSchema: z.object(shape),
+    execute: async () => 'Queued on the page.',
+  });
 
 const CHAT_SYSTEM = `You are the portfolio assistant for Sidhaarth Krishnan.
 Persona: professional, concise, technically specific. No emojis.
@@ -25,8 +38,18 @@ Rules:
 - Lead with current work (Besmak, Complete Leader, Kenspire), then Foodly and ParkAlong.
 - Older roles (Mindtek, UniEats, Idhayam, HiDa, Imaginet) are archive context.
 - Availability, visa, and location come from lookupProfile.
+- Public GitHub activity comes from lookupGitHub: RealSid08 and OpenRenderKit only, public repositories only,
+  and always state the "as of" time from the tool result rather than implying live data.
 - Keep answers structured with short markdown lists.
-- After answering, you may suggest one next question in a single italic line.`;
+- After answering, you may suggest one next question in a single italic line.
+
+Driving the page:
+- You can move the page while you answer. Call navigate_to, highlight, focus_mode, walkthrough,
+  filter_work, sort_work, expand_card, set_theme, set_visibility or reset_view when the visitor
+  asks to see something, or when pointing at a card makes the answer clearer.
+- Prefer one or two page actions per turn; never dispatch a walkthrough unasked.
+- The visitor can see every page action in an activity log and undo them, so be deliberate.
+  If they ask to undo, call reset_view.`;
 
 function lookupProfile(): string {
   return [
@@ -77,7 +100,21 @@ export async function streamPortfolioChat(options: {
         reasoningEffort: 'low',
       },
     },
-    tools: {
+    tools: buildPortfolioTools(),
+  });
+
+  pipeUIMessageStreamToResponse({
+    response: options.response,
+    stream: toUIMessageStream({ stream: result.stream }),
+  });
+}
+
+/**
+ * The tool surface handed to the model. Exported so the page-tool names can be
+ * checked against the browser registry (see scripts/verify-agent.ts).
+ */
+export function buildPortfolioTools() {
+  return {
       lookupRole: tool({
         description: 'Fetch a specific employer/role from Sidhaarth\'s resume.',
         inputSchema: z.object({
@@ -104,6 +141,24 @@ export async function streamPortfolioChat(options: {
         inputSchema: z.object({}),
         execute: async () => lookupProfile(),
       }),
+      lookupGitHub: tool({
+        description:
+          'Fetch public GitHub work for Sidhaarth: an account overview (RealSid08 or OpenRenderKit) or one repository. Private repositories are never included.',
+        inputSchema: z.object({
+          account: z.enum(['RealSid08', 'OpenRenderKit']).optional(),
+          repo: z.string().optional().describe('Repository name for a single repo lookup'),
+        }),
+        execute: async ({ account, repo }) => {
+          const target = account ?? 'RealSid08';
+          if (!isAllowedAccount(target)) return 'Only public GitHub accounts are available.';
+          try {
+            if (repo) return formatRepoForModel(await getPublicRepo(target, repo));
+            return formatReposForModel(await listPublicRepos(target));
+          } catch (error) {
+            return `GitHub lookup failed: ${error instanceof Error ? error.message : 'unknown error'}`;
+          }
+        },
+      }),
       listWorkstreams: tool({
         description: 'List active contracts or archive roles as a compact index.',
         inputSchema: z.object({
@@ -111,13 +166,40 @@ export async function streamPortfolioChat(options: {
         }),
         execute: async ({ lane }) => listWorkstreams(lane),
       }),
-    },
-  });
-
-  pipeUIMessageStreamToResponse({
-    response: options.response,
-    stream: toUIMessageStream({ stream: result.stream }),
-  });
+      navigate_to: pageTool('Scroll the page to a section.', {
+        section: z.enum(['top', 'skills', 'experience', 'projects', 'education', 'contact']),
+      }),
+      highlight: pageTool('Briefly outline one card or section.', {
+        target: z.string().describe('Element id, e.g. project-foodly or exp-besmak'),
+      }),
+      focus_mode: pageTool('Dim everything except one card.', {
+        target: z.string().optional().describe('Element id to keep in focus'),
+      }),
+      walkthrough: pageTool('Step through the work cards one at a time.', {
+        action: z.enum(['start', 'next', 'prev', 'stop']),
+      }),
+      filter_work: pageTool('Show only the work that matches.', {
+        year: z.number().optional(),
+        tech: z.string().optional(),
+        query: z.string().optional().describe('Free text to match against card text'),
+      }),
+      sort_work: pageTool('Reorder the work cards.', {
+        by: z.enum(['year', 'title']),
+        direction: z.enum(['asc', 'desc']).optional(),
+      }),
+      expand_card: pageTool('Open or close a card detail, such as its screenshots.', {
+        target: z.string().describe('Element id, e.g. project-foodly'),
+        expanded: z.boolean().optional(),
+      }),
+      set_theme: pageTool('Switch the site between light and dark.', {
+        theme: z.enum(['light', 'dark']),
+      }),
+      set_visibility: pageTool('Show or hide a section.', {
+        section: z.enum(['top', 'skills', 'experience', 'projects', 'education', 'contact']),
+        visible: z.boolean(),
+      }),
+      reset_view: pageTool('Undo every page change the agent made.', {}),
+  };
 }
 
 export function isUiMessageArray(value: unknown): value is UIMessage[] {

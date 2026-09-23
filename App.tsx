@@ -1,7 +1,6 @@
 import React from 'react';
 import { ThreeBackground } from './components/ThreeBackground';
-import { LiveDemo } from './components/LiveDemo';
-import { ChatBot } from './components/ChatBot';
+import { AgentBar } from './components/agent/AgentBar';
 import { Experience } from './components/Experience';
 import { Hero } from './components/Hero';
 import { SkillsMap } from './components/SkillsMap';
@@ -14,7 +13,7 @@ const App: React.FC = () => {
   return (
     <div className="min-h-screen text-white selection:bg-white selection:text-black relative font-sans animate-appear">
       <ThreeBackground />
-      <ChatBot />
+      <AgentBar />
       <ThemeToggle />
       <Hero />
 
@@ -43,14 +42,6 @@ const App: React.FC = () => {
           </FadeInSection>
         </section>
 
-        <section id="aura" className="mb-24 md:mb-40 scroll-mt-16">
-          <FadeInSection>
-            <div className="mb-8 md:mb-12 border-l-2 border-white pl-4 md:pl-6">
-              <h2 className="text-3xl md:text-4xl font-bold mt-2">Voice demo</h2>
-            </div>
-            <LiveDemo />
-          </FadeInSection>
-        </section>
 
         <FadeInSection>
           <footer id="contact" className="text-center py-12 border-t border-white/10 scroll-mt-16">

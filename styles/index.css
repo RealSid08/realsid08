@@ -99,3 +99,11 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: rgb(var(--fg) / 0.4);
 }
+
+/* Agent focus mode: everything except the focused card steps back. */
+[data-agent-dim] {
+  opacity: 0.22;
+  filter: saturate(0.5);
+  transition: opacity 300ms ease, filter 300ms ease;
+  pointer-events: none;
+}

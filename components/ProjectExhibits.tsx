@@ -2,6 +2,7 @@ import React from 'react';
 import { PROJECTS } from '../constants';
 import { ProjectItem } from '../types';
 import { FadeInSection } from './FadeInSection';
+import { latestYear } from '../lib/period';
 import { FoodlyViz } from './FoodlyViz';
 import { ParkAlongViz } from './ParkAlongViz';
 import { TrafficViz } from './TrafficViz';
@@ -149,7 +150,12 @@ const Exhibit: React.FC<{ project: ProjectItem; featured?: boolean }> = ({ proje
   const shots = SHOTS[project.id];
 
   return (
-  <div className="card-surface group relative bg-black border border-white/10 hover:border-white transition-colors duration-500 h-full flex flex-col">
+  <div
+    className="card-surface group relative bg-black border border-white/10 hover:border-white transition-colors duration-500 h-full flex flex-col"
+    data-year={latestYear(project.period)}
+    data-tech={project.tech.join(',').toLowerCase()}
+    data-title={project.title.toLowerCase()}
+  >
     {isCanvasViz && (
       <div className={`relative overflow-hidden border-b border-white/10 bg-mono-base ${featured ? 'h-[200px] md:h-[280px]' : 'h-[180px] md:h-[220px]'}`}>
         <div className="absolute inset-0 opacity-90 group-hover:opacity-100 transition-opacity">
@@ -187,7 +193,11 @@ const Exhibit: React.FC<{ project: ProjectItem; featured?: boolean }> = ({ proje
         ))}
       </div>
 
-      {shots && <ShotGallery shots={shots} />}
+      {shots && (
+        <div data-collapsible>
+          <ShotGallery shots={shots} />
+        </div>
+      )}
 
       {!isCanvasViz && (
         <div className="mb-8 opacity-90 group-hover:opacity-100 transition-opacity -mx-2 md:mx-0">

@@ -2,6 +2,7 @@ import React from 'react';
 import { EXPERIENCES } from '../constants';
 import { ExperienceItem } from '../types';
 import { FadeInSection } from './FadeInSection';
+import { latestYear } from '../lib/period';
 import { HiDaVisual, IdhayamVisual, ImaginetVisual, MindtekVisual, UniEatsVisual } from './ExperienceVisuals';
 import { BesmakVisual, CompleteLeaderVisual, KenspireVisual } from './WorkstreamVisuals';
 
@@ -20,7 +21,13 @@ const getVisual = (id: string) => {
 };
 
 const ActiveCard: React.FC<{ exp: ExperienceItem; featured?: boolean }> = ({ exp, featured }) => (
-  <div id={`exp-${exp.id}`} className="card-surface group relative flex flex-col h-full border border-white/10 bg-black hover:border-white/50 transition-colors duration-500 scroll-mt-20">
+  <div
+    id={`exp-${exp.id}`}
+    className="card-surface group relative flex flex-col h-full border border-white/10 bg-black hover:border-white/50 transition-colors duration-500 scroll-mt-20"
+    data-year={latestYear(exp.period)}
+    data-tech={exp.tech.join(',').toLowerCase()}
+    data-title={exp.company.toLowerCase()}
+  >
     <div className={`relative overflow-hidden border-b border-white/10 bg-mono-base ${featured ? 'h-[200px] md:h-[340px]' : 'h-[200px] md:h-[260px]'}`}>
       <div className="absolute inset-0 opacity-80 group-hover:opacity-100 transition-opacity duration-500">
         {getVisual(exp.id)}
@@ -72,7 +79,12 @@ const ActiveCard: React.FC<{ exp: ExperienceItem; featured?: boolean }> = ({ exp
 );
 
 const ArchiveCard: React.FC<{ exp: ExperienceItem }> = ({ exp }) => (
-  <div className="card-surface group relative flex flex-col h-full border border-white/10 bg-black hover:border-white/40 transition-colors duration-500">
+  <div
+    className="card-surface group relative flex flex-col h-full border border-white/10 bg-black hover:border-white/40 transition-colors duration-500"
+    data-year={latestYear(exp.period)}
+    data-tech={exp.tech.join(',').toLowerCase()}
+    data-title={exp.company.toLowerCase()}
+  >
     <div className="relative h-[140px] md:h-[180px] overflow-hidden border-b border-white/10 bg-mono-base">
       <div className="absolute inset-0 opacity-60 group-hover:opacity-100 transition-opacity duration-500">
         {getVisual(exp.id)}
