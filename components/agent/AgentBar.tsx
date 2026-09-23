@@ -7,6 +7,7 @@ import { runTool } from '../../services/agent/registry';
 import { TOOLS } from '../../services/agent/registry';
 import { AgentActivity } from './AgentActivity';
 import { CommandPalette } from './CommandPalette';
+import { registerAgentTools } from '../../services/agent/webmcp';
 
 type Mode = 'ask' | 'voice';
 
@@ -65,6 +66,15 @@ export const AgentBar: React.FC = () => {
       tools: TOOLS.map(({ name, description, kind, inputSchema }) => ({ name, description, kind, inputSchema })),
       run: runTool,
     };
+  }, []);
+
+  // Publish the same tools to the browser for external agents.
+  useEffect(() => {
+    let dispose: (() => void) | undefined;
+    void registerAgentTools().then((registration) => {
+      dispose = registration.unregister;
+    });
+    return () => dispose?.();
   }, []);
 
   // Restore the thread for this tab session, then keep it up to date.
@@ -262,6 +272,8 @@ export const AgentBar: React.FC = () => {
         )}
 
         <form
+          toolname="ask_portfolio"
+          tooldescription="Ask Sidhaarth Krishnan's portfolio assistant a question about his work, projects or availability."
           onSubmit={(event) => {
             event.preventDefault();
             send(input);
@@ -276,6 +288,7 @@ export const AgentBar: React.FC = () => {
 
           <textarea
             ref={inputRef}
+            name="question"
             rows={1}
             value={input}
             onChange={(event) => setInput(event.target.value)}
