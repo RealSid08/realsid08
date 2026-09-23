@@ -149,10 +149,10 @@ const Exhibit: React.FC<{ project: ProjectItem; featured?: boolean }> = ({ proje
   const shots = SHOTS[project.id];
 
   return (
-  <div className="group relative bg-black border border-white/10 hover:border-white transition-colors duration-500 h-full flex flex-col">
+  <div className="card-surface group relative bg-black border border-white/10 hover:border-white transition-colors duration-500 h-full flex flex-col">
     <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 pointer-events-none" />
     {isCanvasViz && (
-      <div className={`theme-dark relative overflow-hidden border-b border-white/10 bg-[#0a0a0a] ${featured ? 'h-[200px] md:h-[280px]' : 'h-[180px] md:h-[220px]'}`}>
+      <div className={`relative overflow-hidden border-b border-white/10 bg-mono-base ${featured ? 'h-[200px] md:h-[280px]' : 'h-[180px] md:h-[220px]'}`}>
         <div className="absolute inset-0 opacity-90 group-hover:opacity-100 transition-opacity">
           <ProjectVisual id={project.id} />
         </div>

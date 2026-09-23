@@ -165,7 +165,7 @@ export const ChatBot: React.FC = () => {
   const lastText = lastAssistant ? textFrom(asParts(lastAssistant)) : '';
 
   return (
-    <div className="theme-dark fixed bottom-4 right-4 md:bottom-6 md:right-6 z-50 flex flex-col items-end pointer-events-none font-sans">
+    <div className="fixed bottom-4 right-4 md:bottom-6 md:right-6 z-50 flex flex-col items-end pointer-events-none font-sans">
       <div
         className={`
           ${isMounted ? 'transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)]' : ''}

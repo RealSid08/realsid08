@@ -1,8 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { useTheme } from '../services/theme';
 
 export const TrafficViz: React.FC = () => {
   const [data, setData] = useState<any[]>([]);
+  const [theme] = useTheme();
+
+  const chart =
+    theme === 'light'
+      ? {
+          grid: '#e4e8ee',
+          axis: '#ccd3dc',
+          tick: '#5b6673',
+          tooltipBg: '#ffffff',
+          tooltipBorder: '#dfe4ea',
+          cursor: '#98a2b3',
+        }
+      : {
+          grid: '#222222',
+          axis: '#444444',
+          tick: '#666666',
+          tooltipBg: '#0a0a0a',
+          tooltipBorder: '#333333',
+          cursor: '#666666',
+        };
 
   // Generate initial data
   useEffect(() => {
@@ -37,7 +58,7 @@ export const TrafficViz: React.FC = () => {
   }, []);
 
   return (
-    <div className="w-full h-[320px] bg-[#050505] rounded-sm border border-white/10 flex flex-col">
+    <div className="w-full h-[320px] bg-mono-base rounded-sm border border-white/10 flex flex-col">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center p-4 border-b border-white/10 bg-white/5 gap-3 md:gap-0">
         <div className="flex items-center gap-3">
           <h3 className="text-white font-mono text-xs uppercase tracking-wider">LSTM_Traffic_Net</h3>
@@ -71,25 +92,25 @@ export const TrafficViz: React.FC = () => {
                 <stop offset="95%" stopColor="#a855f7" stopOpacity={0}/>
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="#222" vertical={false} />
+            <CartesianGrid strokeDasharray="3 3" stroke={chart.grid} vertical={false} />
             <XAxis 
                 dataKey="time" 
-                stroke="#444" 
-                tick={{fontSize: 9, fontFamily: 'monospace', fill: '#666'}} 
+                stroke={chart.axis}
+                tick={{fontSize: 9, fontFamily: 'monospace', fill: chart.tick}} 
                 tickLine={false}
                 axisLine={false}
                 interval={4}
             />
             <YAxis 
-                stroke="#444" 
-                tick={{fontSize: 9, fontFamily: 'monospace', fill: '#666'}} 
+                stroke={chart.axis}
+                tick={{fontSize: 9, fontFamily: 'monospace', fill: chart.tick}} 
                 tickLine={false}
                 axisLine={false}
             />
             <Tooltip 
-              contentStyle={{ backgroundColor: '#0a0a0a', border: '1px solid #333', fontFamily: 'monospace', fontSize: '11px' }}
+              contentStyle={{ backgroundColor: chart.tooltipBg, border: `1px solid ${chart.tooltipBorder}`, fontFamily: 'monospace', fontSize: '11px' }}
               itemStyle={{ padding: 0 }}
-              cursor={{stroke: '#666', strokeWidth: 1, strokeDasharray: '4 4'}}
+              cursor={{stroke: chart.cursor, strokeWidth: 1, strokeDasharray: '4 4'}}
             />
             <Area 
               type="monotone" 

@@ -38,11 +38,11 @@ export const PixelLoader: React.FC<PixelLoaderProps> = ({ label = 'Churning', va
       <style>{`
         @keyframes bui-pixel {
           0%, 100% { opacity: 0.15; transform: scale(0.85); }
-          50% { opacity: 1; transform: scale(1); background: #fff; }
+          50% { opacity: 1; transform: scale(1); background: currentColor; }
         }
         @keyframes bui-orbit {
           0% { opacity: 0.2; }
-          40% { opacity: 1; background: #fff; }
+          40% { opacity: 1; background: currentColor; }
           100% { opacity: 0.2; }
         }
       `}</style>

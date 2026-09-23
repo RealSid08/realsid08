@@ -49,7 +49,7 @@ export const LiveDemo: React.FC = () => {
   }, []);
 
   return (
-    <div className="theme-dark relative bg-black border border-mono-border p-4 md:p-8 max-w-2xl mx-auto shadow-2xl">
+    <div className="card-surface relative bg-black border border-mono-border p-4 md:p-8 max-w-2xl mx-auto shadow-2xl">
       {/* Corner Accents */}
       <div className="absolute top-0 left-0 w-4 h-4 border-t border-l border-white"></div>
       <div className="absolute top-0 right-0 w-4 h-4 border-t border-r border-white"></div>

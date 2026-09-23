@@ -99,7 +99,7 @@ export const SkillsMap: React.FC = () => {
       </FadeInSection>
 
       <FadeInSection delay={120}>
-        <div className="theme-dark relative border border-white/10 bg-[#050505] overflow-hidden bg-[radial-gradient(rgba(255,255,255,0.06)_1px,transparent_1px)] [background-size:16px_16px]">
+        <div className="relative border border-white/10 bg-mono-base overflow-hidden bg-[radial-gradient(rgb(var(--fg)/0.07)_1px,transparent_1px)] [background-size:16px_16px]">
           {/* ── mobile / tablet: git-log rail */}
           <ol className="relative lg:hidden p-4 pl-9 space-y-4">
             <span className="absolute left-[1.45rem] top-6 bottom-6 w-px bg-white/15" aria-hidden="true" />
@@ -123,9 +123,9 @@ export const SkillsMap: React.FC = () => {
                   const d = elbow(a, b);
                   return (
                     <g key={`${a}-${b}`}>
-                      <path d={d} fill="none" stroke={on ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.14)'} strokeWidth={1} />
+                      <path d={d} fill="none" className="stroke-white" strokeOpacity={on ? 0.85 : 0.14} strokeWidth={1} />
                       {on && !reduced && (
-                        <circle r={2} fill="#fff">
+                        <circle r={2} className="fill-white">
                           <animateMotion dur="2.4s" repeatCount="indefinite" path={d} />
                         </circle>
                       )}
@@ -136,7 +136,19 @@ export const SkillsMap: React.FC = () => {
                   const cx = Math.round(0.5 * board.w) + 0.5;
                   const cy = Math.round((y / 100) * board.h) + 0.5;
                   const on = active === HEAD_ID || (y === BUS_Y[0] ? active === 'languages' || active === 'frontend' : active === 'backend' || active === 'cloud' || active === 'delivery');
-                  return <rect key={y} x={cx - 3} y={cy - 3} width={6} height={6} fill="#050505" stroke={on ? '#fff' : 'rgba(255,255,255,0.3)'} strokeWidth={1} />;
+                  return (
+                    <rect
+                      key={y}
+                      x={cx - 3}
+                      y={cy - 3}
+                      width={6}
+                      height={6}
+                      className="stroke-white"
+                      strokeOpacity={on ? 1 : 0.3}
+                      strokeWidth={1}
+                      style={{ fill: 'rgb(var(--bg))' }}
+                    />
+                  );
                 })}
               </svg>
             )}
@@ -178,7 +190,7 @@ const SkillNode: React.FC<{
       onFocus={onActivate}
       onClick={onActivate}
       aria-pressed={isActive}
-      className={`w-full text-left border bg-[#050505] font-mono transition-colors duration-300 ${
+      className={`w-full text-left border bg-mono-base font-mono transition-colors duration-300 ${
         isActive ? 'border-white' : isOn ? 'border-white/60' : 'border-white/15 hover:border-white/40'
       }`}
     >

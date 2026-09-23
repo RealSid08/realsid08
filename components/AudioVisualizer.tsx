@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { useTheme } from '../services/theme';
 
 interface AudioVisualizerProps {
   isActive: boolean;
@@ -7,6 +8,8 @@ interface AudioVisualizerProps {
 
 export const AudioVisualizer: React.FC<AudioVisualizerProps> = ({ isActive, volume }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [theme] = useTheme();
+  const ink = theme === 'light' ? '13, 17, 23' : '255, 255, 255';
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -35,9 +38,9 @@ export const AudioVisualizer: React.FC<AudioVisualizerProps> = ({ isActive, volu
 
         // Draw glowing core (White)
         const gradient = ctx.createRadialGradient(centerX, centerY, 10, centerX, centerY, currentRadius);
-        gradient.addColorStop(0, '#ffffff');
-        gradient.addColorStop(0.4, 'rgba(255, 255, 255, 0.3)');
-        gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+        gradient.addColorStop(0, `rgba(${ink}, 1)`);
+        gradient.addColorStop(0.4, `rgba(${ink}, 0.3)`);
+        gradient.addColorStop(1, `rgba(${ink}, 0)`);
 
         ctx.beginPath();
         ctx.arc(centerX, centerY, currentRadius, 0, Math.PI * 2);
@@ -45,13 +48,13 @@ export const AudioVisualizer: React.FC<AudioVisualizerProps> = ({ isActive, volu
         ctx.fill();
 
         // Draw outer rings (Silver/Grey)
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+        ctx.strokeStyle = `rgba(${ink}, 0.8)`;
         ctx.lineWidth = 1;
         ctx.beginPath();
         ctx.arc(centerX, centerY, currentRadius * 0.8, 0, Math.PI * 2);
         ctx.stroke();
         
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+        ctx.strokeStyle = `rgba(${ink}, 0.3)`;
         ctx.beginPath();
         ctx.arc(centerX, centerY, currentRadius * 1.1, 0, Math.PI * 2);
         ctx.stroke();
@@ -65,7 +68,7 @@ export const AudioVisualizer: React.FC<AudioVisualizerProps> = ({ isActive, volu
             
             ctx.beginPath();
             ctx.arc(px, py, 2, 0, Math.PI*2);
-            ctx.fillStyle = '#fff';
+            ctx.fillStyle = `rgba(${ink}, 1)`;
             ctx.fill();
         }
 
@@ -75,7 +78,7 @@ export const AudioVisualizer: React.FC<AudioVisualizerProps> = ({ isActive, volu
         
         ctx.beginPath();
         ctx.arc(centerX, centerY, currentRadius, 0, Math.PI * 2);
-        ctx.strokeStyle = '#333';
+        ctx.strokeStyle = `rgba(${ink}, 0.25)`;
         ctx.lineWidth = 1;
         ctx.setLineDash([5, 5]);
         ctx.stroke();
@@ -88,7 +91,7 @@ export const AudioVisualizer: React.FC<AudioVisualizerProps> = ({ isActive, volu
     render();
 
     return () => cancelAnimationFrame(animationId);
-  }, [isActive, volume]);
+  }, [isActive, volume, ink]);
 
   return (
     <canvas 

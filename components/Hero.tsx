@@ -69,7 +69,7 @@ const WorktreeGraph: React.FC<{ processes: ExperienceItem[] }> = ({ processes })
 
       <div
         ref={panelRef}
-        className="theme-dark relative border border-white/15 bg-[#050505] bg-[radial-gradient(rgba(255,255,255,0.05)_1px,transparent_1px)] [background-size:14px_14px]"
+        className="relative border border-white/15 bg-mono-base bg-[radial-gradient(rgb(var(--fg)/0.06)_1px,transparent_1px)] [background-size:14px_14px]"
       >
         {geo && (
           <svg className="pointer-events-none absolute left-0 top-0" width={RAIL_W} height={geo.h} aria-hidden="true">
@@ -79,9 +79,15 @@ const WorktreeGraph: React.FC<{ processes: ExperienceItem[] }> = ({ processes })
               const d = lanePath(i, y0, geo.main);
               return (
                 <g key={proc.id}>
-                  <path d={d} fill="none" stroke={on ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.18)'} strokeWidth={1} />
+                  <path
+                    d={d}
+                    fill="none"
+                    className="stroke-white"
+                    strokeOpacity={on ? 0.9 : 0.18}
+                    strokeWidth={1}
+                  />
                   {!reduced && (
-                    <rect width={3} height={3} x={-1.5} y={-1.5} fill={on ? '#fff' : 'rgba(255,255,255,0.7)'}>
+                    <rect width={3} height={3} x={-1.5} y={-1.5} className="fill-white" fillOpacity={on ? 1 : 0.7}>
                       <animateMotion dur={`${3.2 + i * 0.6}s`} begin={`${i * 0.9}s`} repeatCount="indefinite" path={d} />
                     </rect>
                   )}
@@ -93,12 +99,20 @@ const WorktreeGraph: React.FC<{ processes: ExperienceItem[] }> = ({ processes })
               const on = checkedOut === proc.id;
               return (
                 <g key={`${proc.id}-node`}>
-                  <line x1={LANE_X[i] + 0.5} y1={y + 0.5} x2={RAIL_W} y2={y + 0.5} stroke="rgba(255,255,255,0.12)" />
-                  <rect x={LANE_X[i] - 3} y={y - 3} width={7} height={7} fill={on ? '#fff' : '#050505'} stroke="#fff" strokeWidth={1} />
+                  <line x1={LANE_X[i] + 0.5} y1={y + 0.5} x2={RAIL_W} y2={y + 0.5} className="stroke-white/15" />
+                  <rect
+                    x={LANE_X[i] - 3}
+                    y={y - 3}
+                    width={7}
+                    height={7}
+                    className="stroke-white"
+                    style={{ fill: on ? 'rgb(var(--fg))' : 'rgb(var(--bg))' }}
+                    strokeWidth={1}
+                  />
                 </g>
               );
             })}
-            <rect x={LANE_X[0] - 3} y={geo.main - 3} width={7} height={7} fill="#fff" />
+            <rect x={LANE_X[0] - 3} y={geo.main - 3} width={7} height={7} className="fill-white" />
           </svg>
         )}
 

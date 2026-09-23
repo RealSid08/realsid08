@@ -20,8 +20,8 @@ const getVisual = (id: string) => {
 };
 
 const ActiveCard: React.FC<{ exp: ExperienceItem; featured?: boolean }> = ({ exp, featured }) => (
-  <div id={`exp-${exp.id}`} className="group relative flex flex-col h-full border border-white/10 bg-black hover:border-white/50 transition-colors duration-500 scroll-mt-20">
-    <div className={`theme-dark relative overflow-hidden border-b border-white/10 bg-[#0a0a0a] ${featured ? 'h-[200px] md:h-[340px]' : 'h-[200px] md:h-[260px]'}`}>
+  <div id={`exp-${exp.id}`} className="card-surface group relative flex flex-col h-full border border-white/10 bg-black hover:border-white/50 transition-colors duration-500 scroll-mt-20">
+    <div className={`relative overflow-hidden border-b border-white/10 bg-mono-base ${featured ? 'h-[200px] md:h-[340px]' : 'h-[200px] md:h-[260px]'}`}>
       <div className="absolute inset-0 opacity-80 group-hover:opacity-100 transition-opacity duration-500">
         {getVisual(exp.id)}
       </div>
@@ -72,8 +72,8 @@ const ActiveCard: React.FC<{ exp: ExperienceItem; featured?: boolean }> = ({ exp
 );
 
 const ArchiveCard: React.FC<{ exp: ExperienceItem }> = ({ exp }) => (
-  <div className="group relative flex flex-col h-full border border-white/10 bg-black hover:border-white/40 transition-colors duration-500">
-    <div className="theme-dark relative h-[140px] md:h-[180px] overflow-hidden border-b border-white/10 bg-[#0a0a0a]">
+  <div className="card-surface group relative flex flex-col h-full border border-white/10 bg-black hover:border-white/40 transition-colors duration-500">
+    <div className="relative h-[140px] md:h-[180px] overflow-hidden border-b border-white/10 bg-mono-base">
       <div className="absolute inset-0 opacity-60 group-hover:opacity-100 transition-opacity duration-500">
         {getVisual(exp.id)}
       </div>
