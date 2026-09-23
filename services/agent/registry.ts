@@ -32,7 +32,6 @@ const SECTIONS = [
   'experience',
   'projects',
   'education',
-  'aura',
   'contact',
 ];
 

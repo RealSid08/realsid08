@@ -167,7 +167,7 @@ export function buildPortfolioTools() {
         execute: async ({ lane }) => listWorkstreams(lane),
       }),
       navigate_to: pageTool('Scroll the page to a section.', {
-        section: z.enum(['top', 'skills', 'experience', 'projects', 'education', 'aura', 'contact']),
+        section: z.enum(['top', 'skills', 'experience', 'projects', 'education', 'contact']),
       }),
       highlight: pageTool('Briefly outline one card or section.', {
         target: z.string().describe('Element id, e.g. project-foodly or exp-besmak'),
@@ -195,7 +195,7 @@ export function buildPortfolioTools() {
         theme: z.enum(['light', 'dark']),
       }),
       set_visibility: pageTool('Show or hide a section.', {
-        section: z.enum(['top', 'skills', 'experience', 'projects', 'education', 'aura', 'contact']),
+        section: z.enum(['top', 'skills', 'experience', 'projects', 'education', 'contact']),
         visible: z.boolean(),
       }),
       reset_view: pageTool('Undo every page change the agent made.', {}),
