@@ -4,9 +4,11 @@ import { useTheme } from '../services/theme';
 interface AudioVisualizerProps {
   isActive: boolean;
   volume: number; // 0 to 1
+  /** rendered size; the canvas keeps its 300px resolution and scales down */
+  className?: string;
 }
 
-export const AudioVisualizer: React.FC<AudioVisualizerProps> = ({ isActive, volume }) => {
+export const AudioVisualizer: React.FC<AudioVisualizerProps> = ({ isActive, volume, className }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [theme] = useTheme();
   const ink = theme === 'light' ? '13, 17, 23' : '255, 255, 255';
@@ -77,6 +79,11 @@ export const AudioVisualizer: React.FC<AudioVisualizerProps> = ({ isActive, volu
         currentRadius = baseRadius + Math.sin(Date.now() / 800) * 3;
         
         ctx.beginPath();
+        ctx.arc(centerX, centerY, 2.5, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${ink}, 0.35)`;
+        ctx.fill();
+
+        ctx.beginPath();
         ctx.arc(centerX, centerY, currentRadius, 0, Math.PI * 2);
         ctx.strokeStyle = `rgba(${ink}, 0.25)`;
         ctx.lineWidth = 1;
@@ -98,7 +105,7 @@ export const AudioVisualizer: React.FC<AudioVisualizerProps> = ({ isActive, volu
       ref={canvasRef} 
       width={300} 
       height={300} 
-      className="w-full max-w-[300px] h-auto mx-auto"
+      className={className ?? 'w-full max-w-[300px] h-auto mx-auto'}
     />
   );
 };
