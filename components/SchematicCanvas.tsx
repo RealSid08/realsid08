@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { useTheme, type Theme } from '../services/theme';
 
 /**
  * Shared canvas language for the schematic visuals (Besmak, Complete Leader,
@@ -17,7 +18,19 @@ export type Frame = {
   top: number;
 };
 
-export const INK = {
+type Tone = {
+  bg: string;
+  grid: string;
+  line: string;
+  lineStrong: string;
+  dim: string;
+  muted: string;
+  text: string;
+  ink: string;
+  ok: string;
+};
+
+const DARK_TONE: Tone = {
   bg: '#050505',
   grid: 'rgba(255,255,255,0.045)',
   line: 'rgba(255,255,255,0.12)',
@@ -27,9 +40,32 @@ export const INK = {
   text: 'rgba(255,255,255,0.72)',
   ink: '#ffffff',
   ok: '#4ade80',
-} satisfies Record<string, string>;
+};
 
-export const white = (a: number) => `rgba(255,255,255,${Math.max(0, Math.min(1, a)).toFixed(3)})`;
+const LIGHT_TONE: Tone = {
+  bg: '#ffffff',
+  grid: 'rgba(13,17,23,0.07)',
+  line: 'rgba(13,17,23,0.16)',
+  lineStrong: 'rgba(13,17,23,0.42)',
+  dim: 'rgba(13,17,23,0.22)',
+  muted: 'rgba(13,17,23,0.58)',
+  text: 'rgba(13,17,23,0.84)',
+  ink: '#0d1117',
+  ok: '#0f7a53',
+};
+
+/** Live palette. Every schematic reads these at paint time, so themes swap in place. */
+export const INK: Tone = { ...DARK_TONE };
+
+let tone = '255,255,255';
+
+export const applyInkTheme = (theme: Theme) => {
+  Object.assign(INK, theme === 'light' ? LIGHT_TONE : DARK_TONE);
+  tone = theme === 'light' ? '13,17,23' : '255,255,255';
+};
+
+/** ink at a given alpha, in whichever tone the current theme uses */
+export const white = (a: number) => `rgba(${tone},${Math.max(0, Math.min(1, a)).toFixed(3)})`;
 export const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
 export const smooth = (v: number) => {
   const x = clamp01(v);
@@ -126,12 +162,15 @@ export const SchematicCanvas: React.FC<Props> = ({ draw, still = 4, loop = 600, 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const drawRef = useRef(draw);
   drawRef.current = draw;
+  const [theme] = useTheme();
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
+
+    applyInkTheme(theme);
 
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     let dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -181,7 +220,7 @@ export const SchematicCanvas: React.FC<Props> = ({ draw, still = 4, loop = 600, 
       ro.disconnect();
       io.disconnect();
     };
-  }, [still, loop]);
+  }, [still, loop, theme]);
 
   return (
     <canvas

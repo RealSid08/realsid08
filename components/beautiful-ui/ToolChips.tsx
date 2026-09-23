@@ -17,7 +17,7 @@ export const ToolChips: React.FC<ToolChipsProps> = ({ chips }) => {
   return (
     <div className="flex flex-wrap gap-1.5">
       <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-gray-500 self-center">
-        {chips.length} tool call{chips.length === 1 ? '' : 's'}
+        {chips.some((chip) => chip.state === 'running') ? 'Looking up' : 'Looked up'}
       </span>
       {chips.map((chip) => (
         <span

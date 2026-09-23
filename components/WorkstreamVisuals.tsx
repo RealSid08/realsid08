@@ -11,7 +11,7 @@ import { SchematicCanvas, INK, white, phase, clamp01, hash, px, label, line, box
 
 export const BesmakVisual: React.FC = () => (
   <SchematicCanvas
-    title="Three git worktrees merging into main and fanning out to a 600-tenant grid across web and mobile"
+    title="Three parallel work tracks feeding one release, then the same codebase running across web and mobile for 600 users"
     still={7}
     loop={16}
     draw={(ctx, { w, h, t, compact, top }) => {
@@ -31,7 +31,7 @@ export const BesmakVisual: React.FC = () => (
       const gridX1 = w - pad;
 
       // lanes
-      const lanes = ['wt/codex', 'wt/claude', 'wt/design'];
+      const lanes = ['codex', 'claude', 'design'];
       const laneGap = Math.min(compact ? 34 : 54, (areaY1 - areaY0) / 3);
       const laneLen = splitX - laneX0;
       lanes.forEach((name, i) => {
@@ -69,7 +69,7 @@ export const BesmakVisual: React.FC = () => (
       const pt = (t % 2) / 2;
       fill(ctx, mergeX + (trunkEnd - mergeX) * pt - 3, midY - 1, 6, 2, white(0.9 * (1 - pt)));
       dot(ctx, mergeX - 14, midY + 15, 2, INK.ok);
-      label(ctx, 'main', mergeX - 7, midY + 15, { color: INK.text, size: compact ? 8 : 10 });
+      label(ctx, 'release', mergeX - 18, midY + 15, { color: INK.text, size: compact ? 8 : 10 });
 
       // tenant grid — exactly 600 cells, split web / mobile
       const cols = compact ? 30 : 40;
@@ -113,7 +113,7 @@ export const BesmakVisual: React.FC = () => (
       }
 
       // footer row
-      label(ctx, compact ? '3 lanes → main' : 'git worktree · 3 lanes → main', pad, h - 11, { size: compact ? 8 : 9 });
+      label(ctx, compact ? '3 tracks · 1 release' : 'three parallel tracks feeding one release', pad, h - 11, { size: compact ? 8 : 9 });
       label(ctx, `${active} / 600 ACTIVE`, w - pad, h - 11, { size: compact ? 8 : 9, align: 'right', color: INK.text });
     }}
   />
@@ -249,7 +249,7 @@ export const CompleteLeaderVisual: React.FC = () => (
 
 export const KenspireVisual: React.FC = () => (
   <SchematicCanvas
-    title="Schema cutover: rows backfilled from a legacy index into a new one, reads switched over, new index locked"
+    title="Migration: rows copied from the old index into the new one, reads switched over, then the old index locked"
     still={10.5}
     loop={13}
     draw={(ctx, { w, h, t, compact, top }) => {
@@ -296,14 +296,14 @@ export const KenspireVisual: React.FC = () => (
 
       // v1 · legacy
       box(ctx, v1X, blockY, blockW, blockH, white(0.22 * legacyA));
-      label(ctx, 'v1 · legacy', v1X + 10, blockY + 11, { size: compact ? 8 : 9, color: white(0.45 * legacyA) });
+      label(ctx, 'old index', v1X + 10, blockY + 11, { size: compact ? 8 : 9, color: white(0.45 * legacyA) });
       line(ctx, v1X, blockY + 20, v1X + blockW, blockY + 20, white(0.12 * legacyA));
       drawRows(v1X, legacyA, () => 1, () => false);
 
       // v2 · cutover
       const v2Border = 0.22 + 0.5 * phase(t, tc, tc + 0.6);
       box(ctx, v2X, blockY, blockW, blockH, white(v2Border));
-      label(ctx, 'v2 · cutover', v2X + 10, blockY + 11, { size: compact ? 8 : 9, color: t > tc ? INK.text : INK.muted });
+      label(ctx, 'new index', v2X + 10, blockY + 11, { size: compact ? 8 : 9, color: t > tc ? INK.text : INK.muted });
       line(ctx, v2X, blockY + 20, v2X + blockW, blockY + 20, INK.line);
       drawRows(
         v2X,
@@ -327,7 +327,7 @@ export const KenspireVisual: React.FC = () => (
       const gapY = blockY + Math.round(blockH / 2);
       const trackW = Math.max(28, gapX1 - gapX0 - (compact ? 10 : 24));
       const trackX = gapMid - Math.round(trackW / 2);
-      const status = t > allLocked ? 'LOCKED' : t > tc ? 'CUTOVER' : `BACKFILL ${Math.round(backfill * 100)}%`;
+      const status = t > allLocked ? 'LOCKED' : t > tc ? 'SWITCHING READS' : `COPYING ${Math.round(backfill * 100)}%`;
       line(ctx, trackX, gapY + 8, trackX + trackW, gapY + 8, white(0.14));
       fill(ctx, trackX, gapY + 8, Math.round(trackW * backfill), 1, white(0.7));
       if (!compact) {
@@ -379,7 +379,7 @@ export const KenspireVisual: React.FC = () => (
         label(ctx, status, pad + (t > allLocked ? 9 : 0), h - 11, { size: 8, color: t > tc ? INK.text : INK.muted });
         label(ctx, '500 ORGS', w - pad, h - 11, { size: 8, align: 'right', color: INK.text });
       } else {
-        label(ctx, 'schema migration · bounded backfill', pad, h - 11, { size: 9 });
+        label(ctx, 'migration · backfill in batches', pad, h - 11, { size: 9 });
         label(ctx, '500 ORGS · TARGET', w - pad, h - 11, { size: 9, align: 'right', color: INK.text });
       }
     }}

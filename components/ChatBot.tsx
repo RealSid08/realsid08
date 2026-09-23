@@ -21,7 +21,7 @@ const ASK_QUERIES = [
 ];
 
 const SLASH_PROMPTS: Record<string, string> = {
-  '/work': 'Summarize Sidhaarth\'s active workstreams.',
+  '/work': 'Summarize Sidhaarth\'s current roles.',
   '/projects': 'Summarize Foodly and ParkAlong.',
   '/contact': 'How can I contact Sidhaarth, and when is he available?',
 };
@@ -71,6 +71,14 @@ function thinkingFrom(parts: MessagePart[], running: boolean): ThinkingStep[] {
 }
 
 function chipsFrom(parts: MessagePart[]): ToolChip[] {
+  const friendlyName: Record<string, string> = {
+    lookupRole: 'Role',
+    lookupProject: 'Project',
+    lookupSkills: 'Skills',
+    lookupProfile: 'Details',
+    listWorkstreams: 'Experience',
+  };
+
   return parts.flatMap((part, index) => {
     if (!part.type.startsWith('tool-')) return [];
     const name = part.type.replace(/^tool-/, '');
@@ -79,7 +87,7 @@ function chipsFrom(parts: MessagePart[]): ToolChip[] {
       part.state === 'output-error' ? 'error' : part.state === 'output-available' ? 'done' : 'running';
     return [{
       id: `${name}-${index}`,
-      name,
+      name: friendlyName[name] ?? 'Lookup',
       label: String(input ?? 'resume'),
       state,
     }];
@@ -107,7 +115,7 @@ function followUpsFor(text: string): string[] {
   if (lower.includes('besmak') || lower.includes('kenspire') || lower.includes('complete leader')) {
     return ['What are the featured projects?', 'When is he available?'];
   }
-  return ['Summarize active workstreams', 'Show contact details'];
+  return ['Summarize the current roles', 'Show contact details'];
 }
 
 export const ChatBot: React.FC = () => {
@@ -239,8 +247,8 @@ export const ChatBot: React.FC = () => {
           )}
           {tab === 'ask' && lastText && !busy && (
             <RecommendationCard
-              question="Want me to open the workstreams?"
-              suggestion="Jump to Besmak, Complete Leader, and Kenspire on the page."
+              question="Want to see the current roles?"
+              suggestion="Jump to Besmak, Complete Leader and Kenspire on the page."
               href="#experience"
             />
           )}
@@ -257,7 +265,7 @@ export const ChatBot: React.FC = () => {
         className="pointer-events-auto w-14 h-14 bg-black border border-white hover:bg-white hover:text-black transition-colors flex items-center justify-center"
         aria-label="Open assistant"
       >
-        <span className="font-mono text-[10px] tracking-[0.14em]">{isOpen ? 'CLS' : 'ASK'}</span>
+        <span className="font-mono text-[10px] tracking-[0.14em]">{isOpen ? 'Close' : 'Ask'}</span>
       </button>
     </div>
   );

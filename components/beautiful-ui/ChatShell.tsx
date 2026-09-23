@@ -13,12 +13,12 @@ type ChatShellProps = {
 export const ChatShell: React.FC<ChatShellProps> = ({ tab, onTab, onClose, children, footer }) => {
   const tabs: Array<{ id: ChatTab; label: string }> = [
     { id: 'ask', label: 'Ask' },
-    { id: 'work', label: 'Work' },
+    { id: 'work', label: 'Experience' },
     { id: 'projects', label: 'Projects' },
   ];
 
   return (
-    <div className="pointer-events-auto w-[calc(100vw-2rem)] md:w-[420px] h-[min(640px,calc(100vh-7rem))] bg-black/95 border border-white/10 shadow-2xl flex flex-col overflow-hidden">
+    <div className="card-surface pointer-events-auto w-[calc(100vw-2rem)] md:w-[420px] h-[min(640px,calc(100vh-7rem))] bg-black/95 border border-white/10 shadow-2xl flex flex-col overflow-hidden">
       <div className="flex items-center justify-between border-b border-white/10 px-3 py-2">
         <div className="flex gap-1">
           {tabs.map((item) => (
@@ -39,7 +39,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({ tab, onTab, onClose, child
         </button>
       </div>
       <div className="flex-1 overflow-y-auto p-3 space-y-4">{children}</div>
-      <div className="border-t border-white/10 p-3 bg-[#0a0a0a]">{footer}</div>
+      <div className="border-t border-white/10 p-3 bg-mono-paper">{footer}</div>
     </div>
   );
 };

@@ -2,8 +2,9 @@ import React, { useRef, useMemo } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Points, PointMaterial } from '@react-three/drei';
 import * as THREE from 'three';
+import { useTheme } from '../services/theme';
 
-function ParticleWave() {
+function ParticleWave({ theme }: { theme: 'dark' | 'light' }) {
   const ref = useRef<THREE.Points>(null);
   
   const count = 3000;
@@ -40,22 +41,36 @@ function ParticleWave() {
     <Points ref={ref} positions={positions} stride={3} frustumCulled={false}>
       <PointMaterial
         transparent
-        color="#ffffff"
-        size={0.03}
+        color={theme === 'light' ? '#0d1117' : '#ffffff'}
+        size={theme === 'light' ? 0.018 : 0.03}
         sizeAttenuation={true}
         depthWrite={false}
-        blending={THREE.AdditiveBlending}
-        opacity={0.4}
+        blending={theme === 'light' ? THREE.NormalBlending : THREE.AdditiveBlending}
+        opacity={theme === 'light' ? 0.13 : 0.4}
       />
     </Points>
   );
 }
 
 export const ThreeBackground: React.FC = () => {
+  const [theme] = useTheme();
+
+  // Light keeps the depth without the starfield: a paper dot grid, a soft
+  // vertical wash and a faint accent glow behind the hero.
+  if (theme === 'light') {
+    return (
+      <div className="fixed inset-0 z-0 bg-mono-base pointer-events-none">
+        <div className="absolute inset-0 bg-[radial-gradient(rgb(var(--fg)/0.075)_1px,transparent_1px)] [background-size:22px_22px]" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(13,17,23,0.035)_0%,transparent_30%,transparent_65%,rgba(13,17,23,0.045)_100%)]" />
+        <div className="absolute inset-x-0 top-0 h-[70vh] bg-[radial-gradient(120%_80%_at_50%_-15%,rgba(29,78,216,0.07),transparent_62%)]" />
+      </div>
+    );
+  }
+
   return (
     <div className="fixed inset-0 z-0 bg-mono-base pointer-events-none">
       <Canvas camera={{ position: [0, 0, 6], fov: 60 }}>
-        <ParticleWave />
+        <ParticleWave theme={theme} />
         <ambientLight intensity={0.5} />
       </Canvas>
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-mono-base/20 to-mono-base pointer-events-none" />

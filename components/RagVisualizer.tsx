@@ -31,7 +31,7 @@ export const RagVisualizer: React.FC = () => {
   }, []);
 
   return (
-    <div className="w-full h-[500px] md:h-[320px] bg-[#050505] border border-white/10 flex flex-col md:flex-row font-mono relative overflow-hidden text-[10px] select-none">
+    <div className="w-full h-[500px] md:h-[320px] bg-mono-base border border-white/10 flex flex-col md:flex-row font-mono relative overflow-hidden text-[10px] select-none">
       
       {/* Left Panel: Chat UI (Frontend) */}
       <div className="w-full h-[30%] md:h-full md:w-[35%] border-b md:border-b-0 md:border-r border-white/10 bg-white/5 flex flex-col relative z-10">
@@ -64,7 +64,7 @@ export const RagVisualizer: React.FC = () => {
       </div>
 
       {/* Right Panel: The Engine (Backend) */}
-      <div className="w-full h-[70%] md:h-full md:w-[65%] relative bg-[#0a0a0a] p-4">
+      <div className="w-full h-[70%] md:h-full md:w-[65%] relative bg-mono-paper p-4">
          <div className="absolute top-3 right-3 text-gray-600 uppercase tracking-widest text-[9px]">RAG Pipeline</div>
          
          {/* Diagram Nodes */}
@@ -80,8 +80,8 @@ export const RagVisualizer: React.FC = () => {
 
             {/* Connection: Processor -> Embedder */}
             <svg className="absolute top-8 left-12 w-32 h-8 z-0 pointer-events-none overflow-visible">
-                <path d="M12,0 L12,10 L100,10 L100,20" fill="none" stroke="#333" strokeWidth="1" />
-                {stage === 2 && <circle r="2" fill="#fff">
+                <path d="M12,0 L12,10 L100,10 L100,20" fill="none" className="stroke-white/20" strokeWidth="1" />
+                {stage === 2 && <circle r="2" className="fill-white">
                     <animateMotion path="M12,0 L12,10 L100,10 L100,20" dur="0.5s" fill="freeze" />
                 </circle>}
             </svg>
@@ -96,7 +96,7 @@ export const RagVisualizer: React.FC = () => {
 
             {/* Connection: Embedder -> DB */}
             <svg className="absolute top-[4.5rem] right-20 w-4 h-12 z-0 pointer-events-none">
-                <path d="M12,0 L12,40" fill="none" stroke="#333" strokeWidth="1" />
+                <path d="M12,0 L12,40" fill="none" className="stroke-white/20" strokeWidth="1" />
                 {stage === 3 && <circle r="2" fill="#4ade80">
                     <animateMotion path="M12,0 L12,40" dur="0.5s" fill="freeze" />
                 </circle>}
@@ -114,7 +114,7 @@ export const RagVisualizer: React.FC = () => {
 
             {/* Connection: DB -> LLM */}
             <svg className="absolute top-36 left-0 w-full h-12 z-0 pointer-events-none overflow-visible">
-                 <path d="M165,0 L165,10 L40,10 L40,35" fill="none" stroke="#333" strokeWidth="1" />
+                 <path d="M165,0 L165,10 L40,10 L40,35" fill="none" className="stroke-white/20" strokeWidth="1" />
                  {stage === 4 && <circle r="2" fill="#a855f7">
                     <animateMotion path="M165,0 L165,10 L40,10 L40,35" dur="0.5s" fill="freeze" />
                 </circle>}

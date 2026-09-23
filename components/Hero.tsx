@@ -3,15 +3,6 @@ import { EXPERIENCES, PROFILE, WORKTREE_IDS } from '../constants';
 import { ExperienceItem } from '../types';
 import { FadeInSection } from './FadeInSection';
 
-const hashOf = (value: string) => {
-  let hash = 0;
-  for (let i = 0; i < value.length; i++) {
-    hash = (hash << 5) - hash + value.charCodeAt(i);
-    hash |= 0;
-  }
-  return Math.abs(hash).toString(16).padStart(7, '0').slice(0, 7);
-};
-
 const RAIL_W = 56;
 const LANE_X = [14, 28, 42];
 
@@ -28,8 +19,8 @@ const useReducedMotion = () => {
 };
 
 /**
- * Live worktrees as a `git log --graph`: one lane per contract, each lane
- * merging into main at the foot of the panel. Hovering a row "checks it out".
+ * Current roles drawn as three parallel tracks meeting a single release line.
+ * Hovering a row selects it.
  */
 const WorktreeGraph: React.FC<{ processes: ExperienceItem[] }> = ({ processes }) => {
   const [checkedOut, setCheckedOut] = useState<string | null>(null);
@@ -69,16 +60,16 @@ const WorktreeGraph: React.FC<{ processes: ExperienceItem[] }> = ({ processes })
   return (
     <div className="font-mono">
       <div className="flex items-center justify-between text-[10px] uppercase tracking-[0.3em] text-gray-500 mb-3 px-1">
-        <span>git worktree list</span>
+        <span>Current roles</span>
         <span className="flex items-center gap-2 text-white/80">
           <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse motion-reduce:animate-none" aria-hidden="true" />
-          {processes.length} running
+          {processes.length} active
         </span>
       </div>
 
       <div
         ref={panelRef}
-        className="relative border border-white/15 bg-[#050505] bg-[radial-gradient(rgba(255,255,255,0.05)_1px,transparent_1px)] [background-size:14px_14px]"
+        className="relative border border-white/15 bg-mono-base bg-[radial-gradient(rgb(var(--fg)/0.06)_1px,transparent_1px)] [background-size:14px_14px]"
       >
         {geo && (
           <svg className="pointer-events-none absolute left-0 top-0" width={RAIL_W} height={geo.h} aria-hidden="true">
@@ -88,9 +79,15 @@ const WorktreeGraph: React.FC<{ processes: ExperienceItem[] }> = ({ processes })
               const d = lanePath(i, y0, geo.main);
               return (
                 <g key={proc.id}>
-                  <path d={d} fill="none" stroke={on ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.18)'} strokeWidth={1} />
+                  <path
+                    d={d}
+                    fill="none"
+                    className="stroke-white"
+                    strokeOpacity={on ? 0.9 : 0.18}
+                    strokeWidth={1}
+                  />
                   {!reduced && (
-                    <rect width={3} height={3} x={-1.5} y={-1.5} fill={on ? '#fff' : 'rgba(255,255,255,0.7)'}>
+                    <rect width={3} height={3} x={-1.5} y={-1.5} className="fill-white" fillOpacity={on ? 1 : 0.7}>
                       <animateMotion dur={`${3.2 + i * 0.6}s`} begin={`${i * 0.9}s`} repeatCount="indefinite" path={d} />
                     </rect>
                   )}
@@ -102,12 +99,20 @@ const WorktreeGraph: React.FC<{ processes: ExperienceItem[] }> = ({ processes })
               const on = checkedOut === proc.id;
               return (
                 <g key={`${proc.id}-node`}>
-                  <line x1={LANE_X[i] + 0.5} y1={y + 0.5} x2={RAIL_W} y2={y + 0.5} stroke="rgba(255,255,255,0.12)" />
-                  <rect x={LANE_X[i] - 3} y={y - 3} width={7} height={7} fill={on ? '#fff' : '#050505'} stroke="#fff" strokeWidth={1} />
+                  <line x1={LANE_X[i] + 0.5} y1={y + 0.5} x2={RAIL_W} y2={y + 0.5} className="stroke-white/15" />
+                  <rect
+                    x={LANE_X[i] - 3}
+                    y={y - 3}
+                    width={7}
+                    height={7}
+                    className="stroke-white"
+                    style={{ fill: on ? 'rgb(var(--fg))' : 'rgb(var(--bg))' }}
+                    strokeWidth={1}
+                  />
                 </g>
               );
             })}
-            <rect x={LANE_X[0] - 3} y={geo.main - 3} width={7} height={7} fill="#fff" />
+            <rect x={LANE_X[0] - 3} y={geo.main - 3} width={7} height={7} className="fill-white" />
           </svg>
         )}
 
@@ -130,11 +135,11 @@ const WorktreeGraph: React.FC<{ processes: ExperienceItem[] }> = ({ processes })
                 >
                   <div className="flex items-center justify-between gap-3 text-[9px] uppercase tracking-[0.25em]">
                     <span className={isOut ? 'text-black/60' : 'text-gray-500'}>
-                      wt/{proc.id} <span className={isOut ? 'text-black/40' : 'text-gray-700'}>· {hashOf(proc.id + proc.company)}</span>
+                      {proc.employmentType ?? proc.role}
                     </span>
                     <span className={`flex items-center gap-1.5 ${isOut ? 'text-black' : 'text-white/80'}`}>
                       <span className={`w-1.5 h-1.5 rounded-full ${isOut ? 'bg-black' : 'bg-green-400'}`} aria-hidden="true" />
-                      {isOut ? 'checked out' : 'running'}
+                      {isOut ? 'Selected' : 'Current'}
                     </span>
                   </div>
                   <div className="mt-1.5 flex items-end justify-between gap-4">
@@ -165,8 +170,8 @@ const WorktreeGraph: React.FC<{ processes: ExperienceItem[] }> = ({ processes })
         </ul>
 
         <div ref={mainRef} style={{ paddingLeft: RAIL_W }} className="flex items-center justify-between pr-4 py-2.5 border-t border-white/10 text-[9px] uppercase tracking-[0.25em]">
-          <span className="text-white">main</span>
-          <span className="text-gray-600">{checkedOut ? `git checkout wt/${checkedOut}` : 'hover a lane to check out'}</span>
+          <span className="text-white">Shipped work</span>
+          <span className="text-gray-600">{checkedOut ? 'Jump to this role' : 'Hover a role to select it'}</span>
         </div>
       </div>
     </div>
@@ -194,13 +199,13 @@ export const Hero: React.FC = () => {
           <FadeInSection delay={200}>
             <div className="flex flex-wrap gap-3">
               <a href="#experience" className="px-6 py-3 border border-white bg-white text-black hover:bg-transparent hover:text-white transition-colors text-[11px] uppercase tracking-[0.2em] font-mono">
-                Workstreams
+                Experience
               </a>
               <a href="#projects" className="px-6 py-3 border border-white/20 hover:border-white hover:bg-white hover:text-black transition-colors text-[11px] uppercase tracking-[0.2em] font-mono">
                 Projects
               </a>
               <a href="#aura" className="px-6 py-3 border border-white/10 text-gray-400 hover:text-white hover:border-white/40 transition-colors text-[11px] uppercase tracking-[0.2em] font-mono">
-                AI Voice Hub
+                Voice demo
               </a>
             </div>
           </FadeInSection>

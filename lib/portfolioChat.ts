@@ -86,7 +86,7 @@ export async function streamPortfolioChat(options: {
         execute: async ({ id }) => formatRole(id) ?? 'Role not found.',
       }),
       lookupProject: tool({
-        description: 'Fetch a featured project: Foodly, ParkAlong, TBRGS, RAG, or Aura/Voice Hub.',
+        description: 'Fetch a featured project: Foodly, ParkAlong, TBRGS, RAG, or the voice demo.',
         inputSchema: z.object({
           id: z.enum(PROJECT_IDS),
         }),
