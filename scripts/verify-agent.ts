@@ -6,6 +6,7 @@
  * Run with: npm run verify:agent
  */
 import assert from 'node:assert/strict';
+import { createUIMessageStream, readUIMessageStream, type UIMessage } from 'ai';
 import { buildPortfolioTools } from '../lib/portfolioChat';
 import { pageIntentsFromMessages } from '../services/agent/pageIntent';
 import { paletteEntries, TOOLS, toolByName } from '../services/agent/registry';
@@ -27,6 +28,10 @@ const REQUIRED_TOOLS = [
 const results: string[] = [];
 const check = (label: string, fn: () => void) => {
   fn();
+  results.push(`ok  ${label}`);
+};
+const checkAsync = async (label: string, fn: () => Promise<void>) => {
+  await fn();
   results.push(`ok  ${label}`);
 };
 
@@ -138,6 +143,28 @@ const runGithubChecks = async () => {
       globalThis.fetch = originalFetch;
     }
   });
+
+  check('a configured token is sent, and never logged in the payload', async () => {
+    const originalFetch = globalThis.fetch;
+    const originalToken = process.env.GITHUB_TOKEN;
+    process.env.GITHUB_TOKEN = 'test-token-value';
+    let seenAuth: string | undefined;
+
+    globalThis.fetch = (async (_url: string, init?: RequestInit) => {
+      seenAuth = (init?.headers as Record<string, string> | undefined)?.Authorization;
+      return { ok: true, json: async () => [] } as unknown as Response;
+    }) as typeof fetch;
+
+    try {
+      const list = await listPublicRepos('OpenRenderKit');
+      assert.equal(seenAuth, 'Bearer test-token-value');
+      assert.ok(!JSON.stringify(list).includes('test-token-value'), 'the token must never reach the caller');
+    } finally {
+      globalThis.fetch = originalFetch;
+      if (originalToken === undefined) delete process.env.GITHUB_TOKEN;
+      else process.env.GITHUB_TOKEN = originalToken;
+    }
+  });
 };
 
 const runWebMcpChecks = async () => {
@@ -172,11 +199,93 @@ const runWebMcpChecks = async () => {
       delete (globalThis as unknown as { document?: unknown }).document;
     }
   });
+
+  check('external agents are rate limited', async () => {
+    const descriptors: Array<{ name: string; execute: (args?: Record<string, unknown>) => Promise<unknown> }> = [];
+
+    (globalThis as unknown as { document?: unknown }).document = {
+      modelContext: {
+        registerTool: async (descriptor: { name: string; execute: (args?: Record<string, unknown>) => Promise<unknown> }) => {
+          descriptors.push(descriptor);
+        },
+      },
+    };
+
+    try {
+      await registerAgentTools();
+      const tool = descriptors.find((descriptor) => descriptor.name === 'get_state');
+      assert.ok(tool, 'expected get_state to be registered');
+
+      for (let call = 0; call < 30; call += 1) {
+        await tool!.execute({});
+      }
+      const overflow = await tool!.execute({});
+      assert.equal(
+        overflow,
+        'Too many page actions in a short window. Wait a moment and try again.',
+        'the 31st call inside a minute should be refused',
+      );
+    } finally {
+      delete (globalThis as unknown as { document?: unknown }).document;
+    }
+  });
+};
+
+const runStreamChecks = async () => {
+  type ServerTool = { execute?: (input: unknown, options: unknown) => Promise<unknown> };
+  const serverTools = buildPortfolioTools() as unknown as Record<string, ServerTool>;
+
+  await checkAsync('the server page tool answers the model when it is called', async () => {
+    const output = await serverTools.navigate_to?.execute?.(
+      { section: 'projects' },
+      { toolCallId: 'call-1', messages: [] },
+    );
+    assert.equal(output, 'Queued on the page.');
+  });
+
+  await checkAsync('a streamed tool call becomes a page intent the bar can run', async () => {
+    const stream = createUIMessageStream({
+      execute: async ({ writer }) => {
+        writer.write({ type: 'start' });
+        writer.write({ type: 'text-start', id: 'text-1' });
+        writer.write({ type: 'text-delta', id: 'text-1', delta: 'Here it is.' });
+        writer.write({ type: 'text-end', id: 'text-1' });
+        writer.write({
+          type: 'tool-input-available',
+          toolCallId: 'call-1',
+          toolName: 'navigate_to',
+          input: { section: 'projects' },
+        });
+        writer.write({ type: 'tool-output-available', toolCallId: 'call-1', output: 'Queued on the page.' });
+        writer.write({ type: 'finish' });
+      },
+    });
+
+    // The client keeps the newest snapshot of each streamed message.
+    const latest = new Map<string, UIMessage>();
+    for await (const message of readUIMessageStream({ stream })) {
+      latest.set(message.id, message);
+    }
+    const messages = [...latest.values()];
+
+    const partTypes = messages.flatMap((message) => (message.parts ?? []).map((part) => part.type));
+    assert.ok(
+      partTypes.includes('tool-navigate_to'),
+      `expected a tool-navigate_to part, saw ${partTypes.join(', ')}`,
+    );
+
+    const intents = pageIntentsFromMessages(messages, new Set());
+    assert.deepEqual(
+      intents.map((intent) => [intent.name, intent.args]),
+      [['navigate_to', { section: 'projects' }]],
+    );
+  });
 };
 
 Promise.resolve()
   .then(runGithubChecks)
   .then(runWebMcpChecks)
+  .then(runStreamChecks)
   .then(() => {
     console.log(results.join('\n'));
     console.log('\nagent verification passed');
