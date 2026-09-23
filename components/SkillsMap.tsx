@@ -90,11 +90,6 @@ export const SkillsMap: React.FC = () => {
             <h2 className="text-3xl md:text-4xl font-bold">Skills</h2>
             <span className="text-gray-500 font-mono text-xs md:mb-2">What I build with</span>
           </div>
-          <div className="font-mono text-[10px] uppercase tracking-[0.25em] text-gray-500 flex flex-wrap gap-x-5 gap-y-1 md:justify-end md:mb-2">
-            <span>{SKILLS.length} groups</span>
-            <span>{SKILLS.reduce((total, cluster) => total + cluster.items.length, 0)} skills and tools</span>
-            <span className="text-white/70">hover to highlight related groups</span>
-          </div>
         </div>
       </FadeInSection>
 

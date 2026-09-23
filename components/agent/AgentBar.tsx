@@ -151,6 +151,10 @@ export const AgentBar: React.FC = () => {
       const typing = !!target && ['INPUT', 'TEXTAREA'].includes(target.tagName);
 
       if (event.key === 'Escape') {
+        if (paletteOpen) {
+          setPaletteOpen(false);
+          return;
+        }
         setMinimized(true);
         setFocused(false);
         return;
@@ -169,7 +173,7 @@ export const AgentBar: React.FC = () => {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, []);
+  }, [paletteOpen]);
 
   const send = (text: string) => {
     const value = text.trim();

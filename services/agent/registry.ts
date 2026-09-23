@@ -19,7 +19,7 @@ export type AgentTool = {
   kind: 'read' | 'act';
   inputSchema: Record<string, unknown>;
   /** shown in the command palette as a ready-made action */
-  palette?: { label: string; args: Record<string, unknown> };
+  palette?: { label: string; hint: string; args: Record<string, unknown> };
   run: (args: Record<string, unknown>) => unknown | Promise<unknown>;
 };
 
@@ -52,7 +52,7 @@ export const TOOLS: AgentTool[] = [
     description: 'Scroll the page to a section.',
     kind: 'act',
     inputSchema: { type: 'object', properties: { section: str('Section id', SECTIONS) }, required: ['section'] },
-    palette: { label: 'Jump to projects', args: { section: 'projects' } },
+    palette: { label: 'Jump to projects', hint: 'scroll to the work', args: { section: 'projects' } },
     run: ({ section }) => navigateTo(String(section)),
   },
   {
@@ -64,7 +64,7 @@ export const TOOLS: AgentTool[] = [
       properties: { target: str('Element id, e.g. project-foodly'), durationMs: { type: 'number' } },
       required: ['target'],
     },
-    palette: { label: 'Highlight ParkAlong', args: { target: 'project-parkalong' } },
+    palette: { label: 'Point at ParkAlong', hint: 'outline the card', args: { target: 'project-parkalong' } },
     run: ({ target, durationMs }) => highlight(String(target), Number(durationMs) || undefined),
   },
   {
@@ -83,7 +83,7 @@ export const TOOLS: AgentTool[] = [
       properties: { action: str('Step', ['start', 'next', 'prev', 'stop']) },
       required: ['action'],
     },
-    palette: { label: 'Walk me through the work', args: { action: 'start' } },
+    palette: { label: 'Walk through the work', hint: 'one card at a time', args: { action: 'start' } },
     run: ({ action }) => walkthrough(String(action) as 'start' | 'next' | 'prev' | 'stop'),
   },
   {
@@ -98,7 +98,7 @@ export const TOOLS: AgentTool[] = [
         query: str('Free text to match against the card text'),
       },
     },
-    palette: { label: 'Show only 2026 work', args: { year: 2026 } },
+    palette: { label: 'Only 2026 work', hint: 'filter the cards', args: { year: 2026 } },
     run: ({ year, tech, query }) =>
       filterWork({
         year: year === undefined || year === null ? undefined : Number(year),
@@ -118,7 +118,7 @@ export const TOOLS: AgentTool[] = [
       },
       required: ['by'],
     },
-    palette: { label: 'Sort work by year', args: { by: 'year', direction: 'desc' } },
+    palette: { label: 'Sort by year', hint: 'newest first', args: { by: 'year', direction: 'desc' } },
     run: ({ by, direction }) => sortWork(String(by) as 'year' | 'title', (direction as 'asc' | 'desc') ?? 'desc'),
   },
   {
@@ -152,7 +152,7 @@ export const TOOLS: AgentTool[] = [
     description: 'Switch between light and dark.',
     kind: 'act',
     inputSchema: { type: 'object', properties: { theme: str('Theme', ['light', 'dark']) }, required: ['theme'] },
-    palette: { label: 'Use dark mode', args: { theme: 'dark' } },
+    palette: { label: 'Dark mode', hint: 'switch the theme', args: { theme: 'dark' } },
     run: ({ theme }) => setTheme(String(theme) as 'light' | 'dark'),
   },
   {
@@ -171,7 +171,7 @@ export const TOOLS: AgentTool[] = [
     description: 'Undo every change the agent made to the page.',
     kind: 'act',
     inputSchema: { type: 'object', properties: {} },
-    palette: { label: 'Reset the page', args: {} },
+    palette: { label: 'Reset the page', hint: 'undo everything', args: {} },
     run: () => resetView(),
   },
 ];
@@ -181,6 +181,7 @@ export const toolByName = (name: string) => TOOLS.find((tool) => tool.name === n
 export const paletteEntries = TOOLS.filter((tool) => tool.palette).map((tool) => ({
   name: tool.name,
   label: tool.palette!.label,
+  hint: tool.palette!.hint,
   args: tool.palette!.args,
 }));
 

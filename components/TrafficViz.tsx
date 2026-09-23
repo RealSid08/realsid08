@@ -61,7 +61,7 @@ export const TrafficViz: React.FC = () => {
     <div className="w-full h-[320px] bg-mono-base rounded-sm border border-white/10 flex flex-col">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center p-4 border-b border-white/10 bg-white/5 gap-3 md:gap-0">
         <div className="flex items-center gap-3">
-          <h3 className="text-white font-mono text-xs uppercase tracking-wider">LSTM_Traffic_Net</h3>
+          <h3 className="text-white font-mono text-xs uppercase tracking-wider">Traffic forecast</h3>
           <div className="flex items-center gap-2 px-2 py-1 bg-green-500/10 border border-green-500/20 rounded">
              <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div>
              <span className="text-[9px] text-green-400 font-mono">LIVE INFERENCE</span>

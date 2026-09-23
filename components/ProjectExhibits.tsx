@@ -181,7 +181,7 @@ const Exhibit: React.FC<{ project: ProjectItem; featured?: boolean }> = ({ proje
             <p className="font-mono text-[10px] text-gray-600 mt-1">{project.period}</p>
           )}
         </div>
-        <div className="w-2 h-2 bg-white/20 group-hover:bg-white transition-colors shrink-0 mt-2" />
+        <div className="w-2 h-2 bg-white/20 group-hover:bg-white/60 transition-colors shrink-0 mt-2" />
       </div>
 
       <div className="space-y-3 mb-6">

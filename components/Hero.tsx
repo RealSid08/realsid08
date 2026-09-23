@@ -61,10 +61,6 @@ const WorktreeGraph: React.FC<{ processes: ExperienceItem[] }> = ({ processes })
     <div className="font-mono">
       <div className="flex items-center justify-between text-[10px] uppercase tracking-[0.3em] text-gray-500 mb-3 px-1">
         <span>Current roles</span>
-        <span className="flex items-center gap-2 text-white/80">
-          <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse motion-reduce:animate-none" aria-hidden="true" />
-          {processes.length} active
-        </span>
       </div>
 
       <div
@@ -131,14 +127,16 @@ const WorktreeGraph: React.FC<{ processes: ExperienceItem[] }> = ({ processes })
                   onMouseLeave={() => setCheckedOut(null)}
                   onFocus={() => setCheckedOut(proc.id)}
                   onBlur={() => setCheckedOut(null)}
-                  className={`group block pr-4 py-3.5 transition-colors duration-300 ${isOut ? 'bg-white text-black' : 'hover:bg-white/[0.03]'}`}
+                  className={`group block pr-4 py-3.5 transition-colors duration-300 ${
+                    isOut ? 'bg-white/[0.07]' : 'hover:bg-white/[0.03]'
+                  }`}
                 >
                   <div className="flex items-center justify-between gap-3 text-[9px] uppercase tracking-[0.25em]">
-                    <span className={isOut ? 'text-black/60' : 'text-gray-500'}>
+                    <span className={isOut ? 'text-gray-400' : 'text-gray-500'}>
                       {proc.employmentType ?? proc.role}
                     </span>
-                    <span className={`flex items-center gap-1.5 ${isOut ? 'text-black' : 'text-white/80'}`}>
-                      <span className={`w-1.5 h-1.5 rounded-full ${isOut ? 'bg-black' : 'bg-green-400'}`} aria-hidden="true" />
+                    <span className={`flex items-center gap-1.5 ${isOut ? 'text-white' : 'text-white/80'}`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${isOut ? 'bg-white' : 'bg-green-400'}`} aria-hidden="true" />
                       {isOut ? 'Selected' : 'Current'}
                     </span>
                   </div>
@@ -156,7 +154,7 @@ const WorktreeGraph: React.FC<{ processes: ExperienceItem[] }> = ({ processes })
                       <span
                         key={t}
                         className={`text-[9px] uppercase tracking-wider border px-1.5 py-0.5 ${
-                          isOut ? 'border-black/25 text-black/80' : 'border-white/[0.12] text-gray-400 group-hover:border-white/30'
+                          isOut ? 'border-white/25 text-gray-300' : 'border-white/[0.12] text-gray-400 group-hover:border-white/30'
                         }`}
                       >
                         {t}
@@ -201,7 +199,7 @@ export const Hero: React.FC = () => {
               <a href="#experience" className="px-6 py-3 border border-white bg-white text-black hover:bg-transparent hover:text-white transition-colors text-[11px] uppercase tracking-[0.2em] font-mono">
                 Experience
               </a>
-              <a href="#projects" className="px-6 py-3 border border-white/20 hover:border-white hover:bg-white hover:text-black transition-colors text-[11px] uppercase tracking-[0.2em] font-mono">
+              <a href="#projects" className="px-6 py-3 border border-white/20 hover:border-white hover:bg-white/10 transition-colors text-[11px] uppercase tracking-[0.2em] font-mono">
                 Projects
               </a>
               <button

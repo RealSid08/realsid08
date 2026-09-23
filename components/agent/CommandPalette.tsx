@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { paletteEntries, runTool, TOOLS } from '../../services/agent/registry';
+import { paletteEntries, runTool } from '../../services/agent/registry';
 
 type Props = {
   open: boolean;
@@ -18,8 +18,6 @@ export const CommandPalette: React.FC<Props> = ({ open, onClose }) => {
     return all.filter((entry) => entry.label.toLowerCase().includes(needle) || entry.name.includes(needle));
   }, [query]);
 
-  const toolCount = TOOLS.length;
-
   useEffect(() => {
     if (open) {
       setQuery('');
@@ -27,6 +25,19 @@ export const CommandPalette: React.FC<Props> = ({ open, onClose }) => {
       requestAnimationFrame(() => inputRef.current?.focus());
     }
   }, [open]);
+
+  // Escape always closes the palette, wherever focus happens to be.
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.stopPropagation();
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', onKey, true);
+    return () => window.removeEventListener('keydown', onKey, true);
+  }, [open, onClose]);
 
   if (!open) return null;
 
@@ -83,7 +94,7 @@ export const CommandPalette: React.FC<Props> = ({ open, onClose }) => {
                 }`}
               >
                 <span className="text-[13px] text-gray-200">{entry.label}</span>
-                <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-gray-600">{entry.name}</span>
+                <span className="text-[11px] text-gray-600">{entry.hint}</span>
               </button>
             </li>
           ))}
@@ -91,9 +102,6 @@ export const CommandPalette: React.FC<Props> = ({ open, onClose }) => {
             <li className="px-4 py-3 font-mono text-[11px] text-gray-500">No matching action</li>
           )}
         </ul>
-        <p className="border-t border-white/10 px-4 py-2 font-mono text-[10px] uppercase tracking-[0.14em] text-gray-600">
-          {toolCount} tools available to the agent
-        </p>
       </div>
     </div>
   );
