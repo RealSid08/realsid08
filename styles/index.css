@@ -1,0 +1,101 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Light is the default; dark is the override. */
+:root {
+  --bg: 255 255 255;
+  --panel: 246 247 249;
+  --fg: 13 17 23;
+  --accent: 29 78 216;
+  --g100: 15 23 42;
+  --g200: 30 41 59;
+  --g300: 51 65 85;
+  --g400: 71 85 105;
+  --g500: 100 116 139;
+  --g600: 148 163 184;
+  --g700: 203 213 225;
+  --g800: 226 232 240;
+  --g900: 241 245 249;
+  color-scheme: light;
+}
+
+html[data-theme='dark'] {
+  --bg: 5 5 5;
+  --panel: 10 10 10;
+  --fg: 255 255 255;
+  --accent: 229 229 229;
+  --g100: 243 244 246;
+  --g200: 229 231 235;
+  --g300: 209 213 219;
+  --g400: 156 163 175;
+  --g500: 107 114 128;
+  --g600: 75 85 99;
+  --g700: 55 65 81;
+  --g800: 31 41 55;
+  --g900: 17 24 39;
+  color-scheme: dark;
+}
+
+/* Surfaces that need their own dark palette in both themes. */
+.theme-dark {
+  --bg: 5 5 5;
+  --panel: 10 10 10;
+  --fg: 255 255 255;
+  --accent: 229 229 229;
+  --g100: 243 244 246;
+  --g200: 229 231 235;
+  --g300: 209 213 219;
+  --g400: 156 163 175;
+  --g500: 107 114 128;
+  --g600: 75 85 99;
+  --g700: 55 65 81;
+  --g800: 31 41 55;
+  --g900: 17 24 39;
+  color: rgb(var(--fg));
+  color-scheme: dark;
+}
+
+/* Light mode is flat white by default, so cards get a soft lift. */
+html[data-theme='light'] .card-surface {
+  box-shadow: 0 1px 2px rgba(13, 17, 23, 0.04), 0 18px 40px -32px rgba(13, 17, 23, 0.55);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background-color: rgb(var(--bg));
+  color: rgb(var(--fg));
+  overflow-x: hidden;
+  transition: background-color 300ms ease, color 300ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  body {
+    transition: none;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgb(var(--bg));
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgb(var(--fg) / 0.25);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(var(--fg) / 0.4);
+}
