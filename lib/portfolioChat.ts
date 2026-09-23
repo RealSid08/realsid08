@@ -13,6 +13,7 @@ import { z } from 'zod';
 import { EDUCATION, EXPERIENCES, PROFILE, SKILLS } from '../constants';
 import { formatProject, formatRole } from '../services/localKnowledge';
 import { CHAT_MODEL_ID } from './chatModel';
+import { formatRepoForModel, formatReposForModel, getPublicRepo, isAllowedAccount, listPublicRepos } from './github';
 
 const ROLE_IDS = ['besmak', 'complete-leader', 'kenspire', 'mindtek', 'unieats', 'idhayam', 'hida', 'imaginet'] as const;
 const PROJECT_IDS = ['foodly', 'parkalong', 'tbrgs', 'rag-viz', 'aura'] as const;
@@ -37,6 +38,8 @@ Rules:
 - Lead with current work (Besmak, Complete Leader, Kenspire), then Foodly and ParkAlong.
 - Older roles (Mindtek, UniEats, Idhayam, HiDa, Imaginet) are archive context.
 - Availability, visa, and location come from lookupProfile.
+- Public GitHub activity comes from lookupGitHub: RealSid08 and OpenRenderKit only, public repositories only,
+  and always state the "as of" time from the tool result rather than implying live data.
 - Keep answers structured with short markdown lists.
 - After answering, you may suggest one next question in a single italic line.
 
@@ -123,6 +126,24 @@ export async function streamPortfolioChat(options: {
         description: 'Fetch location, visa, availability, education, and contact links.',
         inputSchema: z.object({}),
         execute: async () => lookupProfile(),
+      }),
+      lookupGitHub: tool({
+        description:
+          'Fetch public GitHub work for Sidhaarth: an account overview (RealSid08 or OpenRenderKit) or one repository. Private repositories are never included.',
+        inputSchema: z.object({
+          account: z.enum(['RealSid08', 'OpenRenderKit']).optional(),
+          repo: z.string().optional().describe('Repository name for a single repo lookup'),
+        }),
+        execute: async ({ account, repo }) => {
+          const target = account ?? 'RealSid08';
+          if (!isAllowedAccount(target)) return 'Only public GitHub accounts are available.';
+          try {
+            if (repo) return formatRepoForModel(await getPublicRepo(target, repo));
+            return formatReposForModel(await listPublicRepos(target));
+          } catch (error) {
+            return `GitHub lookup failed: ${error instanceof Error ? error.message : 'unknown error'}`;
+          }
+        },
       }),
       listWorkstreams: tool({
         description: 'List active contracts or archive roles as a compact index.',

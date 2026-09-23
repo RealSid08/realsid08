@@ -20,7 +20,7 @@ export type AgentTool = {
   inputSchema: Record<string, unknown>;
   /** shown in the command palette as a ready-made action */
   palette?: { label: string; args: Record<string, unknown> };
-  run: (args: Record<string, unknown>) => unknown;
+  run: (args: Record<string, unknown>) => unknown | Promise<unknown>;
 };
 
 const str = (description: string, values?: string[]) =>
@@ -134,6 +134,21 @@ export const TOOLS: AgentTool[] = [
     run: ({ target, expanded }) => expandCard(String(target), expanded === undefined ? true : Boolean(expanded)),
   },
   {
+    name: 'get_public_repos',
+    description: 'Read the public GitHub repositories for RealSid08 or OpenRenderKit, with a fetched-at timestamp.',
+    kind: 'read',
+    inputSchema: {
+      type: 'object',
+      properties: { account: str('Account', ['RealSid08', 'OpenRenderKit']) },
+    },
+    run: async ({ account }) => {
+      const target = account ? String(account) : 'RealSid08';
+      const response = await fetch(`/api/github?account=${encodeURIComponent(target)}`);
+      if (!response.ok) return { error: `GitHub lookup failed (${response.status})` };
+      return response.json();
+    },
+  },
+  {
     name: 'set_theme',
     description: 'Switch between light and dark.',
     kind: 'act',
@@ -171,11 +186,11 @@ export const paletteEntries = TOOLS.filter((tool) => tool.palette).map((tool) =>
 }));
 
 /** Execute by name, which is what an external agent will call. */
-export const runTool = (name: string, args: Record<string, unknown> = {}) => {
+export const runTool = async (name: string, args: Record<string, unknown> = {}) => {
   const tool = toolByName(name);
   if (!tool) return { ok: false, error: `Unknown tool: ${name}` };
   try {
-    return { ok: true, result: tool.run(args) };
+    return { ok: true, result: await tool.run(args) };
   } catch (error) {
     return { ok: false, error: error instanceof Error ? error.message : 'Tool failed' };
   }

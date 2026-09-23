@@ -4,6 +4,7 @@ import type { IncomingMessage, ServerResponse } from 'http';
 import { SYSTEM_INSTRUCTION_LIVE } from './constants';
 import { createRealtimeClientSecret } from './lib/openaiRealtime';
 import { isUiMessageArray, streamPortfolioChat } from './lib/portfolioChat';
+import { getPublicRepo, isAllowedAccount, listPublicRepos } from './lib/github';
 
 function readJsonBody(req: IncomingMessage): Promise<unknown> {
   return new Promise((resolve, reject) => {
@@ -91,6 +92,33 @@ function openaiLocalApi(apiKey: string | undefined) {
           res.end(JSON.stringify({ error: 'Chat unavailable' }));
         }
       }
+      return;
+    }
+
+    if (path === '/api/github') {
+      const url = new URL(req.url ?? '/', 'http://localhost');
+      const account = url.searchParams.get('account') ?? 'RealSid08';
+      const repo = url.searchParams.get('repo');
+
+      if (!isAllowedAccount(account)) {
+        res.statusCode = 400;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ error: 'Account not allowed' }));
+        return;
+      }
+
+      void (repo ? getPublicRepo(account, repo) : listPublicRepos(account))
+        .then((payload) => {
+          res.statusCode = 200;
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify(payload));
+        })
+        .catch((error: unknown) => {
+          console.error('GitHub context error:', error instanceof Error ? error.message : 'unknown');
+          res.statusCode = 502;
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({ error: 'GitHub unavailable' }));
+        });
       return;
     }
 

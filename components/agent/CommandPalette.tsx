@@ -31,7 +31,7 @@ export const CommandPalette: React.FC<Props> = ({ open, onClose }) => {
   if (!open) return null;
 
   const run = (name: string, args: Record<string, unknown>) => {
-    runTool(name, args);
+    void runTool(name, args);
     onClose();
   };
 

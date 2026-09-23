@@ -8,6 +8,7 @@ import { TOOLS } from '../../services/agent/registry';
 import { AgentActivity } from './AgentActivity';
 import { CommandPalette } from './CommandPalette';
 import { registerAgentTools } from '../../services/agent/webmcp';
+import { pageIntentsFromMessages } from '../../services/agent/pageIntent';
 
 type Mode = 'ask' | 'voice';
 
@@ -107,18 +108,9 @@ export const AgentBar: React.FC = () => {
 
   // Page actions the assistant asked for are executed here, once per tool call.
   useEffect(() => {
-    messages.forEach((message) => {
-      (message.parts ?? []).forEach((part, partIndex) => {
-        const type = (part as { type: string }).type;
-        if (!type.startsWith('tool-')) return;
-        const state = (part as { state?: string }).state;
-        const toolCallId = `${message.id}:${partIndex}`;
-        if (state !== 'output-available' || executed.current.has(toolCallId)) return;
-        executed.current.add(toolCallId);
-        const name = type.replace(/^tool-/, '');
-        const input = ((part as { input?: unknown }).input ?? {}) as Record<string, unknown>;
-        runTool(name, input);
-      });
+    pageIntentsFromMessages(messages, executed.current).forEach((intent) => {
+      executed.current.add(intent.id);
+      void runTool(intent.name, intent.args);
     });
   }, [messages]);
 
