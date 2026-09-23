@@ -1,4 +1,6 @@
 import {
+  expandCard,
+  filterWork,
   focusMode,
   getState,
   highlight,
@@ -6,6 +8,7 @@ import {
   resetView,
   setTheme,
   setVisibility,
+  sortWork,
   walkthrough,
 } from './actions';
 
@@ -83,6 +86,52 @@ export const TOOLS: AgentTool[] = [
     },
     palette: { label: 'Walk me through the work', args: { action: 'start' } },
     run: ({ action }) => walkthrough(String(action) as 'start' | 'next' | 'prev' | 'stop'),
+  },
+  {
+    name: 'filter_work',
+    description: 'Show only the work that matches a year, a technology or a search phrase.',
+    kind: 'act',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        year: { type: 'number', description: 'Only show work from this year' },
+        tech: str('Only show work that uses this technology'),
+        query: str('Free text to match against the card text'),
+      },
+    },
+    palette: { label: 'Show only 2026 work', args: { year: 2026 } },
+    run: ({ year, tech, query }) =>
+      filterWork({
+        year: year === undefined || year === null ? undefined : Number(year),
+        tech: tech === undefined || tech === null ? undefined : String(tech),
+        query: query === undefined || query === null ? undefined : String(query),
+      }),
+  },
+  {
+    name: 'sort_work',
+    description: 'Reorder the work cards by year or title.',
+    kind: 'act',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        by: str('Sort key', ['year', 'title']),
+        direction: str('Direction', ['asc', 'desc']),
+      },
+      required: ['by'],
+    },
+    palette: { label: 'Sort work by year', args: { by: 'year', direction: 'desc' } },
+    run: ({ by, direction }) => sortWork(String(by) as 'year' | 'title', (direction as 'asc' | 'desc') ?? 'desc'),
+  },
+  {
+    name: 'expand_card',
+    description: 'Open or close the extra detail on a card, such as its screenshots.',
+    kind: 'act',
+    inputSchema: {
+      type: 'object',
+      properties: { target: str('Element id, e.g. project-foodly'), expanded: { type: 'boolean' } },
+      required: ['target'],
+    },
+    run: ({ target, expanded }) => expandCard(String(target), expanded === undefined ? true : Boolean(expanded)),
   },
   {
     name: 'set_theme',

@@ -17,6 +17,18 @@ import { CHAT_MODEL_ID } from './chatModel';
 const ROLE_IDS = ['besmak', 'complete-leader', 'kenspire', 'mindtek', 'unieats', 'idhayam', 'hida', 'imaginet'] as const;
 const PROJECT_IDS = ['foodly', 'parkalong', 'tbrgs', 'rag-viz', 'aura'] as const;
 
+/**
+ * Page-control tools run in the browser, not on the server. The server tool
+ * acknowledges the intent and the agent bar executes it against the page
+ * registry, which is also what the command palette and WebMCP call.
+ */
+const pageTool = <Shape extends z.ZodRawShape>(description: string, shape: Shape) =>
+  tool({
+    description: `${description} This drives the page the visitor is looking at.`,
+    inputSchema: z.object(shape),
+    execute: async () => 'Queued on the page.',
+  });
+
 const CHAT_SYSTEM = `You are the portfolio assistant for Sidhaarth Krishnan.
 Persona: professional, concise, technically specific. No emojis.
 
@@ -26,7 +38,15 @@ Rules:
 - Older roles (Mindtek, UniEats, Idhayam, HiDa, Imaginet) are archive context.
 - Availability, visa, and location come from lookupProfile.
 - Keep answers structured with short markdown lists.
-- After answering, you may suggest one next question in a single italic line.`;
+- After answering, you may suggest one next question in a single italic line.
+
+Driving the page:
+- You can move the page while you answer. Call navigate_to, highlight, focus_mode, walkthrough,
+  filter_work, sort_work, expand_card, set_theme, set_visibility or reset_view when the visitor
+  asks to see something, or when pointing at a card makes the answer clearer.
+- Prefer one or two page actions per turn; never dispatch a walkthrough unasked.
+- The visitor can see every page action in an activity log and undo them, so be deliberate.
+  If they ask to undo, call reset_view.`;
 
 function lookupProfile(): string {
   return [
@@ -111,6 +131,39 @@ export async function streamPortfolioChat(options: {
         }),
         execute: async ({ lane }) => listWorkstreams(lane),
       }),
+      navigate_to: pageTool('Scroll the page to a section.', {
+        section: z.enum(['top', 'skills', 'experience', 'projects', 'education', 'aura', 'contact']),
+      }),
+      highlight: pageTool('Briefly outline one card or section.', {
+        target: z.string().describe('Element id, e.g. project-foodly or exp-besmak'),
+      }),
+      focus_mode: pageTool('Dim everything except one card.', {
+        target: z.string().optional().describe('Element id to keep in focus'),
+      }),
+      walkthrough: pageTool('Step through the work cards one at a time.', {
+        action: z.enum(['start', 'next', 'prev', 'stop']),
+      }),
+      filter_work: pageTool('Show only the work that matches.', {
+        year: z.number().optional(),
+        tech: z.string().optional(),
+        query: z.string().optional().describe('Free text to match against card text'),
+      }),
+      sort_work: pageTool('Reorder the work cards.', {
+        by: z.enum(['year', 'title']),
+        direction: z.enum(['asc', 'desc']).optional(),
+      }),
+      expand_card: pageTool('Open or close a card detail, such as its screenshots.', {
+        target: z.string().describe('Element id, e.g. project-foodly'),
+        expanded: z.boolean().optional(),
+      }),
+      set_theme: pageTool('Switch the site between light and dark.', {
+        theme: z.enum(['light', 'dark']),
+      }),
+      set_visibility: pageTool('Show or hide a section.', {
+        section: z.enum(['top', 'skills', 'experience', 'projects', 'education', 'aura', 'contact']),
+        visible: z.boolean(),
+      }),
+      reset_view: pageTool('Undo every page change the agent made.', {}),
     },
   });
 

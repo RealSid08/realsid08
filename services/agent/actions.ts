@@ -30,13 +30,17 @@ export const setExternalAgent = (active: boolean) => {
 export const onExternalAgent = (listener: (active: boolean) => void) => {
   externalListeners.add(listener);
   listener(externalAgent);
-  return () => externalListeners.delete(listener);
+  return () => {
+    externalListeners.delete(listener);
+  };
 };
 
 export const onActions = (listener: Listener) => {
   listeners.add(listener);
   listener([...records]);
-  return () => listeners.delete(listener);
+  return () => {
+    listeners.delete(listener);
+  };
 };
 
 const emit = () => listeners.forEach((listener) => listener([...records]));
@@ -143,6 +147,108 @@ export const setTheme = (theme: 'light' | 'dark') => {
 
 export const resetView = () => {
   undoAll();
+  return true;
+};
+
+/* ---------- cards ---------- */
+
+const cards = () =>
+  Array.from(document.querySelectorAll<HTMLElement>('[id^="exp-"], [id^="project-"]'));
+
+export const filterWork = (filter: { year?: number; tech?: string; query?: string }) => {
+  const snapshot = cards().map((el) => ({ el, hidden: el.hidden }));
+  let shown = 0;
+
+  snapshot.forEach(({ el }) => {
+    const year = Number(el.dataset.year ?? 0);
+    const tech = el.dataset.tech ?? '';
+    const text = (el.textContent ?? '').toLowerCase();
+    const matches =
+      (!filter.year || year === filter.year) &&
+      (!filter.tech || tech.includes(filter.tech.toLowerCase())) &&
+      (!filter.query || text.includes(filter.query.toLowerCase()));
+    el.hidden = !matches;
+    if (matches) shown += 1;
+  });
+
+  const description = [
+    filter.year ? String(filter.year) : null,
+    filter.tech ?? null,
+    filter.query ? `“${filter.query}”` : null,
+  ]
+    .filter(Boolean)
+    .join(' · ');
+
+  record({
+    tool: 'filter_work',
+    label: `Filtered to ${shown} of ${snapshot.length} cards${description ? ` (${description})` : ''}`,
+    kind: 'view',
+    undo: () => snapshot.forEach(({ el, hidden }) => {
+      el.hidden = hidden;
+    }),
+  });
+
+  return { shown, of: snapshot.length };
+};
+
+export const sortWork = (by: 'year' | 'title', direction: 'asc' | 'desc' = 'desc') => {
+  const snapshot: Array<{ wrapper: HTMLElement; order: string }> = [];
+  const containers = new Set<HTMLElement>();
+
+  cards().forEach((el) => {
+    const wrapper = el.parentElement;
+    const container = wrapper?.parentElement;
+    if (!wrapper || !container) return;
+    containers.add(container);
+    snapshot.push({ wrapper, order: wrapper.style.order });
+  });
+
+  const valueOf = (el: HTMLElement) =>
+    by === 'year' ? Number(el.dataset.year ?? 0) : (el.dataset.title ?? el.textContent ?? '');
+
+  containers.forEach((container) => {
+    const items = Array.from(container.children).filter((child): child is HTMLElement =>
+      child instanceof HTMLElement && child.querySelector('[id^="exp-"], [id^="project-"]') !== null,
+    );
+    items
+      .sort((a, b) => {
+        const left = valueOf(a.querySelector('[id^="exp-"], [id^="project-"]') as HTMLElement);
+        const right = valueOf(b.querySelector('[id^="exp-"], [id^="project-"]') as HTMLElement);
+        if (left === right) return 0;
+        const result = left > right ? 1 : -1;
+        return direction === 'asc' ? result : -result;
+      })
+      .forEach((item, index) => {
+        item.style.order = String(index);
+      });
+  });
+
+  record({
+    tool: 'sort_work',
+    label: `Sorted the work by ${by}`,
+    kind: 'view',
+    undo: () => snapshot.forEach(({ wrapper, order }) => {
+      wrapper.style.order = order;
+    }),
+  });
+
+  return { sorted: snapshot.length };
+};
+
+export const expandCard = (target: string, expanded = true) => {
+  const el = byId(target);
+  const collapsible = el?.querySelector<HTMLElement>('[data-collapsible]');
+  if (!collapsible) return false;
+  const previous = collapsible.hidden;
+  collapsible.hidden = !expanded;
+  record({
+    tool: 'expand_card',
+    label: `${expanded ? 'Expanded' : 'Collapsed'} ${target}`,
+    kind: 'view',
+    undo: () => {
+      collapsible.hidden = previous;
+    },
+  });
   return true;
 };
 

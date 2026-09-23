@@ -3,6 +3,10 @@ import { DefaultChatTransport, type UIMessage } from 'ai';
 import { useChat } from '@ai-sdk/react';
 import { VoiceConsole } from '../VoiceConsole';
 import { soundEffects } from '../../services/sound';
+import { runTool } from '../../services/agent/registry';
+import { TOOLS } from '../../services/agent/registry';
+import { AgentActivity } from './AgentActivity';
+import { CommandPalette } from './CommandPalette';
 
 type Mode = 'ask' | 'voice';
 
@@ -47,10 +51,21 @@ export const AgentBar: React.FC = () => {
   const [input, setInput] = useState('');
   const [hintSeen, setHintSeen] = useState(() => read(STORAGE.hint) === 'true');
   const [restored, setRestored] = useState(false);
+  const [paletteOpen, setPaletteOpen] = useState(false);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const executed = useRef<Set<string>>(new Set());
 
   const busy = status === 'submitted' || status === 'streaming';
+
+  // The same registry the assistant and the palette use, reachable from the
+  // page context (which is also how an external agent drives the site).
+  useEffect(() => {
+    (window as unknown as { portfolioAgent?: unknown }).portfolioAgent = {
+      tools: TOOLS.map(({ name, description, kind, inputSchema }) => ({ name, description, kind, inputSchema })),
+      run: runTool,
+    };
+  }, []);
 
   // Restore the thread for this tab session, then keep it up to date.
   useEffect(() => {
@@ -80,6 +95,23 @@ export const AgentBar: React.FC = () => {
     if (el) el.scrollTop = el.scrollHeight;
   }, [messages, status, expanded]);
 
+  // Page actions the assistant asked for are executed here, once per tool call.
+  useEffect(() => {
+    messages.forEach((message) => {
+      (message.parts ?? []).forEach((part, partIndex) => {
+        const type = (part as { type: string }).type;
+        if (!type.startsWith('tool-')) return;
+        const state = (part as { state?: string }).state;
+        const toolCallId = `${message.id}:${partIndex}`;
+        if (state !== 'output-available' || executed.current.has(toolCallId)) return;
+        executed.current.add(toolCallId);
+        const name = type.replace(/^tool-/, '');
+        const input = ((part as { input?: unknown }).input ?? {}) as Record<string, unknown>;
+        runTool(name, input);
+      });
+    });
+  }, [messages]);
+
   useEffect(() => {
     const open = (event: Event) => {
       const detail = (event as CustomEvent<{ tab?: Mode }>).detail;
@@ -101,7 +133,12 @@ export const AgentBar: React.FC = () => {
         setExpanded(false);
         return;
       }
-      if ((event.key === '/' && !typing) || (event.key.toLowerCase() === 'k' && (event.metaKey || event.ctrlKey))) {
+      if (event.key.toLowerCase() === 'k' && (event.metaKey || event.ctrlKey)) {
+        event.preventDefault();
+        setPaletteOpen(true);
+        return;
+      }
+      if (event.key === '/' && !typing) {
         event.preventDefault();
         setExpanded(true);
         setMode('ask');
@@ -199,10 +236,12 @@ export const AgentBar: React.FC = () => {
             )}
             {error && <p className="font-mono text-[11px] text-gray-500">The assistant is unavailable right now.</p>}
           </div>
+
         </div>
       )}
 
       <div className="pointer-events-auto relative w-full max-w-3xl">
+        <AgentActivity className="mb-2" onStopExternal={() => setExpanded(false)} />
         {showHint && (
           <div className="absolute -top-9 left-1/2 -translate-x-1/2 flex items-center gap-2 border border-white/10 bg-black/90 px-3 py-1.5">
             <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-gray-400">
@@ -295,6 +334,16 @@ export const AgentBar: React.FC = () => {
           </div>
         </form>
 
+        <div className="flex items-center justify-center gap-3 mt-1">
+          <button
+            type="button"
+            onClick={() => setPaletteOpen(true)}
+            className="font-mono text-[10px] uppercase tracking-[0.14em] text-gray-600 hover:text-white"
+          >
+            ⌘K actions
+          </button>
+        </div>
+
         <button
           type="button"
           onClick={() => setExpanded((value) => !value)}
@@ -306,6 +355,8 @@ export const AgentBar: React.FC = () => {
           </svg>
         </button>
       </div>
+
+      <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} />
     </div>
   );
 };
