@@ -100,7 +100,21 @@ export async function streamPortfolioChat(options: {
         reasoningEffort: 'low',
       },
     },
-    tools: {
+    tools: buildPortfolioTools(),
+  });
+
+  pipeUIMessageStreamToResponse({
+    response: options.response,
+    stream: toUIMessageStream({ stream: result.stream }),
+  });
+}
+
+/**
+ * The tool surface handed to the model. Exported so the page-tool names can be
+ * checked against the browser registry (see scripts/verify-agent.ts).
+ */
+export function buildPortfolioTools() {
+  return {
       lookupRole: tool({
         description: 'Fetch a specific employer/role from Sidhaarth\'s resume.',
         inputSchema: z.object({
@@ -185,13 +199,7 @@ export async function streamPortfolioChat(options: {
         visible: z.boolean(),
       }),
       reset_view: pageTool('Undo every page change the agent made.', {}),
-    },
-  });
-
-  pipeUIMessageStreamToResponse({
-    response: options.response,
-    stream: toUIMessageStream({ stream: result.stream }),
-  });
+  };
 }
 
 export function isUiMessageArray(value: unknown): value is UIMessage[] {
