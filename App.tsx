@@ -1,6 +1,6 @@
 import React from 'react';
 import { ThreeBackground } from './components/ThreeBackground';
-import { ChatBot } from './components/ChatBot';
+import { AgentBar } from './components/agent/AgentBar';
 import { Experience } from './components/Experience';
 import { Hero } from './components/Hero';
 import { SkillsMap } from './components/SkillsMap';
@@ -13,7 +13,7 @@ const App: React.FC = () => {
   return (
     <div className="min-h-screen text-white selection:bg-white selection:text-black relative font-sans animate-appear">
       <ThreeBackground />
-      <ChatBot />
+      <AgentBar />
       <ThemeToggle />
       <Hero />
 
