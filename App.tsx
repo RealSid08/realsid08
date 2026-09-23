@@ -1,6 +1,5 @@
 import React from 'react';
 import { ThreeBackground } from './components/ThreeBackground';
-import { LiveDemo } from './components/LiveDemo';
 import { ChatBot } from './components/ChatBot';
 import { Experience } from './components/Experience';
 import { Hero } from './components/Hero';
@@ -45,10 +44,23 @@ const App: React.FC = () => {
 
         <section id="aura" className="mb-24 md:mb-40 scroll-mt-16">
           <FadeInSection>
-            <div className="mb-8 md:mb-12 border-l-2 border-white pl-4 md:pl-6">
-              <h2 className="text-3xl md:text-4xl font-bold mt-2">Voice demo</h2>
+            <div className="card-surface border border-white/10 bg-black p-6 md:p-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+              <div>
+                <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-gray-500 mb-3">Voice</p>
+                <h2 className="text-2xl md:text-3xl font-bold">Talk to the assistant</h2>
+                <p className="text-gray-400 text-sm md:text-base mt-3 max-w-xl leading-relaxed">
+                  The same assistant that answers questions on this page can hold the conversation out loud.
+                  Open it and switch to voice to ask about the work directly.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => window.dispatchEvent(new CustomEvent('open-assistant', { detail: { tab: 'voice' } }))}
+                className="shrink-0 px-6 py-3 border border-white bg-white text-black hover:bg-transparent hover:text-white transition-colors text-[11px] uppercase tracking-[0.2em] font-mono"
+              >
+                Open voice assistant
+              </button>
             </div>
-            <LiveDemo />
           </FadeInSection>
         </section>
 

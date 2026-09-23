@@ -12,6 +12,7 @@ import { StreamingAnswer } from './beautiful-ui/StreamingAnswer';
 import { PromptBar } from './beautiful-ui/PromptBar';
 import { SearchEmpty } from './beautiful-ui/SearchEmpty';
 import { RecommendationCard } from './beautiful-ui/RecommendationCard';
+import { VoiceConsole } from './VoiceConsole';
 
 const ASK_QUERIES = [
   'What is Sidhaarth working on right now?',
@@ -126,6 +127,17 @@ export const ChatBot: React.FC = () => {
   const hasAutoOpened = useRef(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
+  useEffect(() => {
+    const open = (event: Event) => {
+      const detail = (event as CustomEvent<{ tab?: ChatTab }>).detail;
+      setIsMounted(true);
+      setIsOpen(true);
+      if (detail?.tab) setTab(detail.tab);
+    };
+    window.addEventListener('open-assistant', open);
+    return () => window.removeEventListener('open-assistant', open);
+  }, []);
+
   const transport = useMemo(() => new DefaultChatTransport({ api: '/api/chat' }), []);
   const { messages, sendMessage, status, error } = useChat({ transport });
 
@@ -177,14 +189,21 @@ export const ChatBot: React.FC = () => {
           onTab={setTab}
           onClose={() => setIsOpen(false)}
           footer={
-            <PromptBar
-              value={input}
-              onChange={setInput}
-              onSubmit={() => submitPrompt(input)}
-              disabled={busy}
-            />
+            tab === 'voice' ? undefined : (
+              <PromptBar
+                value={input}
+                onChange={setInput}
+                onSubmit={() => submitPrompt(input)}
+                disabled={busy}
+              />
+            )
           }
         >
+          {tab === 'voice' && (
+            <div className="py-6">
+              <VoiceConsole compact />
+            </div>
+          )}
           {tab === 'work' && (
             <ContextCards
               chunks={EXPERIENCES.filter((exp) => exp.lane === 'active').map((exp) => ({

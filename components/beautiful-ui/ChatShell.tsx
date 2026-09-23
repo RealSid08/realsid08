@@ -1,6 +1,6 @@
 import React from 'react';
 
-export type ChatTab = 'ask' | 'work' | 'projects';
+export type ChatTab = 'ask' | 'work' | 'projects' | 'voice';
 
 type ChatShellProps = {
   tab: ChatTab;
@@ -15,6 +15,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({ tab, onTab, onClose, child
     { id: 'ask', label: 'Ask' },
     { id: 'work', label: 'Experience' },
     { id: 'projects', label: 'Projects' },
+    { id: 'voice', label: 'Voice' },
   ];
 
   return (
@@ -39,7 +40,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({ tab, onTab, onClose, child
         </button>
       </div>
       <div className="flex-1 overflow-y-auto p-3 space-y-4">{children}</div>
-      <div className="border-t border-white/10 p-3 bg-mono-paper">{footer}</div>
+      {footer ? <div className="border-t border-white/10 p-3 bg-mono-paper">{footer}</div> : null}
     </div>
   );
 };
