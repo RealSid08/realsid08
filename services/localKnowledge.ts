@@ -21,6 +21,35 @@ export function formatProject(id: string): string | null {
   ].filter(Boolean).join('\n');
 }
 
+export function formatProfile(): string {
+  return [
+    `**${PROFILE.givenName} ${PROFILE.familyName}** — ${PROFILE.title}`,
+    PROFILE.location,
+    PROFILE.visa,
+    PROFILE.availability,
+    `Email: ${PROFILE.email}`,
+    `Phone: ${PROFILE.phone}`,
+    `LinkedIn: ${PROFILE.linkedin}`,
+    `GitHub: ${PROFILE.github}`,
+    `Resume: ${PROFILE.resumeUrl}`,
+    `Education: ${EDUCATION.degree}, ${EDUCATION.school}, ${EDUCATION.campus}. Graduating ${EDUCATION.graduating}.`,
+  ].join('\n');
+}
+
+export function formatSkills(cluster?: string): string {
+  const selected = cluster
+    ? SKILLS.filter((item) => item.id === cluster || item.label.toLowerCase().includes(cluster.toLowerCase()))
+    : SKILLS;
+  const rows = selected.length > 0 ? selected : SKILLS;
+  return rows.map((item) => `**${item.label}**: ${item.items.join(', ')}`).join('\n');
+}
+
+export function formatWorkstreams(lane: 'active' | 'archive' | 'all'): string {
+  return EXPERIENCES.filter((exp) => lane === 'all' || exp.lane === lane)
+    .map((exp) => `- **${exp.company}** — ${exp.role} (${exp.period})${exp.employmentType ? ` · ${exp.employmentType}` : ''}`)
+    .join('\n');
+}
+
 export function localPortfolioAnswer(question: string): string {
   const q = question.toLowerCase();
   const parts: string[] = [];

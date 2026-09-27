@@ -1,3 +1,6 @@
+import { executeRealtimeFunctionCall, isRealtimeFunctionCall, realtimeToolDefinitions } from './agent/realtimeTools';
+import { REALTIME_MODEL } from '../lib/openaiRealtime';
+
 type TokenApiResponse = {
   value?: unknown;
   error?: unknown;
@@ -14,6 +17,9 @@ export class LiveSessionManager {
   private animationFrameId: number | null = null;
   private onVolumeChange: (volume: number) => void;
   private greetingSent = false;
+  private awaitingToolSetup = false;
+  private processedResponses = new Set<string>();
+  private toolCalls: number[] = [];
 
   constructor(onVolumeChange: (volume: number) => void) {
     this.onVolumeChange = onVolumeChange;
@@ -51,10 +57,14 @@ export class LiveSessionManager {
 
     this.dc = this.pc.createDataChannel('oai-events');
     this.dc.addEventListener('open', () => {
-      this.sendGreeting();
+      this.awaitingToolSetup = true;
+      this.dc?.send(JSON.stringify({
+        type: 'session.update',
+        session: { type: 'realtime', model: REALTIME_MODEL, tools: realtimeToolDefinitions, tool_choice: 'auto' },
+      }));
     });
     this.dc.addEventListener('message', (event) => {
-      this.handleServerEvent(event.data);
+      void this.handleServerEvent(event.data);
     });
 
     const offer = await this.pc.createOffer();
@@ -101,15 +111,47 @@ export class LiveSessionManager {
     this.dc.send(JSON.stringify({ type: 'response.create' }));
   }
 
-  private handleServerEvent(raw: string) {
+  private async handleServerEvent(raw: string) {
     try {
-      const event = JSON.parse(raw) as { type?: unknown; error?: { message?: unknown } };
+      const event = JSON.parse(raw) as {
+        type?: unknown;
+        error?: { message?: unknown };
+        response?: { id?: string; status?: string; output?: unknown[] };
+      };
+      if (event.type === 'session.updated' && this.awaitingToolSetup) {
+        this.awaitingToolSetup = false;
+        this.sendGreeting();
+        return;
+      }
+      if (event.type === 'response.done' && event.response?.status === 'completed') {
+        const id = event.response.id;
+        if (id && this.processedResponses.has(id)) return;
+        if (id) this.processedResponses.add(id);
+        const calls = (event.response.output ?? []).filter(isRealtimeFunctionCall);
+        if (calls.length === 0 || !this.dc || this.dc.readyState !== 'open') return;
+        for (const call of calls) {
+          const now = Date.now();
+          this.toolCalls = this.toolCalls.filter((at) => now - at < 60_000);
+          const allowed = this.toolCalls.length < 30;
+          if (allowed) this.toolCalls.push(now);
+          const output = allowed
+            ? await executeRealtimeFunctionCall(call)
+            : {
+                type: 'conversation.item.create' as const,
+                item: { type: 'function_call_output' as const, call_id: call.call_id, output: JSON.stringify({ ok: false, error: 'Too many voice tool calls in a short window' }) },
+              };
+          if (!this.dc || this.dc.readyState !== 'open') return;
+          this.dc.send(JSON.stringify(output));
+        }
+        this.dc.send(JSON.stringify({ type: 'response.create' }));
+        return;
+      }
       if (event.type === 'error') {
         const message = typeof event.error?.message === 'string' ? event.error.message : 'session error';
         console.error('Realtime error:', message);
       }
-    } catch {
-      // Ignore malformed data-channel payloads.
+    } catch (error) {
+      console.error('Realtime event error:', error instanceof Error ? error.message : 'unknown');
     }
   }
 
@@ -188,6 +230,9 @@ export class LiveSessionManager {
     }
 
     this.greetingSent = false;
+    this.awaitingToolSetup = false;
+    this.processedResponses.clear();
+    this.toolCalls = [];
     this.onVolumeChange(0);
   }
 }

@@ -10,8 +10,7 @@ import {
 } from 'ai';
 import type { ServerResponse } from 'http';
 import { z } from 'zod';
-import { EDUCATION, EXPERIENCES, PROFILE, SKILLS } from '../constants';
-import { formatProject, formatRole } from '../services/localKnowledge';
+import { formatProfile, formatProject, formatRole, formatSkills, formatWorkstreams } from '../services/localKnowledge';
 import { CHAT_MODEL_ID } from './chatModel';
 import { formatRepoForModel, formatReposForModel, getPublicRepo, isAllowedAccount, listPublicRepos } from './github';
 
@@ -50,38 +49,6 @@ Driving the page:
 - Prefer one or two page actions per turn; never dispatch a walkthrough unasked.
 - The visitor can see every page action in an activity log and undo them, so be deliberate.
   If they ask to undo, call reset_view.`;
-
-function lookupProfile(): string {
-  return [
-    `**${PROFILE.givenName} ${PROFILE.familyName}** — ${PROFILE.title}`,
-    PROFILE.location,
-    PROFILE.visa,
-    PROFILE.availability,
-    `Email: ${PROFILE.email}`,
-    `Phone: ${PROFILE.phone}`,
-    `LinkedIn: ${PROFILE.linkedin}`,
-    `GitHub: ${PROFILE.github}`,
-    `Resume: ${PROFILE.resumeUrl}`,
-    `Education: ${EDUCATION.degree}, ${EDUCATION.school}, ${EDUCATION.campus}. Graduating ${EDUCATION.graduating}.`,
-  ].join('\n');
-}
-
-function lookupSkills(cluster?: string): string {
-  const selected = cluster
-    ? SKILLS.filter((item) => item.id === cluster || item.label.toLowerCase().includes(cluster.toLowerCase()))
-    : SKILLS;
-  if (selected.length === 0) {
-    return SKILLS.map((item) => `**${item.label}**: ${item.items.join(', ')}`).join('\n');
-  }
-  return selected.map((item) => `**${item.label}**: ${item.items.join(', ')}`).join('\n');
-}
-
-function listWorkstreams(lane: 'active' | 'archive' | 'all'): string {
-  const rows = EXPERIENCES.filter((exp) => lane === 'all' || exp.lane === lane);
-  return rows
-    .map((exp) => `- **${exp.company}** — ${exp.role} (${exp.period})${exp.employmentType ? ` · ${exp.employmentType}` : ''}`)
-    .join('\n');
-}
 
 async function createPortfolioChatStream(options: {
   apiKey: string;
@@ -151,12 +118,12 @@ export function buildPortfolioTools() {
         inputSchema: z.object({
           cluster: z.string().optional().describe('Optional cluster name or id'),
         }),
-        execute: async ({ cluster }) => lookupSkills(cluster),
+        execute: async ({ cluster }) => formatSkills(cluster),
       }),
       lookupProfile: tool({
         description: 'Fetch location, visa, availability, education, and contact links.',
         inputSchema: z.object({}),
-        execute: async () => lookupProfile(),
+        execute: async () => formatProfile(),
       }),
       lookupGitHub: tool({
         description:
@@ -181,7 +148,7 @@ export function buildPortfolioTools() {
         inputSchema: z.object({
           lane: z.enum(['active', 'archive', 'all']).default('active'),
         }),
-        execute: async ({ lane }) => listWorkstreams(lane),
+        execute: async ({ lane }) => formatWorkstreams(lane),
       }),
       navigate_to: pageTool('Scroll the page to a section.', {
         section: z.enum(['top', 'skills', 'experience', 'projects', 'education', 'contact']),

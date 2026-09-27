@@ -11,6 +11,7 @@ import {
   sortWork,
   walkthrough,
 } from './actions';
+import { formatProfile, formatProject, formatRole, formatSkills, formatWorkstreams } from '../localKnowledge';
 
 export type AgentTool = {
   name: string;
@@ -40,6 +41,41 @@ const SECTIONS = [
  * in-page agent, the command palette and (later) the WebMCP registration.
  */
 export const TOOLS: AgentTool[] = [
+  {
+    name: 'lookup_role',
+    description: 'Read a specific employer or role from Sidhaarth’s portfolio.',
+    kind: 'read',
+    inputSchema: { type: 'object', properties: { id: str('Role id', ['besmak', 'complete-leader', 'kenspire', 'mindtek', 'unieats', 'idhayam', 'hida', 'imaginet']) }, required: ['id'] },
+    run: ({ id }) => formatRole(String(id)) ?? 'Role not found.',
+  },
+  {
+    name: 'lookup_project',
+    description: 'Read a featured project from Sidhaarth’s portfolio.',
+    kind: 'read',
+    inputSchema: { type: 'object', properties: { id: str('Project id', ['foodly', 'parkalong', 'tbrgs', 'rag-viz', 'aura']) }, required: ['id'] },
+    run: ({ id }) => formatProject(String(id)) ?? 'Project not found.',
+  },
+  {
+    name: 'lookup_skills',
+    description: 'Read skill clusters: languages, frontend, backend, agentic, cloud, or delivery.',
+    kind: 'read',
+    inputSchema: { type: 'object', properties: { cluster: str('Optional cluster name or id') } },
+    run: ({ cluster }) => formatSkills(cluster ? String(cluster) : undefined),
+  },
+  {
+    name: 'lookup_profile',
+    description: 'Read Sidhaarth’s location, availability, education, and public contact details.',
+    kind: 'read',
+    inputSchema: { type: 'object', properties: {} },
+    run: () => formatProfile(),
+  },
+  {
+    name: 'list_workstreams',
+    description: 'List active contracts or earlier roles.',
+    kind: 'read',
+    inputSchema: { type: 'object', properties: { lane: str('Workstream group', ['active', 'archive', 'all']) } },
+    run: ({ lane }) => formatWorkstreams(lane === 'archive' || lane === 'all' ? lane : 'active'),
+  },
   {
     name: 'get_state',
     description: 'Read what the visitor is currently looking at: theme, focus mode, hidden sections.',
@@ -143,6 +179,22 @@ export const TOOLS: AgentTool[] = [
     run: async ({ account }) => {
       const target = account ? String(account) : 'RealSid08';
       const response = await fetch(`/api/github?account=${encodeURIComponent(target)}`);
+      if (!response.ok) return { error: `GitHub lookup failed (${response.status})` };
+      return response.json();
+    },
+  },
+  {
+    name: 'get_public_repo',
+    description: 'Read one public GitHub repository and its languages from RealSid08 or OpenRenderKit.',
+    kind: 'read',
+    inputSchema: {
+      type: 'object',
+      properties: { account: str('Account', ['RealSid08', 'OpenRenderKit']), repo: str('Repository name') },
+      required: ['repo'],
+    },
+    run: async ({ account, repo }) => {
+      const target = account ? String(account) : 'RealSid08';
+      const response = await fetch(`/api/github?account=${encodeURIComponent(target)}&repo=${encodeURIComponent(String(repo))}`);
       if (!response.ok) return { error: `GitHub lookup failed (${response.status})` };
       return response.json();
     },

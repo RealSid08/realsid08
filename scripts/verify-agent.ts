@@ -10,6 +10,8 @@ import { createUIMessageStream, readUIMessageStream, type UIMessage } from 'ai';
 import { buildPortfolioTools } from '../lib/portfolioChat';
 import { pageIntentsFromMessages } from '../services/agent/pageIntent';
 import { paletteEntries, TOOLS, toolByName } from '../services/agent/registry';
+import { LiveSessionManager } from '../services/realtime';
+import { realtimeToolDefinitions } from '../services/agent/realtimeTools';
 
 const REQUIRED_TOOLS = [
   'get_state',
@@ -64,6 +66,41 @@ check('lookups are still offered to the model', () => {
     assert.ok(name in serverTools, `missing ${name}`),
   );
 });
+
+check('voice exposes the same browser tool registry', () => {
+  assert.deepEqual(
+    realtimeToolDefinitions.map((tool) => tool.name),
+    TOOLS.map((tool) => tool.name),
+  );
+  ['lookup_role', 'lookup_project', 'lookup_skills', 'lookup_profile', 'list_workstreams', 'get_public_repos', 'get_public_repo']
+    .forEach((name) => assert.ok(toolByName(name), `voice is missing ${name}`));
+});
+
+const runRealtimeChecks = async () => {
+  await checkAsync('voice executes a function call and asks the model to continue', async () => {
+    const sent: Array<{ type: string; item?: { call_id: string; output: string } }> = [];
+    const session = new LiveSessionManager(() => {});
+    const internals = session as unknown as {
+      dc: { readyState: string; send: (message: string) => void };
+      handleServerEvent: (event: string) => Promise<void>;
+    };
+    internals.dc = { readyState: 'open', send: (message) => sent.push(JSON.parse(message)) };
+    const event = JSON.stringify({
+      type: 'response.done',
+      response: {
+        id: 'response-1', status: 'completed',
+        output: [{ type: 'function_call', name: 'lookup_role', call_id: 'call-1', arguments: '{"id":"besmak"}' }],
+      },
+    });
+    await internals.handleServerEvent(event);
+    assert.equal(sent[0]?.type, 'conversation.item.create');
+    assert.equal(sent[0]?.item?.call_id, 'call-1');
+    assert.match(sent[0]?.item?.output ?? '', /Besmak Components/);
+    assert.equal(sent[1]?.type, 'response.create');
+    await internals.handleServerEvent(event);
+    assert.equal(sent.length, 2, 'a replay must not repeat the page or tool action');
+  });
+};
 
 check('the palette only offers real registry tools', () => {
   assert.ok(paletteEntries.length >= 6, 'expected several palette actions');
@@ -285,6 +322,7 @@ const runStreamChecks = async () => {
 Promise.resolve()
   .then(runGithubChecks)
   .then(runWebMcpChecks)
+  .then(runRealtimeChecks)
   .then(runStreamChecks)
   .then(() => {
     console.log(results.join('\n'));
