@@ -62,7 +62,7 @@ check('the model is told about every act tool the page can run', () => {
 
 check('lookups are still offered to the model', () => {
   const serverTools = buildPortfolioTools() as Record<string, unknown>;
-  ['lookupRole', 'lookupProject', 'lookupSkills', 'lookupProfile', 'lookupGitHub', 'listWorkstreams'].forEach((name) =>
+  ['lookupRole', 'lookupProject', 'lookupSkills', 'lookupProfile', 'lookupGitHub', 'browseGitHubCode', 'lookupGitHubIssues', 'lookupGitHubPullRequests', 'listWorkstreams'].forEach((name) =>
     assert.ok(name in serverTools, `missing ${name}`),
   );
 });
@@ -72,7 +72,7 @@ check('voice exposes the same browser tool registry', () => {
     realtimeToolDefinitions.map((tool) => tool.name),
     TOOLS.map((tool) => tool.name),
   );
-  ['lookup_role', 'lookup_project', 'lookup_skills', 'lookup_profile', 'list_workstreams', 'get_public_repos', 'get_public_repo']
+  ['lookup_role', 'lookup_project', 'lookup_skills', 'lookup_profile', 'list_workstreams', 'get_public_repos', 'get_public_repo', 'browse_public_code', 'get_public_issues', 'get_public_pull_requests']
     .forEach((name) => assert.ok(toolByName(name), `voice is missing ${name}`));
 });
 
@@ -131,14 +131,14 @@ check('page intents ignore unfinished calls, lookups and replays', () => {
 });
 
 const runGithubChecks = async () => {
-  const { ALLOWED_ACCOUNTS, isAllowedAccount, listPublicRepos } = await import('../lib/github');
+  const { ALLOWED_ACCOUNTS, getGithubPayload, isAllowedAccount, listPublicRepos } = await import('../lib/github');
 
   check('only allowlisted accounts pass', () => {
     ALLOWED_ACCOUNTS.forEach((account) => assert.ok(isAllowedAccount(account)));
     assert.ok(!isAllowedAccount('someone-else'));
   });
 
-  check('private, forked and archived repositories never reach the caller', async () => {
+  await checkAsync('private, forked and archived repositories never reach the caller', async () => {
     const originalFetch = globalThis.fetch;
     const repo = (overrides: Record<string, unknown>) => ({
       name: 'repo',
@@ -181,7 +181,7 @@ const runGithubChecks = async () => {
     }
   });
 
-  check('a configured token is sent, and never logged in the payload', async () => {
+  await checkAsync('a configured token is sent, and never logged in the payload', async () => {
     const originalFetch = globalThis.fetch;
     const originalToken = process.env.GITHUB_TOKEN;
     process.env.GITHUB_TOKEN = 'test-token-value';
@@ -201,6 +201,41 @@ const runGithubChecks = async () => {
       if (originalToken === undefined) delete process.env.GITHUB_TOKEN;
       else process.env.GITHUB_TOKEN = originalToken;
     }
+  });
+
+  await checkAsync('code, issues and PRs read bounded public data only', async () => {
+    const originalFetch = globalThis.fetch;
+    const calls: string[] = [];
+    const response = (value: unknown) => ({ ok: true, status: 200, json: async () => value }) as Response;
+    globalThis.fetch = (async (input: string) => {
+      const url = String(input);
+      calls.push(url);
+      if (url.endsWith('/repos/RealSid08/verification-private')) return response({ private: true, fork: false, archived: false });
+      if (url.endsWith('/repos/RealSid08/verification-public')) return response({
+        name: 'verification-public', description: null, language: 'TypeScript', stargazers_count: 0,
+        pushed_at: '2026-01-01T00:00:00Z', html_url: 'https://github.com/RealSid08/verification-public',
+        private: false, fork: false, archived: false, default_branch: 'main',
+      });
+      if (url.endsWith('/languages')) return response({ TypeScript: 100 });
+      if (url.endsWith('/contents/src/index.ts')) return response({ type: 'file', path: 'src/index.ts', size: 30, encoding: 'base64', content: btoa('export const answer = 42;'), html_url: 'https://github.com/RealSid08/verification-public/blob/main/src/index.ts' });
+      if (url.includes('/issues?')) return response([{ number: 1, title: 'Bug', body: 'Fix this', state: 'open', updated_at: '2026-01-01', html_url: 'https://github.com/example/issues/1' }, { number: 2, title: 'PR', pull_request: {}, state: 'open' }]);
+      if (url.endsWith('/pulls/2')) return response({ number: 2, title: 'Fix', body: 'Changed code', state: 'closed', updated_at: '2026-01-01', html_url: 'https://github.com/example/pull/2' });
+      if (url.includes('/pulls/2/files')) return response([{ filename: 'src/index.ts', status: 'modified', additions: 1, deletions: 1, patch: '@@ -1 +1 @@' }]);
+      throw new Error(`Unexpected request: ${url}`);
+    }) as typeof fetch;
+    try {
+      await assert.rejects(getGithubPayload(new URLSearchParams({ account: 'someone-else', repo: 'verification-public', view: 'code' })), /Account not allowed/);
+      await assert.rejects(getGithubPayload(new URLSearchParams({ account: 'RealSid08', repo: 'verification-public', view: 'code', path: '../secret' })), /Invalid code request/);
+      const beforePrivate = calls.length;
+      await assert.rejects(getGithubPayload(new URLSearchParams({ account: 'RealSid08', repo: 'verification-private', view: 'code' })), /Repository is not available/);
+      assert.equal(calls.length, beforePrivate + 1, 'private repo must stop before fetching contents');
+      const code = await getGithubPayload(new URLSearchParams({ account: 'RealSid08', repo: 'verification-public', view: 'code', path: 'src/index.ts' }));
+      assert.match(JSON.stringify(code), /answer = 42/);
+      const issues = await getGithubPayload(new URLSearchParams({ account: 'RealSid08', repo: 'verification-public', view: 'issues' }));
+      assert.equal((issues as { issues: unknown[] }).issues.length, 1, 'PRs must not appear as issues');
+      const pull = await getGithubPayload(new URLSearchParams({ account: 'RealSid08', repo: 'verification-public', view: 'pulls', number: '2' }));
+      assert.match(JSON.stringify(pull), /src\/index.ts/);
+    } finally { globalThis.fetch = originalFetch; }
   });
 };
 

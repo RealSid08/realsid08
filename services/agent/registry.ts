@@ -199,6 +199,34 @@ export const TOOLS: AgentTool[] = [
       return response.json();
     },
   },
+  ...([
+    ['browse_public_code', 'code', 'Browse a public GitHub repository directory or read a text source file or README.'],
+    ['get_public_issues', 'issues', 'List public GitHub issues or read one issue and its comments.'],
+    ['get_public_pull_requests', 'pulls', 'List public GitHub pull requests or read one PR and its changed file patches.'],
+  ] as const).map(([name, view, description]): AgentTool => ({
+    name, description, kind: 'read',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        account: str('Account', ['RealSid08', 'OpenRenderKit']),
+        repo: str('Public repository name'),
+        ...(view === 'code' ? { path: str('Optional path to a directory or text file') } : {
+          number: { type: 'number', description: 'Optional issue or PR number' },
+          state: str('State for listing', ['open', 'closed', 'all']),
+        }),
+      },
+      required: ['repo'],
+    },
+    run: async ({ account, repo, path, number, state }) => {
+      const params = new URLSearchParams({ account: account ? String(account) : 'RealSid08', repo: String(repo), view });
+      if (view === 'code' && path) params.set('path', String(path));
+      if (view !== 'code' && number) params.set('number', String(number));
+      if (view !== 'code' && state) params.set('state', String(state));
+      const response = await fetch(`/api/github?${params}`);
+      if (!response.ok) return { error: `GitHub lookup failed (${response.status}): ${((await response.json()) as { error?: string }).error ?? 'unknown'}` };
+      return response.json();
+    },
+  })),
   {
     name: 'set_theme',
     description: 'Switch between light and dark.',

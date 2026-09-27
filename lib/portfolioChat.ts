@@ -12,7 +12,7 @@ import type { ServerResponse } from 'http';
 import { z } from 'zod';
 import { formatProfile, formatProject, formatRole, formatSkills, formatWorkstreams } from '../services/localKnowledge';
 import { CHAT_MODEL_ID } from './chatModel';
-import { formatRepoForModel, formatReposForModel, getPublicRepo, isAllowedAccount, listPublicRepos } from './github';
+import { formatRepoForModel, formatReposForModel, getGithubPayload, getPublicRepo, isAllowedAccount, listPublicRepos } from './github';
 
 const ROLE_IDS = ['besmak', 'complete-leader', 'kenspire', 'mindtek', 'unieats', 'idhayam', 'hida', 'imaginet'] as const;
 const PROJECT_IDS = ['foodly', 'parkalong', 'tbrgs', 'rag-viz', 'aura'] as const;
@@ -37,7 +37,7 @@ Rules:
 - Lead with current work (Besmak, Complete Leader, Kenspire), then Foodly and ParkAlong.
 - Older roles (Mindtek, UniEats, Idhayam, HiDa, Imaginet) are archive context.
 - Availability, visa, and location come from lookupProfile.
-- Public GitHub activity comes from lookupGitHub: RealSid08 and OpenRenderKit only, public repositories only,
+- Public GitHub activity comes from lookupGitHub, browseGitHubCode, lookupGitHubIssues and lookupGitHubPullRequests: RealSid08 and OpenRenderKit only, public repositories only,
   and always state the "as of" time from the tool result rather than implying live data.
 - Keep answers structured with short markdown lists.
 - After answering, you may suggest one next question in a single italic line.
@@ -141,6 +141,30 @@ export function buildPortfolioTools() {
           } catch (error) {
             return `GitHub lookup failed: ${error instanceof Error ? error.message : 'unknown error'}`;
           }
+        },
+      }),
+      browseGitHubCode: tool({
+        description: 'Browse a public repository directory or read a text file, including README and source code. Only RealSid08 and OpenRenderKit public work.',
+        inputSchema: z.object({ account: z.enum(['RealSid08', 'OpenRenderKit']).default('RealSid08'), repo: z.string(), path: z.string().optional().describe('File or directory path. Omit for repository root.') }),
+        execute: async ({ account, repo, path }) => {
+          try { return JSON.stringify(await getGithubPayload(new URLSearchParams({ account, repo, view: 'code', ...(path ? { path } : {}) }))); }
+          catch (error) { return `GitHub code lookup failed: ${error instanceof Error ? error.message : 'unknown error'}`; }
+        },
+      }),
+      lookupGitHubIssues: tool({
+        description: 'List recent public GitHub issues or inspect one issue and its first comments.',
+        inputSchema: z.object({ account: z.enum(['RealSid08', 'OpenRenderKit']).default('RealSid08'), repo: z.string(), number: z.number().int().positive().optional(), state: z.enum(['open', 'closed', 'all']).default('all') }),
+        execute: async ({ account, repo, number, state }) => {
+          try { return JSON.stringify(await getGithubPayload(new URLSearchParams({ account, repo, view: 'issues', state, ...(number ? { number: String(number) } : {}) }))); }
+          catch (error) { return `GitHub issue lookup failed: ${error instanceof Error ? error.message : 'unknown error'}`; }
+        },
+      }),
+      lookupGitHubPullRequests: tool({
+        description: 'List recent public GitHub pull requests or inspect one PR summary and changed file patches.',
+        inputSchema: z.object({ account: z.enum(['RealSid08', 'OpenRenderKit']).default('RealSid08'), repo: z.string(), number: z.number().int().positive().optional(), state: z.enum(['open', 'closed', 'all']).default('all') }),
+        execute: async ({ account, repo, number, state }) => {
+          try { return JSON.stringify(await getGithubPayload(new URLSearchParams({ account, repo, view: 'pulls', state, ...(number ? { number: String(number) } : {}) }))); }
+          catch (error) { return `GitHub PR lookup failed: ${error instanceof Error ? error.message : 'unknown error'}`; }
         },
       }),
       listWorkstreams: tool({

@@ -1,6 +1,6 @@
 import { SYSTEM_INSTRUCTION_LIVE } from './constants';
 import { createPortfolioChatResponse, isUiMessageArray } from './lib/portfolioChat';
-import { getPublicRepo, isAllowedAccount, listPublicRepos } from './lib/github';
+import { getGithubPayload, GithubLookupError } from './lib/github';
 import { createRealtimeClientSecret } from './lib/openaiRealtime';
 
 type Env = {
@@ -17,13 +17,11 @@ export default {
 
     if (url.pathname === '/api/github') {
       if (request.method !== 'GET') return json({ error: 'Method not allowed' }, 405);
-      const account = url.searchParams.get('account') ?? 'RealSid08';
-      if (!isAllowedAccount(account)) return json({ error: 'Account not allowed' }, 400);
       try {
-        const repo = url.searchParams.get('repo');
-        const payload = repo ? await getPublicRepo(account, repo) : await listPublicRepos(account);
+        const payload = await getGithubPayload(url.searchParams);
         return json(payload, 200, { 'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=1800' });
       } catch (error) {
+        if (error instanceof GithubLookupError) return json({ error: error.message }, error.status);
         console.error('GitHub context error:', error instanceof Error ? error.message : 'unknown');
         return json({ error: 'GitHub unavailable' }, 502);
       }

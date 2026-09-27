@@ -23,10 +23,14 @@ TypeScript, JavaScript, Python, SQL, Swift, C++, Go. React, React Native, Expo, 
 
 This repository is the source for the portfolio site.
 
+## License
+
+The website source code is available under the [MIT License](LICENSE). The résumé, personal portfolio copy, and project screenshots in `public/` are not licensed for reuse under MIT.
+
 ## Deploy
 
 Cloudflare Workers serves the Vite build and the `/api/chat`, `/api/token`, and `/api/github` routes. Pushing to `main` triggers Cloudflare Builds (`npm run build`, then `npx wrangler deploy`). Run `npm run deploy` for a manual deployment after configuring Wrangler access.
 
 Set `OPENAI_API_KEY` and `GITHUB_TOKEN` as Worker secrets with `npx wrangler secret put <NAME>`. The OpenAI key is used by the server routes. The GitHub token is used only for public repository lookups, avoiding GitHub's low unauthenticated rate limit. Use a classic GitHub token with no scopes so both personal and organization public repositories are accessible without granting repository permissions.
 
-Text chat and Realtime voice expose the same portfolio lookups and page actions. The voice client registers the browser tool registry with OpenAI Realtime, executes calls in the open tab, and returns results so the model can continue its response. GitHub lookups cover public, non-fork, non-archived repositories in `RealSid08` and `OpenRenderKit` only.
+Text chat and Realtime voice expose the same portfolio lookups and page actions. The voice client registers the browser tool registry with OpenAI Realtime, executes calls in the open tab, and returns results so the model can continue its response. WebMCP registers the browser tools for external agents. GitHub lookups cover public, non-fork, non-archived repositories in `RealSid08` and `OpenRenderKit` only. The agent can list repos, browse directories, read text files (up to 20,000 characters), list or inspect issues, and list or inspect pull requests and their first changed files. Results include fetch times and source links. All GitHub tools are read-only.
