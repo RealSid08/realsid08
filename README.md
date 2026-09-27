@@ -25,4 +25,4 @@ This repository is the source for the portfolio site.
 
 ## Deploy
 
-Cloudflare Workers serves the Vite build and the `/api/chat`, `/api/token`, and `/api/github` routes. Run `npm run deploy` after configuring Wrangler access. Set `OPENAI_API_KEY` as a Worker secret with `npx wrangler secret put OPENAI_API_KEY`; the key is used only by the server routes.
+Cloudflare Workers serves the Vite build and the `/api/chat`, `/api/token`, and `/api/github` routes. Pushing to `main` triggers Cloudflare Builds (`npm run build`, then `npx wrangler deploy`). Run `npm run deploy` for a manual deployment after configuring Wrangler access. Set `OPENAI_API_KEY` as a Worker secret with `npx wrangler secret put OPENAI_API_KEY`; the key is used only by the server routes.
