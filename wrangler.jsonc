@@ -1,0 +1,18 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "realsid08",
+  "workers_dev": true,
+  "main": "./worker.ts",
+  "compatibility_date": "2026-09-27",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*", "/Sidhaarth_Krishnan_Resume.pdf"]
+  },
+  "routes": [
+    { "pattern": "realsid08.me", "custom_domain": true },
+    { "pattern": "www.realsid08.me", "custom_domain": true }
+  ]
+}

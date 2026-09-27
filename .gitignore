@@ -24,3 +24,5 @@ dist-ssr
 *.sw?
 .vercel
 .verify-out
+.env*
+.wrangler/

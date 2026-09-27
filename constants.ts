@@ -13,7 +13,7 @@ export const PROFILE: ProfileInfo = {
   email: 'krishnansidhaarth@gmail.com',
   linkedin: 'https://www.linkedin.com/in/sidhaarth-krishnan-75b5971a7/',
   github: 'https://github.com/RealSid08',
-  website: 'https://realsid08.vercel.app',
+  website: 'https://realsid08.me',
   resumeUrl: '/Sidhaarth_Krishnan_Resume.pdf',
 };
 

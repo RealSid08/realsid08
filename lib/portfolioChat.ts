@@ -83,14 +83,13 @@ function listWorkstreams(lane: 'active' | 'archive' | 'all'): string {
     .join('\n');
 }
 
-export async function streamPortfolioChat(options: {
+async function createPortfolioChatStream(options: {
   apiKey: string;
   messages: UIMessage[];
-  response: ServerResponse;
-}): Promise<void> {
+}) {
   const openai = createOpenAI({ apiKey: options.apiKey });
 
-  const result = streamText({
+  return streamText({
     model: openai(CHAT_MODEL_ID),
     system: CHAT_SYSTEM,
     messages: await convertToModelMessages(options.messages),
@@ -100,13 +99,31 @@ export async function streamPortfolioChat(options: {
         reasoningEffort: 'low',
       },
     },
+    onError: ({ error }) => {
+      console.error('Portfolio chat stream error:', error instanceof Error ? error.message : 'unknown');
+    },
     tools: buildPortfolioTools(),
   });
+}
+
+export async function streamPortfolioChat(options: {
+  apiKey: string;
+  messages: UIMessage[];
+  response: ServerResponse;
+}): Promise<void> {
+  const result = await createPortfolioChatStream(options);
 
   pipeUIMessageStreamToResponse({
     response: options.response,
     stream: toUIMessageStream({ stream: result.stream }),
   });
+}
+
+export async function createPortfolioChatResponse(options: {
+  apiKey: string;
+  messages: UIMessage[];
+}): Promise<Response> {
+  return (await createPortfolioChatStream(options)).toUIMessageStreamResponse();
 }
 
 /**

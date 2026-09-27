@@ -4,7 +4,7 @@ Full-stack software engineer in Melbourne. Final-year Software Engineering stude
 
 I ship production web, mobile, and AI-enabled products. I treat AI as an engineering system: decompose work across parallel agents, isolate changes in Git worktrees, and validate outputs through human review, automated tests, and real app interaction.
 
-**[realsid08.vercel.app](https://realsid08.vercel.app)** · [LinkedIn](https://www.linkedin.com/in/sidhaarth-krishnan-75b5971a7/) · [Email](mailto:krishnansidhaarth@gmail.com)
+**[realsid08.me](https://realsid08.me)** · [LinkedIn](https://www.linkedin.com/in/sidhaarth-krishnan-75b5971a7/) · [Email](mailto:krishnansidhaarth@gmail.com)
 
 ## Now
 
@@ -14,7 +14,7 @@ I ship production web, mobile, and AI-enabled products. I treat AI as an enginee
 
 ## Building
 
-- **[Foodly](https://realsid08.vercel.app/#projects)** — final-year project. Instagram / TikTok links become mapped restaurant places.
+- **[Foodly](https://realsid08.me/#projects)** — final-year project. Instagram / TikTok links become mapped restaurant places.
 - **[ParkAlong](https://github.com/OpenRenderKit/ParkAlong)** — Victorian parking finder with live City of Melbourne occupancy and 34k integrity-manifested records.
 
 ## Stack I actually use
@@ -22,3 +22,7 @@ I ship production web, mobile, and AI-enabled products. I treat AI as an enginee
 TypeScript, JavaScript, Python, SQL, Swift, C++, Go. React, React Native, Expo, Next.js, TanStack Start, Convex, PostgreSQL, Supabase. AWS, Playwright, Vitest, GitHub Actions.
 
 This repository is the source for the portfolio site.
+
+## Deploy
+
+Cloudflare Workers serves the Vite build and the `/api/chat`, `/api/token`, and `/api/github` routes. Run `npm run deploy` after configuring Wrangler access. Set `OPENAI_API_KEY` as a Worker secret with `npx wrangler secret put OPENAI_API_KEY`; the key is used only by the server routes.
