@@ -7,7 +7,11 @@
  */
 import assert from 'node:assert/strict';
 import { createUIMessageStream, readUIMessageStream, type UIMessage } from 'ai';
+import { pipeJsonRender } from '@json-render/core';
+import { createElement } from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
 import { buildPortfolioTools } from '../lib/portfolioChat';
+import { PortfolioLink } from '../components/agent/PortfolioLink';
 import { pageIntentsFromMessages } from '../services/agent/pageIntent';
 import { paletteEntries, TOOLS, toolByName } from '../services/agent/registry';
 import { transcribeAudio, TranscriptionError } from '../lib/transcribe';
@@ -35,6 +39,35 @@ const checkAsync = async (label: string, fn: () => Promise<void>) => {
   await fn();
   results.push(`ok  ${label}`);
 };
+
+check('chat links render source icons and reject unsafe destinations', () => {
+  const github = renderToStaticMarkup(createElement(PortfolioLink, { href: 'https://github.com/RealSid08/realsid08', children: 'Source' }));
+  assert.match(github, /target="_blank"/);
+  assert.match(github, /noopener noreferrer/);
+  assert.match(github, /<svg/);
+  const unsafe = renderToStaticMarkup(createElement(PortfolioLink, { href: 'javascript:alert(1)', children: 'Unsafe' }));
+  assert.ok(!unsafe.includes('<a'));
+  const protocolRelative = renderToStaticMarkup(createElement(PortfolioLink, { href: '//example.com', children: 'Unsafe' }));
+  assert.ok(!protocolRelative.includes('<a'));
+});
+
+await checkAsync('inline json-render separates evidence patches from streamed prose', async () => {
+  const chunks = [
+    { type: 'text-start' as const, id: 'answer' },
+    { type: 'text-delta' as const, id: 'answer', delta: 'A sourced comparison.\n{"op":"add","path":"/root","value":"board"}\n' },
+    { type: 'text-end' as const, id: 'answer' },
+  ];
+  const input = new ReadableStream({ start(controller) { chunks.forEach((chunk) => controller.enqueue(chunk)); controller.close(); } });
+  const output = [];
+  const reader = pipeJsonRender(input).getReader();
+  for (;;) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    output.push(value);
+  }
+  assert.equal(output.filter((part) => part.type === 'data-spec').length, 1);
+  assert.equal(output.filter((part) => part.type === 'text-delta').map((part) => part.delta).join(''), 'A sourced comparison.\n');
+});
 
 check('registry exposes every required page tool', () => {
   const names = TOOLS.map((tool) => tool.name);
