@@ -1,7 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { DefaultChatTransport, type UIMessage } from 'ai';
 import { useChat } from '@ai-sdk/react';
+import { Renderer, useJsonRenderMessage, type DataPart } from '@json-render/react';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { soundEffects } from '../../services/sound';
 import { runTool, TOOLS } from '../../services/agent/registry';
 import { matchCommands, type SlashCommand } from '../../services/agent/commands';
@@ -10,6 +12,8 @@ import { registerAgentTools } from '../../services/agent/webmcp';
 import { useDictation } from '../../services/useDictation';
 import { AgentActivity } from './AgentActivity';
 import { CommandPalette } from './CommandPalette';
+import { PortfolioLink } from './PortfolioLink';
+import { portfolioEvidenceRegistry } from './PortfolioEvidence';
 
 const STORAGE = {
   thread: 'agent-thread',
@@ -36,7 +40,26 @@ const textOf = (message: UIMessage) =>
   (message.parts ?? [])
     .filter((part) => part.type === 'text')
     .map((part) => (part as { text?: string }).text ?? '')
-    .join('');
+    .join('\n\n');
+
+const AssistantReply: React.FC<{ message: UIMessage; streaming: boolean }> = React.memo(({ message, streaming }) => {
+  const { text, spec, hasSpec } = useJsonRenderMessage(message.parts as DataPart[]);
+  return (
+    <div className="min-w-0 break-words text-[13px] leading-relaxed text-gray-300">
+      {text && (
+        <ReactMarkdown remarkPlugins={[remarkGfm]} components={{
+          p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+          ul: ({ children }) => <ul className="mb-2 list-disc space-y-1 pl-5 last:mb-0">{children}</ul>,
+          ol: ({ children }) => <ol className="mb-2 list-decimal space-y-1 pl-5 last:mb-0">{children}</ol>,
+          a: ({ children, href }) => <PortfolioLink href={href}>{children}</PortfolioLink>,
+          code: ({ children }) => <code className="font-mono text-white">{children}</code>,
+          pre: ({ children }) => <pre className="my-2 overflow-x-auto border border-white/10 bg-black/30 p-2 text-[11px]">{children}</pre>,
+        }}>{text}</ReactMarkdown>
+      )}
+      {hasSpec && spec && <Renderer spec={spec} registry={portfolioEvidenceRegistry} loading={streaming} />}
+    </div>
+  );
+});
 
 const stepCountOf = (message: UIMessage) =>
   (message.parts ?? []).filter((part) => part.type.startsWith('tool-')).length;
@@ -240,19 +263,9 @@ export const AgentBar: React.FC = () => {
                     Looked up {stepCountOf(message)} {stepCountOf(message) === 1 ? 'thing' : 'things'}
                   </p>
                 )}
-                {message.role === 'user' ? (
-                  <p className="whitespace-pre-wrap break-words text-[13px] leading-relaxed text-white">{textOf(message)}</p>
-                ) : (
-                  <div className="break-words text-[13px] leading-relaxed text-gray-300">
-                    <ReactMarkdown components={{
-                      p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
-                      ul: ({ children }) => <ul className="mb-2 list-disc space-y-1 pl-5 last:mb-0">{children}</ul>,
-                      ol: ({ children }) => <ol className="mb-2 list-decimal space-y-1 pl-5 last:mb-0">{children}</ol>,
-                      a: ({ children, href }) => <a href={href} target="_blank" rel="noopener noreferrer" className="text-white underline underline-offset-2">{children}</a>,
-                      code: ({ children }) => <code className="font-mono text-white">{children}</code>,
-                    }}>{textOf(message)}</ReactMarkdown>
-                  </div>
-                )}
+                {message.role === 'user'
+                  ? <p className="whitespace-pre-wrap break-words text-[13px] leading-relaxed text-white">{textOf(message)}</p>
+                  : <AssistantReply message={message} streaming={busy && message.id === messages.at(-1)?.id} />}
                 {message.role === 'assistant' && (
                   <div className="flex items-center gap-2 pt-0.5 text-gray-600">
                     <button

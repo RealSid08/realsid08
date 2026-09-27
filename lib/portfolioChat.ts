@@ -1,17 +1,21 @@
 import { createOpenAI } from '@ai-sdk/openai';
 import {
+  createUIMessageStream,
+  createUIMessageStreamResponse,
   convertToModelMessages,
   pipeUIMessageStreamToResponse,
+  smoothStream,
   stepCountIs,
   streamText,
-  toUIMessageStream,
   tool,
   type UIMessage,
 } from 'ai';
 import type { ServerResponse } from 'http';
 import { z } from 'zod';
+import { pipeJsonRender } from '@json-render/core';
 import { formatProfile, formatProject, formatRole, formatSkills, formatWorkstreams } from '../services/localKnowledge';
 import { CHAT_MODEL_ID } from './chatModel';
+import { portfolioUiCatalog } from './portfolioUiCatalog';
 import { formatRepoForModel, formatReposForModel, getGithubPayload, getPublicRepo, isAllowedAccount, listPublicRepos } from './github';
 
 const ROLE_IDS = ['besmak', 'complete-leader', 'kenspire', 'mindtek', 'unieats', 'idhayam', 'hida', 'imaginet'] as const;
@@ -40,7 +44,16 @@ Rules:
 - Public GitHub activity comes from lookupGitHub, browseGitHubCode, lookupGitHubIssues and lookupGitHubPullRequests: RealSid08 and OpenRenderKit only, public repositories only,
   and always state the "as of" time from the tool result rather than implying live data.
 - Keep answers structured with short markdown lists.
+- Give useful source links in Markdown, especially for public GitHub facts. Never invent a URL.
 - After answering, you may suggest one next question in a single italic line.
+
+Visual evidence:
+${portfolioUiCatalog.prompt({ mode: 'inline', customRules: [
+  'Use an EvidenceBoard only when comparing work or when a compact set of sourced GitHub facts is clearer than prose. Simple questions should stay text-only.',
+  'Every EvidenceItem and Fact must come from a tool result. SourceLink URLs must be exact URLs returned by tools.',
+  'Use at most four EvidenceItems and eight Facts per board. Keep the prose answer concise before the board.',
+  'Never use a board for page actions or to claim private GitHub access.',
+] })}
 
 Driving the page:
 - You can move the page while you answer. Call navigate_to, highlight, focus_mode, walkthrough,
@@ -61,6 +74,7 @@ async function createPortfolioChatStream(options: {
     system: CHAT_SYSTEM,
     messages: await convertToModelMessages(options.messages),
     stopWhen: stepCountIs(4),
+    experimental_transform: smoothStream({ chunking: 'word', delayInMs: 12 }),
     providerOptions: {
       openai: {
         reasoningEffort: 'low',
@@ -79,10 +93,12 @@ export async function streamPortfolioChat(options: {
   response: ServerResponse;
 }): Promise<void> {
   const result = await createPortfolioChatStream(options);
-
+  const stream = createUIMessageStream({
+    execute: ({ writer }) => writer.merge(pipeJsonRender(result.toUIMessageStream())),
+  });
   pipeUIMessageStreamToResponse({
     response: options.response,
-    stream: toUIMessageStream({ stream: result.stream }),
+    stream,
   });
 }
 
@@ -90,7 +106,11 @@ export async function createPortfolioChatResponse(options: {
   apiKey: string;
   messages: UIMessage[];
 }): Promise<Response> {
-  return (await createPortfolioChatStream(options)).toUIMessageStreamResponse();
+  const result = await createPortfolioChatStream(options);
+  const stream = createUIMessageStream({
+    execute: ({ writer }) => writer.merge(pipeJsonRender(result.toUIMessageStream())),
+  });
+  return createUIMessageStreamResponse({ stream });
 }
 
 /**
