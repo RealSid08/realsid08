@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { DefaultChatTransport, type UIMessage } from 'ai';
 import { useChat } from '@ai-sdk/react';
-import { Renderer, useJsonRenderMessage, type DataPart } from '@json-render/react';
+import { JSONUIProvider, Renderer, useJsonRenderMessage, type DataPart } from '@json-render/react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { soundEffects } from '../../services/sound';
@@ -56,7 +56,11 @@ const AssistantReply: React.FC<{ message: UIMessage; streaming: boolean }> = Rea
           pre: ({ children }) => <pre className="my-2 overflow-x-auto border border-white/10 bg-black/30 p-2 text-[11px]">{children}</pre>,
         }}>{text}</ReactMarkdown>
       )}
-      {hasSpec && spec && <Renderer spec={spec} registry={portfolioEvidenceRegistry} loading={streaming} />}
+      {hasSpec && spec && (
+        <JSONUIProvider registry={portfolioEvidenceRegistry} initialState={{}}>
+          <Renderer spec={spec} registry={portfolioEvidenceRegistry} loading={streaming} />
+        </JSONUIProvider>
+      )}
     </div>
   );
 });

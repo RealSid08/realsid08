@@ -8,10 +8,12 @@
 import assert from 'node:assert/strict';
 import { createUIMessageStream, readUIMessageStream, type UIMessage } from 'ai';
 import { pipeJsonRender } from '@json-render/core';
+import { JSONUIProvider, Renderer } from '@json-render/react';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { buildPortfolioTools } from '../lib/portfolioChat';
 import { PortfolioLink } from '../components/agent/PortfolioLink';
+import { portfolioEvidenceRegistry } from '../components/agent/PortfolioEvidence';
 import { pageIntentsFromMessages } from '../services/agent/pageIntent';
 import { paletteEntries, TOOLS, toolByName } from '../services/agent/registry';
 import { transcribeAudio, TranscriptionError } from '../lib/transcribe';
@@ -49,6 +51,21 @@ check('chat links render source icons and reject unsafe destinations', () => {
   assert.ok(!unsafe.includes('<a'));
   const protocolRelative = renderToStaticMarkup(createElement(PortfolioLink, { href: '//example.com', children: 'Unsafe' }));
   assert.ok(!protocolRelative.includes('<a'));
+});
+
+check('a sourced evidence board renders within its json-render providers', () => {
+  const spec = {
+    root: 'board',
+    elements: {
+      board: { type: 'EvidenceBoard', props: { title: 'Public work', asOf: '2026-09-27' }, children: ['source'] },
+      source: { type: 'SourceLink', props: { label: 'Repository', url: 'https://github.com/RealSid08/realsid08' } },
+    },
+  };
+  const board = createElement(Renderer, { spec, registry: portfolioEvidenceRegistry });
+  const html = renderToStaticMarkup(createElement(JSONUIProvider, { registry: portfolioEvidenceRegistry, initialState: {}, children: board }));
+  assert.match(html, /Public work/);
+  assert.match(html, /Repository/);
+  assert.match(html, /https:\/\/github.com\/RealSid08\/realsid08/);
 });
 
 await checkAsync('inline json-render separates evidence patches from streamed prose', async () => {
