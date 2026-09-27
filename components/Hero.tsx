@@ -204,10 +204,10 @@ export const Hero: React.FC = () => {
               </a>
               <button
                 type="button"
-                onClick={() => window.dispatchEvent(new CustomEvent('open-assistant', { detail: { tab: 'voice' } }))}
+                onClick={() => window.dispatchEvent(new CustomEvent('open-assistant'))}
                 className="px-6 py-3 border border-white/10 text-gray-400 hover:text-white hover:border-white/40 transition-colors text-[11px] uppercase tracking-[0.2em] font-mono"
               >
-                Voice
+                Ask me
               </button>
             </div>
           </FadeInSection>

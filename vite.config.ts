@@ -1,8 +1,7 @@
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import type { IncomingMessage, ServerResponse } from 'http';
-import { SYSTEM_INSTRUCTION_LIVE } from './constants';
-import { createRealtimeClientSecret } from './lib/openaiRealtime';
+import { transcribeAudio, TranscriptionError } from './lib/transcribe';
 import { isUiMessageArray, streamPortfolioChat } from './lib/portfolioChat';
 import { getGithubPayload, GithubLookupError } from './lib/github';
 
@@ -32,7 +31,7 @@ function openaiLocalApi(apiKey: string | undefined) {
   const handler = async (req: IncomingMessage, res: ServerResponse, next: () => void) => {
     const path = req.url?.split('?')[0];
 
-    if (path === '/api/token') {
+    if (path === '/api/transcribe') {
       if (req.method !== 'POST') {
         res.statusCode = 405;
         res.setHeader('Content-Type', 'application/json');
@@ -42,19 +41,30 @@ function openaiLocalApi(apiKey: string | undefined) {
       if (!apiKey) {
         res.statusCode = 500;
         res.setHeader('Content-Type', 'application/json');
-        res.end(JSON.stringify({ error: 'Voice session unavailable' }));
+        res.end(JSON.stringify({ error: 'Dictation unavailable' }));
         return;
       }
       try {
-        const value = await createRealtimeClientSecret(apiKey, SYSTEM_INSTRUCTION_LIVE);
+        const chunks: Buffer[] = [];
+        let size = 0;
+        for await (const chunk of req) {
+          const bytes = Buffer.from(chunk);
+          size += bytes.length;
+          if (size > 11 * 1024 * 1024) throw new TranscriptionError('Recording too large', 400);
+          chunks.push(bytes);
+        }
+        const request = new Request('http://localhost/api/transcribe', {
+          method: 'POST', headers: { 'Content-Type': req.headers['content-type'] ?? '' }, body: Buffer.concat(chunks),
+        });
+        const text = await transcribeAudio(apiKey, await request.formData());
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
-        res.end(JSON.stringify({ value }));
+        res.end(JSON.stringify({ text }));
       } catch (error) {
-        console.error('Voice Hub token error:', error instanceof Error ? error.message : 'unknown');
-        res.statusCode = 500;
+        console.error('Dictation error:', error instanceof Error ? error.message : 'unknown');
+        res.statusCode = error instanceof TranscriptionError ? error.status : 502;
         res.setHeader('Content-Type', 'application/json');
-        res.end(JSON.stringify({ error: 'Voice session unavailable' }));
+        res.end(JSON.stringify({ error: error instanceof TranscriptionError ? error.message : 'Dictation unavailable' }));
       }
       return;
     }
@@ -136,7 +146,7 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   if (env.OPENAI_API_KEY) {
     process.env.OPENAI_API_KEY = env.OPENAI_API_KEY;
-    console.info('OpenAI: OPENAI_API_KEY loaded for /api/token and /api/chat');
+    console.info('OpenAI: OPENAI_API_KEY loaded for /api/transcribe and /api/chat');
   } else {
     console.warn('OpenAI: OPENAI_API_KEY missing — set it in .env.local');
   }

@@ -5,8 +5,8 @@ export type SlashCommand = {
   label: string;
   /** what it does, shown next to the label while typing */
   hint: string;
-  /** handled by the bar itself (voice, links) rather than a page tool */
-  local?: 'voice' | 'resume';
+  /** handled by the bar itself rather than a page tool */
+  local?: 'resume';
   run?: () => void;
 };
 
@@ -64,12 +64,6 @@ export const SLASH_COMMANDS: SlashCommand[] = [
     label: 'Only 2026 work',
     hint: 'filter the page',
     run: () => void runTool('filter_work', { year: 2026 }),
-  },
-  {
-    id: 'voice',
-    label: 'Voice',
-    hint: 'talk to the agent',
-    local: 'voice',
   },
   {
     id: 'dark',

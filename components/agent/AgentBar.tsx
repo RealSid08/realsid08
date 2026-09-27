@@ -6,16 +6,12 @@ import { runTool, TOOLS } from '../../services/agent/registry';
 import { matchCommands, type SlashCommand } from '../../services/agent/commands';
 import { pageIntentsFromMessages } from '../../services/agent/pageIntent';
 import { registerAgentTools } from '../../services/agent/webmcp';
-import { useVoiceSession } from '../../services/useVoiceSession';
+import { useDictation } from '../../services/useDictation';
 import { AgentActivity } from './AgentActivity';
 import { CommandPalette } from './CommandPalette';
-import { VoicePulse } from './VoicePulse';
-
-type Mode = 'ask' | 'voice';
 
 const STORAGE = {
   thread: 'agent-thread',
-  mode: 'agent-mode',
   minimized: 'agent-minimized',
 };
 
@@ -69,9 +65,11 @@ const MicIcon: React.FC<{ className?: string }> = ({ className = 'w-4 h-4' }) =>
 export const AgentBar: React.FC = () => {
   const transport = useMemo(() => new DefaultChatTransport({ api: '/api/chat' }), []);
   const { messages, sendMessage, status, error, stop, setMessages } = useChat({ transport });
-  const voice = useVoiceSession();
-
-  const [mode, setMode] = useState<Mode>(() => (read(STORAGE.mode) === 'voice' ? 'voice' : 'ask'));
+  const dictation = useDictation((text) => {
+    setInput((current) => `${current.trim()} ${text}`.trim());
+    setMinimized(false);
+    requestAnimationFrame(() => inputRef.current?.focus());
+  });
   const [minimized, setMinimized] = useState(() => read(STORAGE.minimized) === 'true');
   const [input, setInput] = useState('');
   const [focused, setFocused] = useState(false);
@@ -120,7 +118,6 @@ export const AgentBar: React.FC = () => {
     write(STORAGE.thread, JSON.stringify(messages), true);
   }, [messages, restored]);
 
-  useEffect(() => write(STORAGE.mode, mode), [mode]);
   useEffect(() => write(STORAGE.minimized, String(minimized)), [minimized]);
 
   useEffect(() => {
@@ -137,9 +134,8 @@ export const AgentBar: React.FC = () => {
 
   useEffect(() => {
     const open = (event: Event) => {
-      const detail = (event as CustomEvent<{ tab?: Mode }>).detail;
-      if (detail?.tab) setMode(detail.tab);
       setMinimized(false);
+      requestAnimationFrame(() => inputRef.current?.focus());
     };
     window.addEventListener('open-assistant', open);
     return () => window.removeEventListener('open-assistant', open);
@@ -167,7 +163,6 @@ export const AgentBar: React.FC = () => {
       if (event.key === '/' && !typing) {
         event.preventDefault();
         setMinimized(false);
-        setMode('ask');
         requestAnimationFrame(() => inputRef.current?.focus());
       }
     };
@@ -185,10 +180,6 @@ export const AgentBar: React.FC = () => {
   };
 
   const runCommand = (command: SlashCommand) => {
-    if (command.local === 'voice') {
-      setMode('voice');
-      return;
-    }
     if (command.local === 'resume') {
       window.open('/Sidhaarth_Krishnan_Resume.pdf', '_blank');
       return;
@@ -236,7 +227,7 @@ export const AgentBar: React.FC = () => {
           </div>
         )}
 
-        {messages.length > 0 && mode === 'ask' && (
+        {messages.length > 0 && (
           <div
             ref={scrollRef}
             className="card-surface mb-1.5 max-h-[32vh] overflow-y-auto border border-white/10 bg-black/95 px-3 py-2 backdrop-blur-md"
@@ -268,21 +259,6 @@ export const AgentBar: React.FC = () => {
                         <path d="M5 15V5a2 2 0 012-2h8" strokeLinecap="round" />
                       </svg>
                     </button>
-                    <button
-                      type="button"
-                      aria-label="Read answer aloud"
-                      onClick={() => {
-                        if (typeof speechSynthesis === 'undefined') return;
-                        const utterance = new SpeechSynthesisUtterance(textOf(message));
-                        speechSynthesis.speak(utterance);
-                      }}
-                      className="hover:text-white"
-                    >
-                      <svg viewBox="0 0 24 24" className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={1.6}>
-                        <path d="M11 5L6 9H3v6h3l5 4V5z" strokeLinejoin="round" />
-                        <path d="M16 9a4 4 0 010 6" strokeLinecap="round" />
-                      </svg>
-                    </button>
                     <span className="font-mono text-[10px]">{clockOf(message.id)}</span>
                   </div>
                 )}
@@ -300,7 +276,7 @@ export const AgentBar: React.FC = () => {
           tooldescription="Ask Sidhaarth Krishnan's portfolio assistant a question about his work, projects or availability."
           onSubmit={(event) => {
             event.preventDefault();
-            if (mode === 'ask' && input.startsWith('/') && commands.length > 0) {
+            if (input.startsWith('/') && commands.length > 0) {
               runCommand(commands[0]);
               setInput('');
               return;
@@ -309,21 +285,7 @@ export const AgentBar: React.FC = () => {
           }}
           className="card-surface flex items-center gap-1.5 rounded-full border border-white/15 bg-black/90 pl-3 pr-1.5 py-1.5 backdrop-blur-md"
         >
-          {mode === 'voice' ? (
-            <div className="flex flex-1 items-center gap-2 py-1">
-              <VoicePulse active={voice.isActive} connecting={voice.isConnecting} volume={voice.volume} />
-              <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-gray-500">
-                {voice.isConnecting
-                  ? 'Connecting'
-                  : voice.isActive
-                    ? 'Listening'
-                    : voice.failed
-                      ? 'Voice unavailable'
-                      : 'Voice agent idle'}
-              </span>
-            </div>
-          ) : (
-            <textarea
+          <textarea
               ref={inputRef}
               name="question"
               rows={1}
@@ -342,13 +304,12 @@ export const AgentBar: React.FC = () => {
                   send(input);
                 }
               }}
-              placeholder="Ask about the work, or type /"
+              placeholder={dictation.state === 'requesting' ? 'Waiting for microphone…' : dictation.state === 'recording' ? 'Listening… tap mic to finish' : dictation.state === 'transcribing' ? 'Transcribing…' : 'Ask about the work, or type /'}
               className="flex-1 resize-none bg-transparent py-1 text-[13px] text-white placeholder:text-gray-600 focus:outline-none"
             />
-          )}
 
           <div className="flex items-center gap-1">
-            {mode === 'ask' && busy && (
+            {busy && (
               <button
                 type="button"
                 onClick={() => stop()}
@@ -360,19 +321,12 @@ export const AgentBar: React.FC = () => {
 
             <button
               type="button"
-              onClick={() => {
-                if (mode === 'voice' && (voice.isActive || voice.isConnecting)) {
-                  void voice.toggle();
-                  return;
-                }
-                setMode(mode === 'voice' ? 'ask' : 'voice');
-                setMinimized(false);
-                if (mode === 'ask') void voice.toggle();
-              }}
-              aria-label={mode === 'voice' ? 'End voice session' : 'Talk to the agent'}
-              aria-pressed={mode === 'voice'}
+              onClick={() => void dictation.toggle()}
+              disabled={dictation.state === 'requesting' || dictation.state === 'transcribing'}
+              aria-label={dictation.state === 'recording' ? 'Finish dictation' : 'Dictate a message'}
+              aria-pressed={dictation.state === 'recording'}
               className={`grid size-7 place-items-center rounded-full border transition-colors ${
-                mode === 'voice'
+                dictation.state === 'recording'
                   ? 'border-white bg-white text-black'
                   : 'border-white/20 text-gray-400 hover:border-white hover:text-white'
               }`}
@@ -380,7 +334,7 @@ export const AgentBar: React.FC = () => {
               <MicIcon className="w-3.5 h-3.5" />
             </button>
 
-            {mode === 'ask' && (
+            {(
               <button
                 type="submit"
                 disabled={!input.trim()}
@@ -394,6 +348,8 @@ export const AgentBar: React.FC = () => {
             )}
           </div>
         </form>
+
+        {dictation.error && <p role="alert" className="px-3 pt-1 text-[11px] text-gray-400">{dictation.error}</p>}
 
         <div className="flex items-center justify-center gap-3">
           <button

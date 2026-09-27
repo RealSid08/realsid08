@@ -107,7 +107,7 @@ export function buildPortfolioTools() {
         execute: async ({ id }) => formatRole(id) ?? 'Role not found.',
       }),
       lookupProject: tool({
-        description: 'Fetch a featured project: Foodly, ParkAlong, TBRGS, RAG, or the voice demo.',
+        description: 'Fetch a featured project: Foodly, ParkAlong, TBRGS, RAG, or Aura.',
         inputSchema: z.object({
           id: z.enum(PROJECT_IDS),
         }),

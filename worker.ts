@@ -1,7 +1,6 @@
-import { SYSTEM_INSTRUCTION_LIVE } from './constants';
 import { createPortfolioChatResponse, isUiMessageArray } from './lib/portfolioChat';
 import { getGithubPayload, GithubLookupError } from './lib/github';
-import { createRealtimeClientSecret } from './lib/openaiRealtime';
+import { transcribeAudio, TranscriptionError } from './lib/transcribe';
 
 type Env = {
   ASSETS: { fetch: (request: Request) => Promise<Response> };
@@ -27,15 +26,17 @@ export default {
       }
     }
 
-    if (url.pathname === '/api/token') {
+    if (url.pathname === '/api/transcribe') {
       if (request.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
-      if (!env.OPENAI_API_KEY) return json({ error: 'Voice session unavailable' }, 500);
+      if (!env.OPENAI_API_KEY) return json({ error: 'Dictation unavailable' }, 500);
+      if (Number(request.headers.get('content-length')) > 11 * 1024 * 1024) return json({ error: 'Recording too large' }, 413);
       try {
-        const value = await createRealtimeClientSecret(env.OPENAI_API_KEY, SYSTEM_INSTRUCTION_LIVE);
-        return json({ value });
+        const text = await transcribeAudio(env.OPENAI_API_KEY, await request.formData());
+        return json({ text });
       } catch (error) {
-        console.error('Voice Hub token error:', error instanceof Error ? error.message : 'unknown');
-        return json({ error: 'Voice session unavailable' }, 500);
+        if (error instanceof TranscriptionError) return json({ error: error.message }, error.status);
+        console.error('Dictation error:', error instanceof Error ? error.message : 'unknown');
+        return json({ error: 'Dictation unavailable' }, 502);
       }
     }
 

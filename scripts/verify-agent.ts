@@ -10,8 +10,7 @@ import { createUIMessageStream, readUIMessageStream, type UIMessage } from 'ai';
 import { buildPortfolioTools } from '../lib/portfolioChat';
 import { pageIntentsFromMessages } from '../services/agent/pageIntent';
 import { paletteEntries, TOOLS, toolByName } from '../services/agent/registry';
-import { LiveSessionManager } from '../services/realtime';
-import { realtimeToolDefinitions } from '../services/agent/realtimeTools';
+import { transcribeAudio, TranscriptionError } from '../lib/transcribe';
 
 const REQUIRED_TOOLS = [
   'get_state',
@@ -67,38 +66,26 @@ check('lookups are still offered to the model', () => {
   );
 });
 
-check('voice exposes the same browser tool registry', () => {
-  assert.deepEqual(
-    realtimeToolDefinitions.map((tool) => tool.name),
-    TOOLS.map((tool) => tool.name),
-  );
-  ['lookup_role', 'lookup_project', 'lookup_skills', 'lookup_profile', 'list_workstreams', 'get_public_repos', 'get_public_repo', 'browse_public_code', 'get_public_issues', 'get_public_pull_requests']
-    .forEach((name) => assert.ok(toolByName(name), `voice is missing ${name}`));
-});
-
-const runRealtimeChecks = async () => {
-  await checkAsync('voice executes a function call and asks the model to continue', async () => {
-    const sent: Array<{ type: string; item?: { call_id: string; output: string } }> = [];
-    const session = new LiveSessionManager(() => {});
-    const internals = session as unknown as {
-      dc: { readyState: string; send: (message: string) => void };
-      handleServerEvent: (event: string) => Promise<void>;
-    };
-    internals.dc = { readyState: 'open', send: (message) => sent.push(JSON.parse(message)) };
-    const event = JSON.stringify({
-      type: 'response.done',
-      response: {
-        id: 'response-1', status: 'completed',
-        output: [{ type: 'function_call', name: 'lookup_role', call_id: 'call-1', arguments: '{"id":"besmak"}' }],
-      },
-    });
-    await internals.handleServerEvent(event);
-    assert.equal(sent[0]?.type, 'conversation.item.create');
-    assert.equal(sent[0]?.item?.call_id, 'call-1');
-    assert.match(sent[0]?.item?.output ?? '', /Besmak Components/);
-    assert.equal(sent[1]?.type, 'response.create');
-    await internals.handleServerEvent(event);
-    assert.equal(sent.length, 2, 'a replay must not repeat the page or tool action');
+const runDictationChecks = async () => {
+  await checkAsync('dictation only forwards bounded audio and returns text', async () => {
+    const originalFetch = globalThis.fetch;
+    let seenModel: FormDataEntryValue | null = null;
+    let seenAuth: string | null = null;
+    globalThis.fetch = (async (_url: string, options?: RequestInit) => {
+      seenModel = (options?.body as FormData).get('model');
+      seenAuth = new Headers(options?.headers).get('Authorization');
+      return { ok: true, json: async () => ({ text: '  Show me ParkAlong  ' }) } as Response;
+    }) as typeof fetch;
+    try {
+      const form = new FormData();
+      form.set('file', new File([new Uint8Array([1, 2, 3])], 'speech.webm', { type: 'audio/webm' }));
+      assert.equal(await transcribeAudio('test-secret', form), 'Show me ParkAlong');
+      assert.equal(seenModel, 'gpt-transcribe');
+      assert.equal(seenAuth, 'Bearer test-secret');
+      const bad = new FormData();
+      bad.set('file', new File(['no'], 'test.txt', { type: 'text/plain' }));
+      await assert.rejects(transcribeAudio('test-secret', bad), TranscriptionError);
+    } finally { globalThis.fetch = originalFetch; }
   });
 };
 
@@ -357,7 +344,7 @@ const runStreamChecks = async () => {
 Promise.resolve()
   .then(runGithubChecks)
   .then(runWebMcpChecks)
-  .then(runRealtimeChecks)
+  .then(runDictationChecks)
   .then(runStreamChecks)
   .then(() => {
     console.log(results.join('\n'));
