@@ -27,6 +27,10 @@ This repository is the source for the portfolio site.
 
 The website source code is available under the [MIT License](LICENSE). The résumé, personal portfolio copy, and project screenshots in `public/` are not licensed for reuse under MIT.
 
+## Development
+
+Use Node 24 and `npm ci`, then `npm run dev`. Pull requests and pushes to `main` run the build and agent checks in GitHub Actions. CI does not need production secrets; Cloudflare Builds handles deployment from `main`.
+
 ## Deploy
 
 Cloudflare Workers serves the Vite build and the `/api/chat`, `/api/transcribe`, and `/api/github` routes. Pushing to `main` triggers Cloudflare Builds (`npm run build`, then `npx wrangler deploy`). Run `npm run deploy` for a manual deployment after configuring Wrangler access.
