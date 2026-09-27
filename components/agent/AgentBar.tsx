@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { DefaultChatTransport, type UIMessage } from 'ai';
 import { useChat } from '@ai-sdk/react';
+import ReactMarkdown from 'react-markdown';
 import { soundEffects } from '../../services/sound';
 import { runTool, TOOLS } from '../../services/agent/registry';
 import { matchCommands, type SlashCommand } from '../../services/agent/commands';
@@ -239,13 +240,19 @@ export const AgentBar: React.FC = () => {
                     Looked up {stepCountOf(message)} {stepCountOf(message) === 1 ? 'thing' : 'things'}
                   </p>
                 )}
-                <p
-                  className={`whitespace-pre-wrap text-[13px] leading-relaxed ${
-                    message.role === 'user' ? 'text-white' : 'text-gray-300'
-                  }`}
-                >
-                  {textOf(message)}
-                </p>
+                {message.role === 'user' ? (
+                  <p className="whitespace-pre-wrap break-words text-[13px] leading-relaxed text-white">{textOf(message)}</p>
+                ) : (
+                  <div className="break-words text-[13px] leading-relaxed text-gray-300">
+                    <ReactMarkdown components={{
+                      p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                      ul: ({ children }) => <ul className="mb-2 list-disc space-y-1 pl-5 last:mb-0">{children}</ul>,
+                      ol: ({ children }) => <ol className="mb-2 list-decimal space-y-1 pl-5 last:mb-0">{children}</ol>,
+                      a: ({ children, href }) => <a href={href} target="_blank" rel="noopener noreferrer" className="text-white underline underline-offset-2">{children}</a>,
+                      code: ({ children }) => <code className="font-mono text-white">{children}</code>,
+                    }}>{textOf(message)}</ReactMarkdown>
+                  </div>
+                )}
                 {message.role === 'assistant' && (
                   <div className="flex items-center gap-2 pt-0.5 text-gray-600">
                     <button
