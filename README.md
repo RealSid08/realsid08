@@ -25,4 +25,6 @@ This repository is the source for the portfolio site.
 
 ## Deploy
 
-Cloudflare Workers serves the Vite build and the `/api/chat`, `/api/token`, and `/api/github` routes. Pushing to `main` triggers Cloudflare Builds (`npm run build`, then `npx wrangler deploy`). Run `npm run deploy` for a manual deployment after configuring Wrangler access. Set `OPENAI_API_KEY` as a Worker secret with `npx wrangler secret put OPENAI_API_KEY`; the key is used only by the server routes.
+Cloudflare Workers serves the Vite build and the `/api/chat`, `/api/token`, and `/api/github` routes. Pushing to `main` triggers Cloudflare Builds (`npm run build`, then `npx wrangler deploy`). Run `npm run deploy` for a manual deployment after configuring Wrangler access.
+
+Set `OPENAI_API_KEY` and `GITHUB_TOKEN` as Worker secrets with `npx wrangler secret put <NAME>`. The OpenAI key is used by the server routes. The GitHub token is used only for public repository lookups, avoiding GitHub's low unauthenticated rate limit. Use a classic GitHub token with no scopes so both personal and organization public repositories are accessible without granting repository permissions.
