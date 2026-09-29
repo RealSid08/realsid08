@@ -55,7 +55,7 @@ export const TOOLS: AgentTool[] = [
   },
   {
     name: 'lookup_skills',
-    description: 'Read skill clusters: languages, frontend, backend, agentic, cloud, or delivery.',
+    description: 'Read skill clusters: languages, frontend, backend, agentic, cloud, or testing.',
     kind: 'read',
     inputSchema: { type: 'object', properties: { cluster: str('Optional cluster name or id') } },
     run: ({ cluster }) => formatSkills(cluster ? String(cluster) : undefined),

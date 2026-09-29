@@ -108,7 +108,7 @@ const ArchiveCard: React.FC<{ exp: ExperienceItem }> = ({ exp }) => (
         {exp.description.map((point) => (
           <div key={point} className="flex gap-2 opacity-90">
             <span className="text-ok shrink-0">+</span>
-            <span className="leading-tight">{point.toLowerCase()}</span>
+            <span className="leading-snug">{point}</span>
           </div>
         ))}
       </div>
@@ -127,7 +127,7 @@ export const Experience: React.FC = () => {
       <FadeInSection>
         <div className="flex flex-col md:flex-row md:items-end gap-2 md:gap-4 mb-8 md:mb-12 border-b border-white/10 pb-6">
           <h2 className="text-3xl md:text-4xl font-bold">Experience</h2>
-          <span className="text-gray-500 font-mono text-xs md:mb-2">Where I work now</span>
+          <span className="text-gray-500 font-mono text-xs md:mb-2">Current and recent work</span>
         </div>
       </FadeInSection>
 
@@ -148,7 +148,7 @@ export const Experience: React.FC = () => {
       <FadeInSection>
         <div className="flex flex-col md:flex-row md:items-end gap-2 md:gap-4 mb-8 md:mb-12 border-b border-white/10 pb-6">
           <h2 className="text-2xl md:text-3xl font-light">Earlier roles</h2>
-          <span className="text-gray-500 font-mono text-xs md:mb-2">2024 – 2017</span>
+          <span className="text-gray-500 font-mono text-xs md:mb-2">2016 – 2025</span>
         </div>
       </FadeInSection>
 

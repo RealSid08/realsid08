@@ -72,6 +72,13 @@ export const isAgentScrolling = () => Date.now() < agentScrollUntil;
 
 const scrollToElement = (el: HTMLElement) => {
   agentScrollUntil = Date.now() + 1200;
+  // A smooth scroll down a long page can outlast any fixed window, so every scroll
+  // event while the guard is up pushes it forward until the page settles.
+  const extend = () => {
+    if (isAgentScrolling()) agentScrollUntil = Date.now() + 250;
+  };
+  window.addEventListener('scroll', extend, { passive: true });
+  window.setTimeout(() => window.removeEventListener('scroll', extend), 10_000);
   el.scrollIntoView({ behavior: 'smooth', block: 'start' });
 };
 

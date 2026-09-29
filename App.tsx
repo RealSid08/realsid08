@@ -33,6 +33,14 @@ const App: React.FC = () => {
                 <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-gray-500 mb-3">Education</p>
                 <h2 className="text-2xl md:text-4xl font-bold">{EDUCATION.school}</h2>
                 <p className="text-gray-400 mt-3 text-sm md:text-base">{EDUCATION.degree}</p>
+                <p className="mt-5 font-mono text-[10px] uppercase tracking-[0.2em] text-gray-500">High Distinctions</p>
+                <ul className="mt-2 flex flex-wrap gap-2" aria-label="High Distinctions">
+                  {EDUCATION.distinctions.map((item) => (
+                    <li key={item.unit} className="border border-white/10 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-gray-400">
+                      {item.unit} <span className="text-white">{item.mark}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
               <div className="font-mono text-xs uppercase tracking-[0.2em] text-gray-400 text-left md:text-right">
                 <p>{EDUCATION.campus}</p>

@@ -10,18 +10,18 @@ const EDGES: Array<[string, string]> = [
   ['backend', 'agentic'],
   ['cloud', 'agentic'],
   ['backend', 'cloud'],
-  ['agentic', 'delivery'],
-  ['cloud', 'delivery'],
+  ['agentic', 'testing'],
+  ['cloud', 'testing'],
 ];
 
 /** node centres in % of the desktop board */
-const NODE_POS: Record<string, { x: number; y: number }> = {
+export const NODE_POS: Record<string, { x: number; y: number }> = {
   languages: { x: 16, y: 22 },
   frontend: { x: 84, y: 22 },
   agentic: { x: 50, y: 40 },
   backend: { x: 16, y: 70 },
   cloud: { x: 84, y: 70 },
-  delivery: { x: 50, y: 85 },
+  testing: { x: 50, y: 85 },
 };
 
 /** the two horizontal buses the elbows share; junction ticks sit where drops meet them */
@@ -130,7 +130,7 @@ export const SkillsMap: React.FC = () => {
                 {BUS_Y.map((y) => {
                   const cx = Math.round(0.5 * board.w) + 0.5;
                   const cy = Math.round((y / 100) * board.h) + 0.5;
-                  const on = active === HEAD_ID || (y === BUS_Y[0] ? active === 'languages' || active === 'frontend' : active === 'backend' || active === 'cloud' || active === 'delivery');
+                  const on = active === HEAD_ID || (y === BUS_Y[0] ? active === 'languages' || active === 'frontend' : active === 'backend' || active === 'cloud' || active === 'testing');
                   return (
                     <rect
                       key={y}
