@@ -244,7 +244,9 @@ export const ProjectExhibits: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
         {rest.map((project, idx) => (
           <FadeInSection key={project.id} delay={idx * 100} className="h-full">
-            <Exhibit project={project} />
+            <div id={`project-${project.id}`} className="h-full">
+              <Exhibit project={project} />
+            </div>
           </FadeInSection>
         ))}
       </div>

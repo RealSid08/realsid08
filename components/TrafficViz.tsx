@@ -64,7 +64,7 @@ export const TrafficViz: React.FC = () => {
           <h3 className="text-white font-mono text-xs uppercase tracking-wider">Traffic forecast</h3>
           <div className="flex items-center gap-2 px-2 py-1 bg-green-500/10 border border-green-500/20 rounded">
              <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div>
-             <span className="text-[9px] text-green-400 font-mono">LIVE INFERENCE</span>
+             <span className="text-[9px] text-ok font-mono">LIVE INFERENCE</span>
           </div>
         </div>
         <div className="flex gap-4 text-[9px] font-mono text-gray-400 uppercase">
