@@ -51,7 +51,7 @@ const components = {
     },
     RepoList: {
       props: z.object({
-        asOf: z.string().describe('The fetch time from the GitHub tool result'),
+        asOf: z.string().describe('The fetch time from the GitHub tool result, written for people, e.g. "Sep 29, 2026, 09:51 UTC"'),
         repos: z.array(z.object({
           name: z.string().describe('owner/name'),
           url: z.string().url(),
@@ -71,7 +71,7 @@ const components = {
       description: 'A button that changes the page when the visitor clicks it: show a card, filter the work, or start a tour.',
     },
     EvidenceBoard: {
-      props: z.object({ title: z.string(), asOf: z.string() }),
+      props: z.object({ title: z.string(), asOf: z.string().describe('Fetch time written for people, e.g. "Sep 29, 2026, 09:51 UTC"') }),
       slots: ['default'],
       description: 'Compact board for comparing public repositories, issues, or pull requests. asOf is the source fetch time.',
     },

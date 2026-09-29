@@ -8,6 +8,16 @@ import { PortfolioLink } from './PortfolioLink';
 
 const label = 'font-mono text-[9px] uppercase tracking-[0.18em] text-gray-500';
 
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+/** Tool results carry ISO timestamps; show them as "Sep 29, 2026, 09:51 UTC". Anything else passes through. */
+export const asOfLabel = (value: string) => {
+  const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(value);
+  if (!match) return value;
+  const [, year, month, day, hour, minute] = match;
+  return `${MONTHS[Number(month) - 1]} ${Number(day)}, ${year}, ${hour}:${minute} UTC`;
+};
+
 /** Hover outlines the card on the page; nothing is recorded until the visitor clicks. */
 const peekProps = (target: string | null | undefined) =>
   target && isTargetId(target)
@@ -120,7 +130,7 @@ export const { registry: portfolioEvidenceRegistry } = defineRegistry(portfolioU
     ),
     RepoList: ({ props }) => (
       <div className="mt-2 border border-white/15">
-        <p className={`${label} border-b border-white/10 px-2.5 py-1.5`}>Public GitHub · as of {props.asOf}</p>
+        <p className={`${label} border-b border-white/10 px-2.5 py-1.5`}>Public GitHub · as of {asOfLabel(props.asOf)}</p>
         <ul className="divide-y divide-white/10">
           {(props.repos ?? []).map((repo) => (
             <li key={repo.url} className="px-2.5 py-2">
@@ -161,7 +171,7 @@ export const { registry: portfolioEvidenceRegistry } = defineRegistry(portfolioU
       <section className="mt-2 border border-white/15 bg-white/[0.03] p-2.5" aria-label={props.title}>
         <div className="mb-2 flex flex-wrap items-baseline justify-between gap-x-3 border-b border-white/10 pb-1.5">
           <strong className="text-[12px] text-white">{props.title}</strong>
-          <span className={label}>{props.asOf}</span>
+          <span className={label}>{asOfLabel(props.asOf)}</span>
         </div>
         <div className="grid gap-2 sm:grid-cols-2">{children}</div>
       </section>

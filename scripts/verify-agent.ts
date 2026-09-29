@@ -13,7 +13,7 @@ import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { buildPortfolioTools } from '../lib/portfolioChat';
 import { PortfolioLink } from '../components/agent/PortfolioLink';
-import { portfolioEvidenceRegistry } from '../components/agent/PortfolioEvidence';
+import { asOfLabel, portfolioEvidenceRegistry } from '../components/agent/PortfolioEvidence';
 import { pageIntentsFromMessages } from '../services/agent/pageIntent';
 import { TOOLS, toolByName } from '../services/agent/registry';
 import { SLASH_COMMANDS, matchCommands, parseSlash } from '../services/agent/commands';
@@ -117,6 +117,11 @@ check('every catalog component renders from streamed, partial and complete props
   assert.doesNotThrow(() => render(partial));
   assert.doesNotThrow(() => render({ root: 'r', elements: { r: partial.elements.r } }));
   assert.doesNotThrow(() => render({ root: 't', elements: { t: partial.elements.t } }));
+});
+
+check('fetch times are shown for people, not as raw ISO strings', () => {
+  assert.equal(asOfLabel('2026-09-29T09:51:30.502Z'), 'Sep 29, 2026, 09:51 UTC');
+  assert.equal(asOfLabel('2026-09-29 12:00 UTC'), '2026-09-29 12:00 UTC', 'other formats pass through');
 });
 
 check('slash commands only run registered tools with valid targets', () => {
