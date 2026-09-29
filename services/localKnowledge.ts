@@ -18,6 +18,7 @@ export function formatProject(id: string): string | null {
     `**${project.title}**${project.subtitle ? ` — ${project.subtitle}` : ''}${project.period ? ` (${project.period})` : ''}.`,
     ...(project.bullets ?? [project.description]).map((line) => `- ${line}`),
     project.githubUrl ? `Repo: ${project.githubUrl}` : '',
+    project.link ? `Link: ${project.link}` : '',
   ].filter(Boolean).join('\n');
 }
 
@@ -94,6 +95,12 @@ export function localPortfolioAnswer(question: string): string {
     const text = formatRole('mindtek');
     if (text) parts.push(text);
   }
+  if (/open.?source|codex shared memory|shared memory|pptx/.test(q)) {
+    ['codex-shared-memory', 'pptx-react-renderer'].forEach((id) => {
+      const text = formatProject(id);
+      if (text) parts.push(text);
+    });
+  }
   if (/foodly/.test(q)) {
     const text = formatProject('foodly');
     if (text) parts.push(text);
@@ -105,8 +112,11 @@ export function localPortfolioAnswer(question: string): string {
   if (/(available|availability|graduate|december|dec 2026|work rights|visa|melbourne|location)/.test(q)) {
     parts.push([`**${PROFILE.location}**`, PROFILE.visa, PROFILE.availability].join('\n\n'));
   }
-  if (/educat|swinburne|degree/.test(q)) {
-    parts.push(`**${EDUCATION.degree}**, ${EDUCATION.school}, ${EDUCATION.campus}. Graduating ${EDUCATION.graduating}.`);
+  if (/educat|swinburne|degree|grades?|marks?|distinction/.test(q)) {
+    parts.push(
+      `**${EDUCATION.degree}**, ${EDUCATION.school}, ${EDUCATION.campus}. Graduating ${EDUCATION.graduating}.`,
+      `High Distinctions: ${EDUCATION.distinctions.map((item) => `${item.unit} (${item.mark})`).join(', ')}.`,
+    );
   }
   if (/skill|stack|agentic|worktree/.test(q) && parts.length === 0) {
     parts.push(SKILLS.map((cluster) => `**${cluster.label}**: ${cluster.items.join(', ')}`).join('\n'));
@@ -117,9 +127,9 @@ export function localPortfolioAnswer(question: string): string {
   }
 
   return [
-    `Sidhaarth Krishnan is a full-stack software engineer in ${PROFILE.location}.`,
+    `Sidhaarth Krishnan is a software engineer in ${PROFILE.location}.`,
     PROFILE.availability,
-    'Active workstreams: **Besmak Components**, **Complete Leader**, and **Kenspire Advisors**. Featured projects include **Foodly** and **ParkAlong**.',
+    'Current work: **Kenspire Advisors**, **Besmak Components** and **Complete Leader**. Projects include **Foodly** and **ParkAlong**, plus open source: **Codex Shared Memory** and **pptx-react-renderer**.',
     'Ask about a company, project, skills, or availability for specifics.',
   ].join('\n\n');
 }

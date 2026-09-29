@@ -29,6 +29,17 @@ const ProjectVisual: React.FC<{ id: string }> = ({ id }) => {
   }
 };
 
+/** Read by the page tools (filter and sort), so it must sit on the element that carries the card id. */
+const cardData = (project: ProjectItem) => ({
+  'data-year': latestYear(project.period),
+  'data-tech': project.tech.join(',').toLowerCase(),
+  'data-title': project.title.toLowerCase(),
+});
+
+const VISUAL_IDS = ['foodly', 'parkalong', 'tbrgs', 'rag-viz'];
+
+const hostOf = (url: string) => new URL(url).hostname.replace(/^www\./, '');
+
 type Shot = {
   src: string;
   alt: string;
@@ -152,9 +163,6 @@ const Exhibit: React.FC<{ project: ProjectItem; featured?: boolean }> = ({ proje
   return (
   <div
     className="card-surface group relative bg-black border border-white/10 hover:border-white transition-colors duration-500 h-full flex flex-col"
-    data-year={latestYear(project.period)}
-    data-tech={project.tech.join(',').toLowerCase()}
-    data-title={project.title.toLowerCase()}
   >
     {isCanvasViz && (
       <div className={`relative overflow-hidden border-b border-white/10 bg-mono-base ${featured ? 'h-[200px] md:h-[280px]' : 'h-[180px] md:h-[220px]'}`}>
@@ -180,6 +188,16 @@ const Exhibit: React.FC<{ project: ProjectItem; featured?: boolean }> = ({ proje
           {project.period && (
             <p className="font-mono text-[10px] text-gray-600 mt-1">{project.period}</p>
           )}
+          {project.link && (
+            <a
+              href={project.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-2 inline-block font-mono text-[10px] text-gray-400 underline decoration-white/30 underline-offset-4 hover:text-white hover:decoration-white"
+            >
+              {hostOf(project.link)} ↗
+            </a>
+          )}
         </div>
         <div className="w-2 h-2 bg-white/20 group-hover:bg-white/60 transition-colors shrink-0 mt-2" />
       </div>
@@ -199,7 +217,7 @@ const Exhibit: React.FC<{ project: ProjectItem; featured?: boolean }> = ({ proje
         </div>
       )}
 
-      {!isCanvasViz && (
+      {!isCanvasViz && VISUAL_IDS.includes(project.id) && (
         <div className="mb-8 opacity-90 group-hover:opacity-100 transition-opacity -mx-2 md:mx-0">
           <ProjectVisual id={project.id} />
         </div>
@@ -218,23 +236,24 @@ const Exhibit: React.FC<{ project: ProjectItem; featured?: boolean }> = ({ proje
 };
 
 export const ProjectExhibits: React.FC = () => {
-  const exhibits = PROJECTS.filter((project) => project.type !== 'live-demo');
+  const exhibits = PROJECTS.filter((project) => project.type !== 'live-demo' && project.type !== 'open-source');
   const featured = exhibits.filter((project) => project.featured);
   const rest = exhibits.filter((project) => !project.featured);
+  const openSource = PROJECTS.filter((project) => project.type === 'open-source');
 
   return (
     <section id="projects" className="mb-24 md:mb-40 scroll-mt-16">
       <FadeInSection>
         <div className="flex flex-col md:flex-row md:items-end gap-2 md:gap-4 mb-10 md:mb-16 border-b border-white/10 pb-6">
           <h2 className="text-3xl md:text-4xl font-bold">Projects</h2>
-          <span className="text-gray-500 font-mono text-xs md:mb-2">Selected work</span>
+          <span className="text-gray-500 font-mono text-xs md:mb-2">Shipped and in progress</span>
         </div>
       </FadeInSection>
 
       <div className="space-y-6 md:space-y-8 mb-8">
         {featured.map((project, idx) => (
           <FadeInSection key={project.id} delay={idx * 80}>
-            <div id={`project-${project.id}`}>
+            <div id={`project-${project.id}`} {...cardData(project)}>
               <Exhibit project={project} featured />
             </div>
           </FadeInSection>
@@ -244,12 +263,32 @@ export const ProjectExhibits: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
         {rest.map((project, idx) => (
           <FadeInSection key={project.id} delay={idx * 100} className="h-full">
-            <div id={`project-${project.id}`} className="h-full">
+            <div id={`project-${project.id}`} className="h-full" {...cardData(project)}>
               <Exhibit project={project} />
             </div>
           </FadeInSection>
         ))}
       </div>
+
+      {openSource.length > 0 && (
+        <>
+          <FadeInSection>
+            <div className="flex flex-col md:flex-row md:items-end gap-2 md:gap-4 mt-16 md:mt-24 mb-8 md:mb-12 border-b border-white/10 pb-6">
+              <h2 className="text-2xl md:text-3xl font-light">Open source</h2>
+              <span className="text-gray-500 font-mono text-xs md:mb-2">Tools I built and published</span>
+            </div>
+          </FadeInSection>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
+            {openSource.map((project, idx) => (
+              <FadeInSection key={project.id} delay={idx * 100} className="h-full">
+                <div id={`project-${project.id}`} className="h-full" {...cardData(project)}>
+                  <Exhibit project={project} />
+                </div>
+              </FadeInSection>
+            ))}
+          </div>
+        </>
+      )}
     </section>
   );
 };

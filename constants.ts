@@ -4,14 +4,16 @@ export const PROFILE: ProfileInfo = {
   givenName: 'SIDHAARTH',
   familyName: 'KRISHNAN',
   title: 'Software Engineer',
+  tagline:
+    'Software engineer in Melbourne. I build multi-tenant web, mobile and AI products, from Convex backends and AWS infrastructure to native iOS apps.',
   location: 'Melbourne, VIC',
   visa: 'Student visa with work rights',
   availability: 'Available for full-time graduate employment from December 2026',
   manifesto:
-    'Treat AI as an engineering system: decompose work across parallel agents, isolate changes in Git worktrees, and validate outputs through human review, automated tests, and real app interaction.',
+    'He splits work across parallel coding agents in isolated Git worktrees, then checks every change with automated tests, real app runs and human review.',
   phone: '+61 475 508 390',
   email: 'krishnansidhaarth@gmail.com',
-  linkedin: 'https://www.linkedin.com/in/sidhaarth-krishnan-75b5971a7/',
+  linkedin: 'https://www.linkedin.com/in/sidhaarth-krishnan',
   github: 'https://github.com/RealSid08',
   website: 'https://realsid08.me',
   resumeUrl: '/Sidhaarth_Krishnan_Resume.pdf',
@@ -20,70 +22,92 @@ export const PROFILE: ProfileInfo = {
 export const EDUCATION: EducationInfo = {
   school: 'Swinburne University of Technology',
   campus: 'Hawthorn, VIC',
-  degree: 'Bachelor of Engineering (Honours), Software Engineering',
+  degree: 'Bachelor of Engineering (Honours), majoring in Software',
   graduating: 'Dec 2026',
+  distinctions: [
+    { unit: 'Concurrent Programming', mark: 98 },
+    { unit: 'Data Structures and Patterns', mark: 86 },
+    { unit: 'Intro to AI', mark: 83 },
+    { unit: 'AI Engineering', mark: 82 },
+  ],
 };
 
 export const SKILLS: SkillCluster[] = [
   {
     id: 'languages',
     label: 'Languages',
-    items: ['TypeScript', 'JavaScript', 'Python', 'SQL', 'Swift', 'C++', 'Go'],
+    items: ['TypeScript', 'JavaScript', 'Python', 'Swift', 'SQL', 'C++'],
   },
   {
     id: 'frontend',
-    label: 'Frontend & Full Stack',
-    items: ['React', 'React Native', 'Expo', 'Next.js', 'TanStack Start', 'Node.js', 'HTML', 'CSS', 'REST APIs', 'WebSockets'],
+    label: 'Web & Mobile',
+    items: ['React', 'TanStack Start', 'Next.js', 'React Native / Expo', 'SwiftUI', 'MapKit'],
   },
   {
     id: 'backend',
     label: 'Backend & Data',
-    items: ['Convex', 'PostgreSQL', 'Supabase', 'Multi-tenant architecture', 'Indexed pagination', 'Background workflows'],
+    items: ['Convex', 'Node.js', 'PostgreSQL', 'Supabase', 'SQLite'],
   },
   {
     id: 'agentic',
-    label: 'Agentic Engineering',
+    label: 'AI & Coding Agents',
     items: [
-      'Cursor Design mode',
-      'Parallel Codex and Claude Code agents',
-      'Git worktrees',
-      'Codex Computer Use',
-      'Human-led review and integration',
+      'Gemini and OpenAI APIs',
+      'Tool calling',
+      'RAG',
+      'Embeddings and vector search',
+      'MCP',
+      'Codex',
+      'Claude Code',
+      'Cursor',
+      'OpenCode',
+      'T3 Code',
     ],
     emphasis: true,
   },
   {
     id: 'cloud',
-    label: 'Cloud & Quality',
-    items: ['AWS', 'Self-hosted Convex', 'Playwright', 'Vitest', 'GitHub Actions', 'CI/CD', 'Production monitoring'],
+    label: 'Cloud',
+    items: ['AWS (EC2, RDS, S3, ALB)', 'Cloudflare (Pages, Workers)', 'OpenTofu', 'Docker'],
   },
   {
-    id: 'delivery',
-    label: 'Delivery',
-    items: [
-      'End-to-end feature ownership',
-      'Problem decomposition',
-      'Cross-functional collaboration',
-      'Production releases',
-    ],
+    id: 'testing',
+    label: 'Testing & CI',
+    items: ['Playwright and Maestro (E2E)', 'Vitest', 'XCTest', 'GitHub Actions'],
   },
 ];
 
 export const EXPERIENCES: ExperienceItem[] = [
+  {
+    id: 'kenspire',
+    role: 'Software Engineer',
+    company: 'Kenspire Advisors',
+    period: 'Apr 2026 – Present',
+    location: 'Remote',
+    employmentType: 'Contract',
+    lane: 'active',
+    description: [
+      'Own the architecture and delivery of a multi-tenant platform that turns clients’ goals and operating procedures into scheduled work, ahead of a planned rollout to 500 organisations.',
+      'Built the web (TanStack Start) and mobile (Expo) apps on a Convex backend: maker, checker and reviewer approvals, recurring schedules, timesheets, goal tracking, analytics, passkey sign-in and iOS Live Activities.',
+      'Built an agent harness that lets Gemini edit procedure drafts through tool calls, with Google Search grounding.',
+      'Replaced 62 aggregates behind 118 of 167 GB of billed I/O with exact counters, which showed zero drift in production. Separately cut daily scheduling reads from 57.8 to 36.3 MB per run, a 37% reduction.',
+    ],
+    tech: ['TanStack Start', 'Expo', 'Convex', 'Gemini API'],
+  },
   {
     id: 'besmak',
     role: 'Software Engineer',
     company: 'Besmak Components',
     period: 'Jul 2026 – Present',
     location: 'Remote',
-    employmentType: 'Freelance Contract',
+    employmentType: 'Contract',
     lane: 'active',
     description: [
-      'Own hands-on delivery of a web and mobile operations platform for 600 users across TanStack Start, React Native/Expo, and tenant-safe real-time backend workflows.',
-      'Coordinate parallel Codex and Claude Code agents in isolated Git worktrees for scoped implementation and review; use Cursor Design mode for interface iteration and Codex Computer Use to exercise logged-in product flows, reproduce defects, and verify fixes.',
-      'Led adoption of self-hosted Convex on AWS; manage deployment, monitoring, backups, security, cost control, and scaling for backend and file services.',
+      'Lead development of a web and mobile task platform being rolled out to about 600 staff across departments, with end-to-end tests for both apps.',
+      'Built recurring tasks with subtasks as a resumable background workflow: checkpoints, duplicate-safe retries and daylight-saving-correct dates, tested at 600 subtasks and 600 users within Convex transaction limits.',
+      'Provisioned and maintain the AWS backend with OpenTofu: Convex on EC2 with Multi-AZ PostgreSQL, encrypted S3, TLS and backups. Tested a 40-second database failover.',
     ],
-    tech: ['TanStack Start', 'React Native', 'Expo', 'Convex', 'AWS'],
+    tech: ['TanStack Start', 'React Native', 'Expo', 'Convex', 'AWS', 'OpenTofu'],
   },
   {
     id: 'complete-leader',
@@ -94,24 +118,10 @@ export const EXPERIENCES: ExperienceItem[] = [
     employmentType: 'Casual',
     lane: 'active',
     description: [
-      'Partner with the founder to turn in-person psychometric testing and manual reports into a Next.js and Supabase assessment, scoring, reporting, and role-based client platform.',
+      'Built the psychometric assessment platform in Next.js and Supabase, replacing paper questionnaires and hand-written reports with online assessments, scoring and streamed AI-generated reports.',
+      'Built the staff dashboard for inviting clients, reviewing results and exporting assessment data.',
     ],
-    tech: ['Next.js', 'Supabase', 'Psychometrics'],
-  },
-  {
-    id: 'kenspire',
-    role: 'Software Engineer',
-    company: 'Kenspire Advisors',
-    period: 'Oct 2025 – Present',
-    location: 'Remote',
-    employmentType: 'Freelance Contract',
-    lane: 'active',
-    description: [
-      'Use Codex and Claude Code to audit authorization and performance, design bounded Convex migrations and backfills, and pressure-test changes while retaining human ownership of architecture, schema cutovers, and releases.',
-      'Own full-stack delivery with TanStack Start and Convex, including access control, regression testing, CI/CD, production releases, and schema and data migrations across web and mobile products.',
-      'Architect for a planned rollout to 500 client organisations, validating target workloads through end-to-end and backend stress tests.',
-    ],
-    tech: ['TanStack Start', 'Convex', 'CI/CD', 'Migrations'],
+    tech: ['Next.js', 'Supabase', 'AI reports', 'Psychometrics'],
   },
   {
     id: 'mindtek',
@@ -121,21 +131,20 @@ export const EXPERIENCES: ExperienceItem[] = [
     location: 'Melbourne, VIC',
     lane: 'active',
     description: [
-      'Built a multi-tenant retrieval-augmented generation platform in Next.js and Supabase, then shipped an embeddable third-party chat widget and a real-time voice-receptionist kiosk using Gemini Live.',
-      'Orchestrated RAG pipelines with Vercel AI SDK and implemented a drop-in chat widget using vanilla JavaScript and React with secure iframe resizing.',
-      'Developed the speech-to-speech receptionist kiosk using Gemini Live API and Zustand for state management.',
+      'Built a multi-tenant Next.js and Supabase platform where businesses create OpenAI and Gemini chatbots grounded in their own documents, embed them on their websites and review conversations, leads and analytics.',
+      'Built a voice agent on the Gemini Live API that answers spoken enquiries and takes booking requests through tool calls, recovering from model and tool failures.',
     ],
-    tech: ['Next.js', 'Supabase', 'Gemini API', 'RAG', 'TanStack Query'],
+    tech: ['Next.js', 'Supabase', 'OpenAI', 'Gemini Live', 'RAG'],
   },
   {
     id: 'unieats',
     role: 'Startup Contributor',
     company: 'UniEats',
-    period: 'March 2024 – April 2025',
+    period: 'Mar 2024 – Apr 2025',
     lane: 'archive',
     description: [
-      'Contributed to promotion, logistics, idea generation, and technological platform improvements.',
-      'Created digital marketing content (Final Cut/Premiere Pro) and pitched partnerships to local restaurants.',
+      'Contributed to promotion, logistics, product ideas and platform improvements at an early-stage startup.',
+      'Made marketing videos in Final Cut and Premiere Pro and pitched partnerships to local restaurants.',
     ],
     tech: ['Marketing', 'Video Editing', 'Operations', 'Logistics'],
   },
@@ -146,8 +155,8 @@ export const EXPERIENCES: ExperienceItem[] = [
     period: 'Oct 2024 – Dec 2024',
     lane: 'archive',
     description: [
-      'Conducted market research for edible oils in the Australian market (Melbourne & Sydney).',
-      'Analysed consumer preferences and distribution challenges through store visits and interviews.',
+      'Researched the Australian edible-oil market across Melbourne and Sydney.',
+      'Studied consumer preferences and distribution challenges through store visits and interviews.',
     ],
     tech: ['Data Analysis', 'Market Research', 'Strategy'],
   },
@@ -158,9 +167,8 @@ export const EXPERIENCES: ExperienceItem[] = [
     period: 'Aug 2020 – May 2021',
     lane: 'archive',
     description: [
-      'Engineered a real-time video conferencing application utilizing Enablex and Quickblox APIs for seamless peer-to-peer streaming.',
-      'Implemented dynamic room creation, screen sharing capabilities, and synchronized chat messaging.',
-      'Optimized connection stability and bandwidth usage for multi-participant calls.',
+      'Built a real-time video conferencing app on the Enablex and Quickblox APIs, with peer-to-peer streaming, dynamic room creation, screen sharing and synchronised chat.',
+      'Tuned connection stability and bandwidth use for multi-participant calls.',
     ],
     tech: ['React', 'WebRTC', 'Enablex', 'Quickblox', 'Node.js'],
   },
@@ -168,11 +176,11 @@ export const EXPERIENCES: ExperienceItem[] = [
     id: 'imaginet',
     role: 'Intern',
     company: 'Imaginet Ventures Pvt. Ltd.',
-    period: 'June 2016 – July 2017',
+    period: 'Jun 2016 – Jul 2017',
     lane: 'archive',
     description: [
-      'Worked with Python, PHP, mySQL and other database structure concepts.',
-      'Gained foundational knowledge in SaaS development within a B2B environment.',
+      'Worked with Python, PHP and MySQL, and learned database design.',
+      'Picked up the basics of SaaS development in a B2B setting.',
     ],
     tech: ['Python', 'PHP', 'MySQL', 'SaaS'],
   },
@@ -183,28 +191,30 @@ export const PROJECTS: ProjectItem[] = [
     id: 'foodly',
     title: 'Foodly',
     subtitle: 'Social-to-Place Restaurant Discovery',
-    period: 'Final-Year Project, Mar 2026 – Present',
+    period: 'Final-Year Honours Project, Mar 2026 – Present',
     description:
-      'Co-built a web and React Native product that turns Instagram Reel and TikTok links into mapped restaurant places through Apify, Gemini, and Google Places, with shareable lists and community discovery.',
+      'Wrote the backend and most of the iOS app for a team product that turns Instagram and TikTok restaurant posts into saved places on a personal map.',
     bullets: [
-      'Co-built a web and React Native product that turns Instagram Reel and TikTok links into mapped restaurant places through Apify, Gemini, and Google Places, with shareable lists and community discovery.',
-      'Engineered retry-safe ingestion, indexed cursor pagination, aggregate counters, resumable deletion and privacy workflows, and 102 automated tests across 19 backend test files.',
+      'Wrote the backend and most of the iOS app for a team product that turns Instagram and TikTok restaurant posts into saved places on a personal map.',
+      'Built the AI pipeline: Apify fetches the post, Gemini with Maps grounding identifies the restaurant, and Google Places verifies it. Caching, retries and idempotent webhooks make reruns safe, and embeddings power search.',
     ],
-    tech: ['React Native', 'Apify', 'Gemini', 'Google Places', 'Convex'],
+    tech: ['iOS', 'React Native', 'Convex', 'Apify', 'Gemini', 'Google Places'],
     type: 'visualization',
     featured: true,
+    link: 'https://foodly-app-mauve.vercel.app',
   },
   {
     id: 'parkalong',
     title: 'ParkAlong',
-    subtitle: 'Trust-First Victorian Parking Finder',
-    period: 'Shipped',
+    subtitle: 'Native iOS Parking Finder',
+    period: 'Aug 2026 – Present',
     description:
-      'Built and shipped a native parking product combining live City of Melbourne occupancy with 34,023 integrity-manifested Victorian records, backed by viewport-driven loading, generation-safe refreshes, CI, and deterministic unit and UI tests.',
+      'Built a SwiftUI and MapKit app that puts live City of Melbourne bay sensors, time limits, prices and 38,000+ statewide parking records on one map, and labels what is live and what is static.',
     bullets: [
-      'Built and shipped a native parking product combining live City of Melbourne occupancy with 34,023 integrity-manifested Victorian records, backed by viewport-driven loading, generation-safe refreshes, CI, and deterministic unit and UI tests.',
+      'Built a SwiftUI and MapKit app that puts live City of Melbourne bay sensors, time limits, prices and 38,000+ statewide parking records on one map, and labels what is live and what is static.',
+      'Made catalogue loading 43 times faster (23.3 to 0.53 seconds) by profiling the decoder and reusing date parsing, then added a spatial index for map queries. 160 unit and UI tests run in CI.',
     ],
-    tech: ['Swift', 'CI', 'Integrity Manifest', 'Viewport Loading'],
+    tech: ['Swift', 'SwiftUI', 'MapKit', 'XCTest', 'GitHub Actions'],
     type: 'visualization',
     featured: true,
     githubUrl: 'https://github.com/OpenRenderKit/ParkAlong',
@@ -213,7 +223,7 @@ export const PROJECTS: ProjectItem[] = [
     id: 'tbrgs',
     title: 'Traffic-Based Route Guidance',
     description:
-      'End-to-end traffic forecasting pipeline using LSTM and GRU neural networks trained on historical SCATS sensor data. Optimized A* algorithms for routing.',
+      'A traffic forecasting pipeline: LSTM and GRU models trained on historical SCATS sensor data, feeding an optimised A* route search.',
     tech: ['Python', 'TensorFlow', 'LSTM/GRU', 'Graph Theory', 'Tkinter'],
     type: 'visualization',
     githubUrl: 'https://github.com/RealSid08/IntroToAISquad/tree/2B',
@@ -222,7 +232,7 @@ export const PROJECTS: ProjectItem[] = [
     id: 'rag-viz',
     title: 'RAG Engine',
     description:
-      'Interactive visualization of the Retrieval-Augmented Generation pipeline. Demonstrates how user queries are vectorized, matched with knowledge base chunks, and synthesized by the LLM.',
+      'An interactive walkthrough of retrieval-augmented generation: a question is embedded, matched against knowledge-base chunks, and answered by an LLM using what was retrieved.',
     tech: ['React', 'Vercel AI SDK', 'Vector Embeddings', 'Supabase pgvector'],
     type: 'visualization',
   },
@@ -230,19 +240,40 @@ export const PROJECTS: ProjectItem[] = [
     id: 'aura',
     title: 'Aura Ecosystem (AI & IoT)',
     description:
-      'A voice and IoT project combining OpenAI Realtime over WebRTC with ESP32 tactile stress sensors and WebSockets.',
+      'A voice and IoT project pairing OpenAI Realtime over WebRTC with ESP32 tactile stress sensors and WebSockets.',
     tech: ['React', 'OpenAI Realtime', 'WebRTC', 'ESP32', 'Python'],
     type: 'live-demo',
     githubUrl: 'https://github.com/RealSid08/AuraHub',
   },
+  {
+    id: 'codex-shared-memory',
+    title: 'Codex Shared Memory',
+    subtitle: 'MCP memory server',
+    description:
+      'A Python and SQLite MCP server that syncs AI agent memory across devices, self-hosted on a Raspberry Pi over Tailscale.',
+    tech: ['Python', 'SQLite', 'MCP', 'Tailscale', 'Raspberry Pi'],
+    type: 'open-source',
+    githubUrl: 'https://github.com/RealSid08/codex-shared-memory',
+  },
+  {
+    id: 'pptx-react-renderer',
+    title: 'pptx-react-renderer',
+    subtitle: 'npm package',
+    description:
+      'An npm package that renders PowerPoint files as HTML, with pixel-diff regression tests.',
+    tech: ['npm', 'React', 'PPTX', 'Pixel-diff tests'],
+    type: 'open-source',
+    githubUrl: 'https://github.com/OpenRenderKit/pptx-react-renderer',
+    link: 'https://www.npmjs.com/package/pptx-react-renderer',
+  },
 ];
 
-export const WORKTREE_IDS = ['besmak', 'complete-leader', 'kenspire'] as const;
+export const WORKTREE_IDS = ['kenspire', 'besmak', 'complete-leader'] as const;
 
 const generatePortfolioContext = () => `
 [IDENTITY]
 - **Name**: Sidhaarth Krishnan
-- **Title**: Full-stack software engineer and final-year Software Engineering student
+- **Title**: Software engineer and final-year Software Engineering (Honours) student
 - **Location**: ${PROFILE.location}
 - **Visa**: ${PROFILE.visa}
 - **Availability**: ${PROFILE.availability}
@@ -270,21 +301,23 @@ ${EXPERIENCES.filter(e => e.lane === 'archive').map(e => `
   *Stack*: ${e.tech.join(', ')}
 `).join('\n')}
 
-[PROJECTS]
+[PROJECTS AND OPEN SOURCE]
 ${PROJECTS.map(p => `
 - **${p.title}**${p.subtitle ? ` — ${p.subtitle}` : ''}${p.period ? ` (${p.period})` : ` (${p.type})`}
   ${p.bullets ? p.bullets.map(b => `  * ${b}`).join('\n') : p.description}
   *Stack*: ${p.tech.join(', ')}
   ${p.githubUrl ? `*Repo*: ${p.githubUrl}` : ''}
+  ${p.link ? `*Link*: ${p.link}` : ''}
 `).join('\n')}
 
 [EDUCATION]
 - ${EDUCATION.degree}, ${EDUCATION.school}, ${EDUCATION.campus}. Graduating: ${EDUCATION.graduating}.
+- High Distinctions: ${EDUCATION.distinctions.map((d) => `${d.unit} (${d.mark})`).join(', ')}.
 `;
 
 export const SYSTEM_INSTRUCTION_CHAT = `You answer questions about Sidhaarth Krishnan on his portfolio site. Write like a colleague who knows the work: plain, specific, and short.
 
-Sidhaarth works on three things right now — Besmak Components, Complete Leader and Kenspire Advisors — with earlier work at Mindtek AI. Lead with those, his projects (Foodly, ParkAlong), and his availability from December 2026 when they are relevant, rather than older roles like HiDa.
+Sidhaarth works on three things right now — Kenspire Advisors, Besmak Components and Complete Leader — with earlier work at Mindtek AI. Lead with those, his projects (Foodly, ParkAlong) and open source (Codex Shared Memory, pptx-react-renderer), and his availability from December 2026 when they are relevant, rather than older roles like HiDa.
 
 [KNOWLEDGE BASE]
 ${generatePortfolioContext()}

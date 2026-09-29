@@ -1,7 +1,7 @@
 import React from 'react';
 import { SchematicCanvas, INK, white, phase, hash, hex, label, line, box, fill, dot, dotGrid } from './SchematicCanvas';
 
-const RECORDS = '34,023';
+const RECORDS = '38,000+';
 const GEN_SECONDS = 6;
 
 export const ParkAlongViz: React.FC = () => (

@@ -1,25 +1,30 @@
 # Sidhaarth Krishnan
 
-Full-stack software engineer in Melbourne. Final-year Software Engineering student at Swinburne. Available for full-time graduate roles from December 2026.
+Software engineer in Melbourne. Final-year Software Engineering (Honours) student at Swinburne. Available for full-time graduate roles from December 2026.
 
-I ship production web, mobile, and AI-enabled products. I treat AI as an engineering system: decompose work across parallel agents, isolate changes in Git worktrees, and validate outputs through human review, automated tests, and real app interaction.
+I build multi-tenant web, mobile and AI products, from Convex backends and AWS infrastructure to native iOS apps. I split work across parallel coding agents in isolated Git worktrees, then check every change with automated tests, real app runs and human review.
 
-**[realsid08.me](https://realsid08.me)** · [LinkedIn](https://www.linkedin.com/in/sidhaarth-krishnan-75b5971a7/) · [Email](mailto:krishnansidhaarth@gmail.com)
+**[realsid08.me](https://realsid08.me)** · [GitHub](https://github.com/RealSid08) · [LinkedIn](https://www.linkedin.com/in/sidhaarth-krishnan) · [Email](mailto:krishnansidhaarth@gmail.com)
 
 ## Now
 
-- **Besmak Components** — freelance contract. Web + React Native operations platform for 600 users. Self-hosted Convex on AWS.
-- **Complete Leader** — casual. Turning in-person psychometric testing into a Next.js / Supabase client platform.
-- **Kenspire Advisors** — freelance contract. TanStack Start + Convex, access control, migrations, CI/CD, aimed at a 500-org rollout.
+- **Kenspire Advisors** — contract. Multi-tenant platform that turns clients' goals and procedures into scheduled work, on TanStack Start, Expo and Convex. Planned rollout to 500 organisations.
+- **Besmak Components** — contract. Web and mobile task platform for about 600 staff, with Convex self-hosted on AWS and provisioned with OpenTofu.
+- **Complete Leader** — casual. Psychometric assessments, scoring and AI-generated reports in Next.js and Supabase.
 
 ## Building
 
-- **[Foodly](https://realsid08.me/#projects)** — final-year project. Instagram / TikTok links become mapped restaurant places.
-- **[ParkAlong](https://github.com/OpenRenderKit/ParkAlong)** — Victorian parking finder with live City of Melbourne occupancy and 34k integrity-manifested records.
+- **[Foodly](https://foodly-app-mauve.vercel.app)** — final-year honours project. Instagram and TikTok restaurant posts become saved places on a personal map.
+- **[ParkAlong](https://github.com/OpenRenderKit/ParkAlong)** — native iOS parking finder: live City of Melbourne bay sensors plus 38,000+ statewide records, with 160 tests in CI.
+
+## Open source
+
+- **[Codex Shared Memory](https://github.com/RealSid08/codex-shared-memory)** — Python and SQLite MCP server that syncs agent memory across devices.
+- **[pptx-react-renderer](https://github.com/OpenRenderKit/pptx-react-renderer)** — npm package that renders PowerPoint files as HTML.
 
 ## Stack I actually use
 
-TypeScript, JavaScript, Python, SQL, Swift, C++, Go. React, React Native, Expo, Next.js, TanStack Start, Convex, PostgreSQL, Supabase. AWS, Playwright, Vitest, GitHub Actions.
+TypeScript, JavaScript, Python, Swift, SQL, C++. React, TanStack Start, Next.js, React Native and Expo, SwiftUI. Convex, Node.js, PostgreSQL, Supabase, SQLite. AWS, Cloudflare, OpenTofu, Docker. Playwright, Maestro, Vitest, XCTest, GitHub Actions. Gemini and OpenAI APIs, MCP.
 
 This repository is the source for the portfolio site.
 

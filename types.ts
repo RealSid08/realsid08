@@ -18,7 +18,7 @@ export interface ProjectItem {
   link?: string;
   githubUrl?: string;
   tech: string[];
-  type: 'live-demo' | 'visualization' | 'standard';
+  type: 'live-demo' | 'visualization' | 'standard' | 'open-source';
   subtitle?: string;
   period?: string;
   featured?: boolean;
@@ -35,6 +35,8 @@ export interface ProfileInfo {
   givenName: string;
   familyName: string;
   title: string;
+  /** one or two sentences under the name */
+  tagline: string;
   location: string;
   visa: string;
   availability: string;
@@ -52,6 +54,8 @@ export interface EducationInfo {
   campus: string;
   degree: string;
   graduating: string;
+  /** units passed with a High Distinction, best first */
+  distinctions: Array<{ unit: string; mark: number }>;
 }
 
 export interface ChatMessage {

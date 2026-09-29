@@ -13,15 +13,16 @@ import {
 import type { ServerResponse } from 'http';
 import { z } from 'zod';
 import { pipeJsonRender } from '@json-render/core';
-import { PROFILE } from '../constants';
+import { EXPERIENCES, PROFILE, PROJECTS } from '../constants';
 import { formatProfile, formatProject, formatRole, formatSkills, formatWorkByTech, formatWorkstreams } from '../services/localKnowledge';
 import { CHAT_MODEL_ID } from './chatModel';
 import { uiSpecPrompt } from './portfolioUiCatalog';
 import { CARD_IDS, SECTION_IDS, TARGET_IDS } from './portfolioIds';
 import { formatRepoForModel, formatReposForModel, getGithubPayload, getPublicRepo, isAllowedAccount, listPublicRepos, searchGithub } from './github';
 
-const ROLE_IDS = ['besmak', 'complete-leader', 'kenspire', 'mindtek', 'unieats', 'idhayam', 'hida', 'imaginet'] as const;
-const PROJECT_IDS = ['foodly', 'parkalong', 'tbrgs', 'rag-viz', 'aura'] as const;
+// Derived from the page data so a new role or project is lookup-able without touching the tools.
+const ROLE_IDS = EXPERIENCES.map((exp) => exp.id) as [string, ...string[]];
+const PROJECT_IDS = PROJECTS.map((project) => project.id) as [string, ...string[]];
 
 /**
  * Page-control tools run in the browser, not on the server. The server tool
@@ -62,8 +63,8 @@ Voice:
 
 Facts:
 - Call lookup tools before stating facts. Never invent metrics, dates, employers, links or opinions attributed to others.
-- Current work first (Besmak, Complete Leader, Kenspire), then Foodly and ParkAlong. Mindtek, UniEats, Idhayam, HiDa and
-  Imaginet are earlier roles.
+- Current work first (Kenspire, Besmak, Complete Leader), then Foodly and ParkAlong. Mindtek ended in October 2025; UniEats,
+  Idhayam, HiDa and Imaginet are earlier roles. His open source is Codex Shared Memory and pptx-react-renderer.
 - Availability, visa and location come from lookupProfile.
 - Public GitHub comes from lookupGitHub, browseGitHubCode, lookupGitHubIssues and lookupGitHubPullRequests: RealSid08 and
   OpenRenderKit public repos only. Mention the "as of" time from the tool result; never imply private access.
@@ -183,14 +184,14 @@ export function buildPortfolioTools() {
         execute: async ({ id }) => formatRole(id) ?? 'Role not found.',
       }),
       lookupProject: tool({
-        description: 'Fetch a featured project: Foodly, ParkAlong, TBRGS, RAG, or Aura.',
+        description: 'Fetch a project or open-source package: Foodly, ParkAlong, TBRGS, RAG, Aura, Codex Shared Memory or pptx-react-renderer.',
         inputSchema: z.object({
           id: z.enum(PROJECT_IDS),
         }),
         execute: async ({ id }) => formatProject(id) ?? 'Project not found.',
       }),
       lookupSkills: tool({
-        description: 'Fetch skill clusters (languages, frontend, backend, agentic, cloud, delivery).',
+        description: 'Fetch skill clusters (languages, frontend, backend, agentic, cloud, testing).',
         inputSchema: z.object({
           cluster: z.string().optional().describe('Optional cluster name or id'),
         }),

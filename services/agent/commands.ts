@@ -53,6 +53,7 @@ export const SLASH_COMMANDS: SlashCommand[] = [
   { id: 'clear', group: 'Page', hint: 'Start a new conversation', local: 'clear' },
 
   { id: 'github', group: 'Ask', hint: 'What he has shipped publicly, with links', prompt: () => 'What has Sidhaarth shipped on GitHub recently? Link the repos.' },
+  { id: 'opensource', group: 'Ask', hint: 'Packages and tools he has published', prompt: () => 'What open source has Sidhaarth built? Link the repos.' },
   { id: 'compare', group: 'Ask', hint: 'Foodly vs ParkAlong, side by side', prompt: () => 'Compare Foodly and ParkAlong: what was hard about each, and what does each show about him as an engineer?' },
   { id: 'hire', group: 'Ask', hint: 'The honest case for and against', prompt: () => 'Give me the honest case for and against hiring Sidhaarth as a graduate engineer.' },
   { id: 'stack', group: 'Ask', arg: 'technology', hint: 'Where he has used it, e.g. /stack convex', prompt: (arg) => `Where has Sidhaarth used ${arg} in real work? Show me on the page.` },

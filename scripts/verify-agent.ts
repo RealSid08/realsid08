@@ -16,6 +16,10 @@ import { PortfolioLink } from '../components/agent/PortfolioLink';
 import { asOfLabel, portfolioEvidenceRegistry } from '../components/agent/PortfolioEvidence';
 import { pageIntentsFromMessages } from '../services/agent/pageIntent';
 import { TOOLS, toolByName } from '../services/agent/registry';
+import { EXPERIENCES, PROJECTS, SKILLS } from '../constants';
+import { ProjectExhibits } from '../components/ProjectExhibits';
+import { Experience } from '../components/Experience';
+import { NODE_POS } from '../components/SkillsMap';
 import { formatWorkByTech } from '../services/localKnowledge';
 import { SLASH_COMMANDS, matchCommands, parseSlash } from '../services/agent/commands';
 import { CARD_IDS, isTargetId } from '../lib/portfolioIds';
@@ -123,6 +127,24 @@ check('every catalog component renders from streamed, partial and complete props
 check('fetch times are shown for people, not as raw ISO strings', () => {
   assert.equal(asOfLabel('2026-09-29T09:51:30.502Z'), 'Sep 29, 2026, 09:51 UTC');
   assert.equal(asOfLabel('2026-09-29 12:00 UTC'), '2026-09-29 12:00 UTC', 'other formats pass through');
+});
+
+check('portfolio data is consistent: unique ids, every skill cluster has a graph node', () => {
+  const ids = [...EXPERIENCES.map((exp) => `exp-${exp.id}`), ...PROJECTS.map((project) => `project-${project.id}`)];
+  assert.equal(new Set(ids).size, ids.length, 'card ids must be unique');
+  assert.deepEqual(SKILLS.map((cluster) => cluster.id).sort(), Object.keys(NODE_POS).sort(), 'SKILLS and the SkillsMap nodes must match');
+  PROJECTS.filter((project) => project.type === 'open-source').forEach((project) =>
+    assert.ok(project.githubUrl?.startsWith('https://github.com/'), `${project.id} needs a public repo link`));
+});
+
+check('every card the page tools can target carries the data they filter and sort on', () => {
+  const html = renderToStaticMarkup(createElement('div', null, createElement(Experience), createElement(ProjectExhibits)));
+  const tags = html.match(/<div[^>]*\bid="(?:exp|project)-[^"]+"[^>]*>/g) ?? [];
+  assert.equal(tags.length, EXPERIENCES.length + PROJECTS.filter((project) => project.type !== 'live-demo').length, 'one element per card id');
+  tags.forEach((tag) => {
+    assert.match(tag, /data-tech="[^"]+"/, `${tag.slice(0, 60)} needs data-tech`);
+    assert.match(tag, /data-title="[^"]+"/, `${tag.slice(0, 60)} needs data-title`);
+  });
 });
 
 check('tech lookups name every role and project that uses the tech, with card ids', () => {
