@@ -26,7 +26,6 @@ export function formatProfile(): string {
   return [
     `**${PROFILE.givenName} ${PROFILE.familyName}** — ${PROFILE.title}`,
     PROFILE.location,
-    PROFILE.visa,
     PROFILE.availability,
     `Email: ${PROFILE.email}`,
     `Phone: ${PROFILE.phone}`,
@@ -110,8 +109,8 @@ export function localPortfolioAnswer(question: string): string {
     const text = formatProject('parkalong');
     if (text) parts.push(text);
   }
-  if (/(available|availability|graduate|december|dec 2026|work rights|visa|melbourne|location)/.test(q)) {
-    parts.push([`**${PROFILE.location}**`, PROFILE.visa, PROFILE.availability].join('\n\n'));
+  if (/(available|availability|graduate|december|dec 2026|melbourne|location)/.test(q)) {
+    parts.push([`**${PROFILE.location}**`, PROFILE.availability].join('\n\n'));
   }
   if (/educat|swinburne|degree|grades?|marks?|distinction/.test(q)) {
     parts.push(

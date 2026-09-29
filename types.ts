@@ -38,7 +38,6 @@ export interface ProfileInfo {
   /** one or two sentences under the name */
   tagline: string;
   location: string;
-  visa: string;
   availability: string;
   manifesto: string;
   phone: string;
