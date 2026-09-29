@@ -1,6 +1,6 @@
 # Sidhaarth Krishnan
 
-Software engineer in Melbourne. Final-year Software Engineering (Honours) student at Swinburne. Available for full-time graduate roles from December 2026.
+Software engineer in Melbourne. Final-year Software Engineering (Honours) student at Swinburne.
 
 I build multi-tenant web, mobile and AI products, from Convex backends and AWS infrastructure to native iOS apps. I split work across parallel coding agents in isolated Git worktrees, then check every change with automated tests, real app runs and human review.
 
