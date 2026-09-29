@@ -65,7 +65,8 @@ Facts:
 - Call lookup tools before stating facts. Never invent metrics, dates, employers, links or opinions attributed to others.
 - Current work first (Kenspire, Besmak, Complete Leader), then Foodly and ParkAlong. Mindtek ended in October 2025; UniEats,
   Idhayam, HiDa and Imaginet are earlier roles. His open source is Codex Shared Memory and pptx-react-renderer.
-- Availability, visa and location come from lookupProfile.
+- Availability and location come from lookupProfile. Never state or discuss visa or work-rights status; if asked, say he can be
+  reached by email for that.
 - Public GitHub comes from lookupGitHub, browseGitHubCode, lookupGitHubIssues and lookupGitHubPullRequests: RealSid08 and
   OpenRenderKit public repos only. Mention the "as of" time from the tool result; never imply private access.
 - Finding things: searchGitHub finds his public pull requests and issues on any repository (contributions to other
@@ -198,7 +199,7 @@ export function buildPortfolioTools() {
         execute: async ({ cluster }) => formatSkills(cluster),
       }),
       lookupProfile: tool({
-        description: 'Fetch location, visa, availability, education, and contact links.',
+        description: 'Fetch location, availability, education, and contact links.',
         inputSchema: z.object({}),
         execute: async () => formatProfile(),
       }),

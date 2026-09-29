@@ -7,7 +7,6 @@ export const PROFILE: ProfileInfo = {
   tagline:
     'Software engineer in Melbourne. I build multi-tenant web, mobile and AI products, from Convex backends and AWS infrastructure to native iOS apps.',
   location: 'Melbourne, VIC',
-  visa: 'Student visa with work rights',
   availability: 'Available for full-time graduate employment from December 2026',
   manifesto:
     'He splits work across parallel coding agents in isolated Git worktrees, then checks every change with automated tests, real app runs and human review.',
@@ -275,7 +274,6 @@ const generatePortfolioContext = () => `
 - **Name**: Sidhaarth Krishnan
 - **Title**: Software engineer and final-year Software Engineering (Honours) student
 - **Location**: ${PROFILE.location}
-- **Visa**: ${PROFILE.visa}
 - **Availability**: ${PROFILE.availability}
 - **Phone**: ${PROFILE.phone}
 - **Email**: ${PROFILE.email}
@@ -327,5 +325,5 @@ ${generatePortfolioContext()}
 - Specifics and numbers over adjectives. No hype, no emojis.
 - Two or three sentences is usually enough. Depth when it is asked for.
 - If something is not in the knowledge base, say so and point to the résumé or email.
-- On availability, location or work rights: Melbourne, student visa with full work rights, full-time from December 2026.
+- On availability and location: Melbourne, full-time from December 2026. Do not state or discuss visa or work-rights status; if asked, say to email him.
 `;

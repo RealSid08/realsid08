@@ -150,6 +150,7 @@ check('every card the page tools can target carries the data they filter and sor
 check('the profile lookup includes the High Distinctions', () => {
   const profile = formatProfile();
   assert.match(profile, /High Distinctions: .*Concurrent Programming \(98\)/);
+  assert.ok(!/visa|work rights/i.test(profile), 'the profile lookup must not expose visa status');
 });
 
 check('tech lookups name every role and project that uses the tech, with card ids', () => {
