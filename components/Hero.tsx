@@ -196,11 +196,7 @@ export const Hero: React.FC = () => {
         <div className="mt-10 md:mt-12 grid grid-cols-1 lg:grid-cols-[1fr_minmax(400px,0.9fr)] gap-10 lg:gap-8 items-end">
           <FadeInSection delay={200}>
             <p className="max-w-xl text-base md:text-lg leading-relaxed text-gray-300">{PROFILE.tagline}</p>
-            <p className="mt-4 mb-8 flex items-center gap-2 font-mono text-[10px] md:text-[11px] uppercase tracking-[0.2em] text-gray-400">
-              <span className="size-1.5 shrink-0 rounded-full bg-ok" aria-hidden="true" />
-              {PROFILE.availability}
-            </p>
-            <div className="flex flex-wrap gap-3">
+            <div className="mt-8 flex flex-wrap gap-3">
               <a href="#experience" className="px-6 py-3 border border-white bg-white text-black hover:bg-transparent hover:text-white transition-colors text-[11px] uppercase tracking-[0.2em] font-mono">
                 Experience
               </a>
