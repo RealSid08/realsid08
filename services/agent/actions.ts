@@ -1,3 +1,5 @@
+import { applyTheme } from '../theme';
+
 /**
  * Page actions the agent can take. Everything here is reversible or
  * short-lived, and every call is recorded so the UI can show what happened.
@@ -61,6 +63,18 @@ export const undoAll = () => {
   clearActions();
 };
 
+/* ---------- programmatic scrolling ---------- */
+
+let agentScrollUntil = 0;
+
+/** true while the page is moving because of an agent or command, not the visitor */
+export const isAgentScrolling = () => Date.now() < agentScrollUntil;
+
+const scrollToElement = (el: HTMLElement) => {
+  agentScrollUntil = Date.now() + 1200;
+  el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+};
+
 /* ---------- element helpers ---------- */
 
 const byId = (target: string) =>
@@ -76,12 +90,12 @@ const blocks = () =>
 export const navigateTo = (section: string) => {
   const el = byId(section);
   if (!el) return false;
-  el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  scrollToElement(el);
   record({ tool: 'navigate_to', label: `Scrolled to ${section}`, kind: 'navigate' });
   return true;
 };
 
-export const highlight = (target: string, durationMs = 1800) => {
+export const highlight = (target: string, durationMs = 2600) => {
   const el = byId(target);
   if (!el) return false;
   const previous = el.style.boxShadow;
@@ -99,7 +113,13 @@ export const highlight = (target: string, durationMs = 1800) => {
 
 export const focusMode = (target?: string) => {
   const keep = target ? byId(target) : null;
-  const dimmed = blocks().filter((block) => block !== keep && !block.contains(keep ?? null));
+  const siblingCards = keep
+    ? cards().filter((card) => card !== keep && !card.contains(keep) && !keep.contains(card))
+    : [];
+  const dimmed = [
+    ...blocks().filter((block) => block !== keep && !block.contains(keep ?? null)),
+    ...siblingCards,
+  ];
   dimmed.forEach((block) => block.setAttribute('data-agent-dim', ''));
   document.body.classList.add('agent-focus');
   const undo = () => {
@@ -127,15 +147,8 @@ export const setVisibility = (section: string, visible: boolean) => {
 };
 
 export const setTheme = (theme: 'light' | 'dark') => {
-  const root = document.documentElement;
-  const previous = root.dataset.theme === 'dark' ? 'dark' : 'light';
-  root.dataset.theme = theme;
-  try {
-    localStorage.setItem('theme', theme);
-  } catch {
-    /* ignore */
-  }
-  window.dispatchEvent(new CustomEvent('themechange'));
+  const previous = document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light';
+  applyTheme(theme);
   record({
     tool: 'set_theme',
     label: `Switched to ${theme}`,
@@ -268,6 +281,22 @@ export const getState = () => ({
 let walkthroughSteps: string[] = [];
 let walkthroughIndex = -1;
 
+export type TourState = { step: number; of: number; target: string } | null;
+const tourListeners = new Set<(state: TourState) => void>();
+const tourState = (): TourState =>
+  walkthroughIndex < 0 || walkthroughSteps.length === 0
+    ? null
+    : { step: walkthroughIndex + 1, of: walkthroughSteps.length, target: walkthroughSteps[walkthroughIndex] };
+const emitTour = () => tourListeners.forEach((listener) => listener(tourState()));
+
+export const onTour = (listener: (state: TourState) => void) => {
+  tourListeners.add(listener);
+  listener(tourState());
+  return () => {
+    tourListeners.delete(listener);
+  };
+};
+
 export const walkthrough = (action: 'start' | 'next' | 'prev' | 'stop') => {
   if (action === 'start') {
     walkthroughSteps = Array.from(
@@ -279,6 +308,7 @@ export const walkthrough = (action: 'start' | 'next' | 'prev' | 'stop') => {
     undoAll();
     walkthroughSteps = [];
     walkthroughIndex = -1;
+    emitTour();
     return { stopped: true };
   }
   if (walkthroughSteps.length === 0) return { steps: 0 };
@@ -288,7 +318,17 @@ export const walkthrough = (action: 'start' | 'next' | 'prev' | 'stop') => {
       ? Math.max(0, walkthroughIndex - 1)
       : Math.min(walkthroughSteps.length - 1, walkthroughIndex + 1);
   const target = walkthroughSteps[walkthroughIndex];
+  document.querySelectorAll('[data-agent-dim]').forEach((block) => block.removeAttribute('data-agent-dim'));
   navigateTo(target);
   focusMode(target);
+  emitTour();
   return { step: walkthroughIndex + 1, of: walkthroughSteps.length, target };
+};
+
+/* ---------- peek ---------- */
+
+/** Outline a card while a chat reference to it is hovered. Not recorded: nothing changed. */
+export const peek = (target: string | null) => {
+  document.querySelectorAll('[data-agent-peek]').forEach((el) => el.removeAttribute('data-agent-peek'));
+  if (target) byId(target)?.setAttribute('data-agent-peek', '');
 };

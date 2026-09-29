@@ -149,7 +149,59 @@ const excerpt = (value: string | null | undefined, limit = 4000) => {
 };
 
 export type GithubView = 'code' | 'issues' | 'pulls';
+
+export type SearchKind = 'pulls' | 'issues' | 'code';
+const SEARCH_KINDS: readonly SearchKind[] = ['pulls', 'issues', 'code'];
+const MAX_QUERY_CHARS = 100;
+const SEARCH_AUTHOR = ALLOWED_ACCOUNTS[0];
+
+type RawSearchIssue = RawIssue & { repository_url: string; pull_request?: { merged_at?: string | null }; user?: { login: string } };
+type RawSearchCode = { name: string; path: string; html_url: string; repository: { full_name: string; private: boolean; fork: boolean } };
+
+/**
+ * Free text only. Qualifiers (`repo:`, `user:`, `is:`...) are stripped so a query
+ * cannot widen the search past the fixed scope built in searchGithub.
+ */
+const searchTerms = (query: string) =>
+  query.replace(/[A-Za-z-]+:("[^"]*"|\S*)/g, ' ').replace(/[^\w\s.\-"']/g, ' ').replace(/\s+/g, ' ').trim().slice(0, MAX_QUERY_CHARS);
+
+export const searchGithub = async (kind: SearchKind, query: string, state = 'all') => {
+  const terms = searchTerms(query);
+  if (!SEARCH_KINDS.includes(kind)) throw new GithubLookupError('Invalid search kind', 400);
+  if (!['open', 'closed', 'all'].includes(state)) throw new GithubLookupError('Invalid state', 400);
+  if (kind === 'code' && !terms) throw new GithubLookupError('Code search needs search terms', 400);
+  return cached(`search:${kind}:${state}:${terms}`, async () => {
+    const fetchedAt = new Date().toISOString();
+    if (kind === 'code') {
+      if (!process.env.GITHUB_TOKEN) throw new GithubLookupError('Code search is unavailable right now', 503);
+      const perAccount = await Promise.all(ALLOWED_ACCOUNTS.map((account) =>
+        githubJson<{ items: RawSearchCode[] }>(`https://api.github.com/search/code?per_page=10&q=${encodeURIComponent(`${terms} user:${account}`)}`)));
+      const results = perAccount.flatMap((page) => page.items)
+        .filter((item) => !item.repository.private && !item.repository.fork)
+        .slice(0, 15)
+        .map((item) => ({ repo: item.repository.full_name, path: item.path, url: item.html_url }));
+      return { kind, query: terms, fetchedAt, scope: ALLOWED_ACCOUNTS.join(' and '), results };
+    }
+    const qualifiers = [`author:${SEARCH_AUTHOR}`, 'is:public', kind === 'pulls' ? 'is:pr' : 'is:issue', ...(state === 'all' ? [] : [`is:${state}`])];
+    const page = await githubJson<{ total_count: number; items: RawSearchIssue[] }>(
+      `https://api.github.com/search/issues?per_page=20&sort=updated&order=desc&q=${encodeURIComponent([terms, ...qualifiers].join(' '))}`);
+    const results = page.items.map((item) => ({
+      repo: item.repository_url.replace('https://api.github.com/repos/', ''),
+      number: item.number,
+      title: item.title,
+      state: item.pull_request?.merged_at ? 'merged' : item.state,
+      updatedAt: item.updated_at,
+      url: item.html_url,
+      body: excerpt(item.body, 300),
+    }));
+    return { kind, query: terms, fetchedAt, scope: `public ${kind === 'pulls' ? 'pull requests' : 'issues'} authored by ${SEARCH_AUTHOR} on any repository`, total: page.total_count, results };
+  });
+};
+
 export const getGithubPayload = async (params: URLSearchParams) => {
+  if (params.get('view') === 'search') {
+    return searchGithub(params.get('kind') as SearchKind, params.get('q') ?? '', params.get('state') ?? 'all');
+  }
   const account = params.get('account') ?? 'RealSid08';
   if (!isAllowedAccount(account)) throw new GithubLookupError('Account not allowed', 400);
   const repo = params.get('repo');

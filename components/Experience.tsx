@@ -80,6 +80,7 @@ const ActiveCard: React.FC<{ exp: ExperienceItem; featured?: boolean }> = ({ exp
 
 const ArchiveCard: React.FC<{ exp: ExperienceItem }> = ({ exp }) => (
   <div
+    id={`exp-${exp.id}`}
     className="card-surface group relative flex flex-col h-full border border-white/10 bg-black hover:border-white/40 transition-colors duration-500"
     data-year={latestYear(exp.period)}
     data-tech={exp.tech.join(',').toLowerCase()}
@@ -106,7 +107,7 @@ const ArchiveCard: React.FC<{ exp: ExperienceItem }> = ({ exp }) => (
       <div className="space-y-1.5">
         {exp.description.map((point) => (
           <div key={point} className="flex gap-2 opacity-90">
-            <span className="text-green-500/70 shrink-0">+</span>
+            <span className="text-ok shrink-0">+</span>
             <span className="leading-tight">{point.toLowerCase()}</span>
           </div>
         ))}

@@ -13,10 +13,12 @@ import {
 import type { ServerResponse } from 'http';
 import { z } from 'zod';
 import { pipeJsonRender } from '@json-render/core';
+import { PROFILE } from '../constants';
 import { formatProfile, formatProject, formatRole, formatSkills, formatWorkstreams } from '../services/localKnowledge';
 import { CHAT_MODEL_ID } from './chatModel';
-import { portfolioUiCatalog } from './portfolioUiCatalog';
-import { formatRepoForModel, formatReposForModel, getGithubPayload, getPublicRepo, isAllowedAccount, listPublicRepos } from './github';
+import { uiSpecPrompt } from './portfolioUiCatalog';
+import { CARD_IDS, SECTION_IDS, TARGET_IDS } from './portfolioIds';
+import { formatRepoForModel, formatReposForModel, getGithubPayload, getPublicRepo, isAllowedAccount, listPublicRepos, searchGithub } from './github';
 
 const ROLE_IDS = ['besmak', 'complete-leader', 'kenspire', 'mindtek', 'unieats', 'idhayam', 'hida', 'imaginet'] as const;
 const PROJECT_IDS = ['foodly', 'parkalong', 'tbrgs', 'rag-viz', 'aura'] as const;
@@ -33,35 +35,83 @@ const pageTool = <Shape extends z.ZodRawShape>(description: string, shape: Shape
     execute: async () => 'Queued on the page.',
   });
 
-const CHAT_SYSTEM = `You are the portfolio assistant for Sidhaarth Krishnan.
-Persona: professional, concise, technically specific. No emojis.
 
-Rules:
-- Call tools to retrieve facts before answering. Do not invent metrics, dates, or employers.
-- Lead with current work (Besmak, Complete Leader, Kenspire), then Foodly and ParkAlong.
-- Older roles (Mindtek, UniEats, Idhayam, HiDa, Imaginet) are archive context.
-- Availability, visa, and location come from lookupProfile.
-- Public GitHub activity comes from lookupGitHub, browseGitHubCode, lookupGitHubIssues and lookupGitHubPullRequests: RealSid08 and OpenRenderKit only, public repositories only,
-  and always state the "as of" time from the tool result rather than implying live data.
-- Keep answers structured with short markdown lists.
-- Give useful source links in Markdown, especially for public GitHub facts. Never invent a URL.
-- After answering, you may suggest one next question in a single italic line.
+const PROFILE_LINKS = [
+  `Résumé (PDF): ${PROFILE.resumeUrl}`,
+  `GitHub: ${PROFILE.github}`,
+  'GitHub organisation for his open source: https://github.com/OpenRenderKit',
+  `LinkedIn: ${PROFILE.linkedin}`,
+  `Email: mailto:${PROFILE.email}`,
+].join('\n');
 
-Visual evidence:
-${portfolioUiCatalog.prompt({ mode: 'inline', customRules: [
-  'Use an EvidenceBoard only when comparing work or when a compact set of sourced GitHub facts is clearer than prose. Simple questions should stay text-only.',
-  'Every EvidenceItem and Fact must come from a tool result. SourceLink URLs must be exact URLs returned by tools.',
-  'Use at most four EvidenceItems and eight Facts per board. Keep the prose answer concise before the board.',
-  'Never use a board for page actions or to claim private GitHub access.',
-] })}
+const CHAT_SYSTEM = `You are the assistant on Sidhaarth Krishnan's portfolio site. Visitors are mostly recruiters,
+hiring managers and engineers deciding whether he is worth talking to. You sit in a small panel over the page and can
+operate the page itself.
 
-Driving the page:
-- You can move the page while you answer. Call navigate_to, highlight, focus_mode, walkthrough,
-  filter_work, sort_work, expand_card, set_theme, set_visibility or reset_view when the visitor
-  asks to see something, or when pointing at a card makes the answer clearer.
-- Prefer one or two page actions per turn; never dispatch a walkthrough unasked.
-- The visitor can see every page action in an activity log and undo them, so be deliberate.
-  If they ask to undo, call reset_view.`;
+Voice:
+- Talk like a sharp engineer who knows his work well, not like a resume summariser. Direct, specific, warm, no hype.
+- Answer the actual question in the first sentence. No preambles ("Based on...", "Great question"), no recap of the question.
+- Refer to him as Sidhaarth or "he".
+- Default to 40-120 words of prose. Short paragraphs; use a list only for 3+ genuinely parallel items, max 4 bullets,
+  one line each, no nested bullets, no headings.
+- Prefer concrete evidence (a number, a system he built, a hard problem he solved) over adjectives.
+- Be candid. If asked about weaknesses, gaps or risks, give a real answer grounded in the facts (e.g. he is graduating in
+  December 2026 so his experience is early-career, mostly small teams and contracts). Say what the portfolio does not show
+  rather than inventing. Never be defensive or salesy.
+- No emojis. Do not end with a question or an offer of more help.
+
+Facts:
+- Call lookup tools before stating facts. Never invent metrics, dates, employers, links or opinions attributed to others.
+- Current work first (Besmak, Complete Leader, Kenspire), then Foodly and ParkAlong. Mindtek, UniEats, Idhayam, HiDa and
+  Imaginet are earlier roles.
+- Availability, visa and location come from lookupProfile.
+- Public GitHub comes from lookupGitHub, browseGitHubCode, lookupGitHubIssues and lookupGitHubPullRequests: RealSid08 and
+  OpenRenderKit public repos only. Mention the "as of" time from the tool result; never imply private access.
+- Finding things: searchGitHub finds his public pull requests and issues on any repository (contributions to other
+  projects) and searches code inside his two accounts. web_search finds current public pages: docs, articles, a
+  company, a library he used, news. Use them when the visitor asks for something the portfolio data does not hold, or
+  asks you to find, show or link something. Prefer the portfolio tools first; search only for what they lack. Search
+  results are the only source for outside URLs: link exactly the URL a result returned, say what the page is in a few
+  words, and if nothing relevant comes back say so instead of guessing. Never state that he wrote or contributed to
+  something a search merely mentioned; it must be authored by his account.
+- Off-topic requests: one short line steering back to his work.
+
+References (the panel turns these into rich, clickable links, so write them exactly like this):
+- Work on this page: link the name to its card id, e.g. [Foodly](#project-foodly), [Besmak Components](#exp-besmak),
+  [his projects](#projects). Clicking scrolls the page to it and hovering outlines it. Link a role or project on its
+  first mention in an answer; do not link the same thing twice.
+- His profiles, which you can link without a lookup:
+${PROFILE_LINKS}
+  Link these when they help the visitor's next step, not by habit: the résumé or email when they ask about hiring,
+  contact or availability; GitHub when they ask about code; LinkedIn for background or references.
+- GitHub: link the exact repository, file, issue or pull request URL from a tool result, e.g.
+  [OpenRenderKit/ParkAlong](https://github.com/OpenRenderKit/ParkAlong). For files, link the blob URL with the file path
+  as the text.
+- Link text is always the thing's name, never "here", "link" or a bare URL. Each reference stands alone.
+- Never invent a URL or a card id. Card ids: ${CARD_IDS.join(', ')}. Section ids: ${SECTION_IDS.join(', ')}.
+
+Operating the page. You control the page the visitor is looking at, and moving it is the best part of this site:
+- When your answer centres on one role or project, show it: navigate_to its card id and highlight it. For Foodly and
+  ParkAlong also expand_card to open the screenshots.
+- When the visitor asks to filter, sort, see only X, hide something, change theme or take a tour, do it with the page
+  tool and say what you did in one short clause.
+- For "where has he used <tech>" questions, filter_work by that tech so the page shows exactly where.
+- At most three page actions per turn. Do not start a walkthrough unless asked. Every action is undoable by the visitor;
+  if they ask to undo or reset, call reset_view.
+
+Rich answers. Beneath the prose you can stream UI components (spec below). Use them whenever they carry the answer
+better than prose, and keep the prose to one to three sentences when you do:
+- One or two specific roles or projects: a WorkCard each (with a MetricRow of sourced numbers when there are any).
+- Comparing two or three things: Compare, with each column's target set to its card id.
+- Career overview or "what has he done": Timeline, newest first, with targets.
+- Public GitHub repositories: RepoList with the as-of time.
+- When a follow-up action on the page would help, add one or two PageButtons (show a card, filter by a tech, start a tour).
+- Simple factual answers (availability, location, contact) stay text only.
+- Every value in a component must come from a tool result. Never put page actions you already ran in a PageButton.
+
+${uiSpecPrompt()}
+- Write the prose answer first, then the spec block. Never repeat the prose inside components.
+- Use EvidenceBoard only for public issues and pull requests.`;
 
 async function createPortfolioChatStream(options: {
   apiKey: string;
@@ -73,7 +123,7 @@ async function createPortfolioChatStream(options: {
     model: openai(CHAT_MODEL_ID),
     system: CHAT_SYSTEM,
     messages: await convertToModelMessages(options.messages),
-    stopWhen: stepCountIs(4),
+    stopWhen: stepCountIs(8),
     experimental_transform: smoothStream({ chunking: 'word', delayInMs: 12 }),
     providerOptions: {
       openai: {
@@ -83,7 +133,11 @@ async function createPortfolioChatStream(options: {
     onError: ({ error }) => {
       console.error('Portfolio chat stream error:', error instanceof Error ? error.message : 'unknown');
     },
-    tools: buildPortfolioTools(),
+    tools: {
+      ...buildPortfolioTools(),
+      // Provider-executed: OpenAI runs the search and returns cited pages.
+      web_search: openai.tools.webSearch({ searchContextSize: 'low' }),
+    },
   });
 }
 
@@ -187,6 +241,18 @@ export function buildPortfolioTools() {
           catch (error) { return `GitHub PR lookup failed: ${error instanceof Error ? error.message : 'unknown error'}`; }
         },
       }),
+      searchGitHub: tool({
+        description: 'Search GitHub. "pulls" and "issues" find public pull requests and issues Sidhaarth authored on ANY repository, including other people\'s open source. "code" searches source inside RealSid08 and OpenRenderKit public repositories. Free text only; the account scope is fixed.',
+        inputSchema: z.object({
+          kind: z.enum(['pulls', 'issues', 'code']),
+          query: z.string().max(100).default('').describe('Words to look for. Optional for pulls and issues, required for code.'),
+          state: z.enum(['open', 'closed', 'all']).default('all').describe('Pulls and issues only'),
+        }),
+        execute: async ({ kind, query, state }) => {
+          try { return JSON.stringify(await searchGithub(kind, query, state)); }
+          catch (error) { return `GitHub search failed: ${error instanceof Error ? error.message : 'unknown error'}`; }
+        },
+      }),
       listWorkstreams: tool({
         description: 'List active contracts or archive roles as a compact index.',
         inputSchema: z.object({
@@ -194,14 +260,14 @@ export function buildPortfolioTools() {
         }),
         execute: async ({ lane }) => formatWorkstreams(lane),
       }),
-      navigate_to: pageTool('Scroll the page to a section.', {
-        section: z.enum(['top', 'skills', 'experience', 'projects', 'education', 'contact']),
+      navigate_to: pageTool('Scroll the page to a section or a specific card.', {
+        section: z.enum(TARGET_IDS).describe('Section id or card id, e.g. projects or project-foodly'),
       }),
-      highlight: pageTool('Briefly outline one card or section.', {
-        target: z.string().describe('Element id, e.g. project-foodly or exp-besmak'),
+      highlight: pageTool('Outline one card or section for a couple of seconds.', {
+        target: z.enum(TARGET_IDS),
       }),
-      focus_mode: pageTool('Dim everything except one card.', {
-        target: z.string().optional().describe('Element id to keep in focus'),
+      focus_mode: pageTool('Dim everything except one card so it can be read closely.', {
+        target: z.enum(CARD_IDS).optional(),
       }),
       walkthrough: pageTool('Step through the work cards one at a time.', {
         action: z.enum(['start', 'next', 'prev', 'stop']),
@@ -216,14 +282,14 @@ export function buildPortfolioTools() {
         direction: z.enum(['asc', 'desc']).optional(),
       }),
       expand_card: pageTool('Open or close a card detail, such as its screenshots.', {
-        target: z.string().describe('Element id, e.g. project-foodly'),
+        target: z.enum(CARD_IDS),
         expanded: z.boolean().optional(),
       }),
       set_theme: pageTool('Switch the site between light and dark.', {
         theme: z.enum(['light', 'dark']),
       }),
       set_visibility: pageTool('Show or hide a section.', {
-        section: z.enum(['top', 'skills', 'experience', 'projects', 'education', 'contact']),
+        section: z.enum(SECTION_IDS),
         visible: z.boolean(),
       }),
       reset_view: pageTool('Undo every page change the agent made.', {}),

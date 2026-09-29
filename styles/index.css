@@ -8,12 +8,14 @@
   --panel: 246 247 249;
   --fg: 13 17 23;
   --accent: 29 78 216;
+  --ok: 21 128 61;
+  --info: 29 78 216;
   --g100: 15 23 42;
   --g200: 30 41 59;
   --g300: 51 65 85;
   --g400: 71 85 105;
-  --g500: 100 116 139;
-  --g600: 148 163 184;
+  --g500: 82 96 116;
+  --g600: 100 113 133;
   --g700: 203 213 225;
   --g800: 226 232 240;
   --g900: 241 245 249;
@@ -25,13 +27,15 @@ html[data-theme='dark'] {
   --panel: 10 10 10;
   --fg: 255 255 255;
   --accent: 229 229 229;
+  --ok: 74 222 128;
+  --info: 96 165 250;
   --g100: 243 244 246;
   --g200: 229 231 235;
   --g300: 209 213 219;
-  --g400: 156 163 175;
-  --g500: 107 114 128;
-  --g600: 75 85 99;
-  --g700: 55 65 81;
+  --g400: 176 182 192;
+  --g500: 148 154 165;
+  --g600: 124 131 143;
+  --g700: 82 90 104;
   --g800: 31 41 55;
   --g900: 17 24 39;
   color-scheme: dark;
@@ -43,13 +47,15 @@ html[data-theme='dark'] {
   --panel: 10 10 10;
   --fg: 255 255 255;
   --accent: 229 229 229;
+  --ok: 74 222 128;
+  --info: 96 165 250;
   --g100: 243 244 246;
   --g200: 229 231 235;
   --g300: 209 213 219;
-  --g400: 156 163 175;
-  --g500: 107 114 128;
-  --g600: 75 85 99;
-  --g700: 55 65 81;
+  --g400: 176 182 192;
+  --g500: 148 154 165;
+  --g600: 124 131 143;
+  --g700: 82 90 104;
   --g800: 31 41 55;
   --g900: 17 24 39;
   color: rgb(var(--fg));
@@ -106,4 +112,92 @@ body {
   filter: saturate(0.5);
   transition: opacity 300ms ease, filter 300ms ease;
   pointer-events: none;
+}
+
+/* Cards the assistant can point at land below the top edge, not flush against it. */
+[id^='exp-'],
+[id^='project-'] {
+  scroll-margin-top: 5rem;
+}
+
+/* A soft outline while the visitor hovers a reference to a card in the chat. */
+[data-agent-peek] {
+  outline: 1px solid rgb(var(--fg) / 0.55);
+  outline-offset: 4px;
+  transition: outline-color 200ms ease;
+}
+
+/*
+ * A slow band of light that travels around the idle composer, inviting a
+ * question. It fades out once the visitor is typing or reading a reply.
+ */
+@property --agent-glow-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+.agent-glow {
+  position: relative;
+  isolation: isolate;
+}
+
+.agent-glow::before,
+.agent-glow::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  pointer-events: none;
+  background: conic-gradient(
+    from var(--agent-glow-angle),
+    transparent 0deg 250deg,
+    rgb(var(--accent) / 0.15) 285deg,
+    rgb(var(--accent) / 0.9) 330deg,
+    rgb(var(--accent) / 0.15) 350deg,
+    transparent 360deg
+  );
+  opacity: 0;
+  transition: opacity 600ms ease;
+  animation: agent-glow-spin 7s linear infinite;
+}
+
+/* the crisp travelling edge */
+.agent-glow::before {
+  z-index: 1;
+  padding: 1px;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+}
+
+/* the soft light it casts */
+.agent-glow::after {
+  z-index: -1;
+  inset: -3px;
+  filter: blur(10px);
+}
+
+.agent-glow-idle::before {
+  opacity: 0.85;
+}
+
+.agent-glow-idle::after {
+  opacity: 0.4;
+}
+
+html[data-theme='dark'] .agent-glow-idle::after {
+  opacity: 0.3;
+}
+
+@keyframes agent-glow-spin {
+  to {
+    --agent-glow-angle: 360deg;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .agent-glow::before,
+  .agent-glow::after {
+    animation: none;
+  }
 }

@@ -26,6 +26,9 @@ export default {
         'mono-glass': 'rgb(var(--fg) / 0.03)',
         'mono-border': 'rgb(var(--fg) / 0.1)',
         'mono-accent': 'rgb(var(--accent) / <alpha-value>)',
+        // Status text that stays readable on both themes' backgrounds.
+        ok: 'rgb(var(--ok) / <alpha-value>)',
+        info: 'rgb(var(--info) / <alpha-value>)',
       },
       fontFamily: {
         sans: ['Inter', 'sans-serif'],

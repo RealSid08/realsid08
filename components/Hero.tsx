@@ -142,11 +142,11 @@ const WorktreeGraph: React.FC<{ processes: ExperienceItem[] }> = ({ processes })
                   </div>
                   <div className="mt-1.5 flex items-end justify-between gap-4">
                     <p className="font-display font-bold text-lg md:text-xl leading-none tracking-tight">{proc.company}</p>
-                    <span className={`hidden sm:block text-[9px] uppercase tracking-[0.2em] shrink-0 ${isOut ? 'text-black/60' : 'text-gray-500'}`}>
+                    <span className={`hidden sm:block text-[9px] uppercase tracking-[0.2em] shrink-0 ${isOut ? 'text-gray-400' : 'text-gray-500'}`}>
                       since {since}
                     </span>
                   </div>
-                  <p className={`mt-1.5 text-[10.5px] ${isOut ? 'text-black/70' : 'text-gray-400'}`}>
+                  <p className={`mt-1.5 text-[10.5px] ${isOut ? 'text-gray-300' : 'text-gray-400'}`}>
                     {proc.role} · {proc.employmentType}
                   </p>
                   <div className="mt-2.5 flex flex-wrap gap-1.5">
@@ -180,7 +180,7 @@ export const Hero: React.FC = () => {
   const processes = EXPERIENCES.filter((exp) => (WORKTREE_IDS as readonly string[]).includes(exp.id));
 
   return (
-    <header className="relative z-10 min-h-[90vh] md:min-h-screen flex flex-col justify-center px-4 md:px-8 lg:px-12 pt-16 pb-24 overflow-hidden">
+    <header id="top" className="relative z-10 min-h-[90vh] md:min-h-screen flex flex-col justify-center px-4 md:px-8 lg:px-12 pt-16 pb-24 overflow-hidden">
       <div className="max-w-7xl mx-auto w-full">
         <FadeInSection>
           <h1 className="relative leading-none select-none">

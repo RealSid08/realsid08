@@ -51,8 +51,8 @@ export const RagVisualizer: React.FC = () => {
 
             {/* Bot Message */}
             <div className={`transition-all duration-500 transform ${stage === 5 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-                <div className="mr-auto bg-zinc-800 border border-white/10 text-gray-200 px-2 py-1.5 rounded-lg rounded-tl-none max-w-[90%] shadow-lg">
-                    <span className="text-green-400 font-semibold">RAG</span> retrieves data.
+                <div className="mr-auto bg-white/10 border border-white/10 text-gray-200 px-2 py-1.5 rounded-lg rounded-tl-none max-w-[90%] shadow-lg">
+                    <span className="text-ok font-semibold">RAG</span> retrieves data.
                 </div>
                 <div className="text-[8px] text-gray-500 mt-1">AI • 10:42 AM</div>
             </div>
@@ -88,7 +88,7 @@ export const RagVisualizer: React.FC = () => {
 
             {/* Node 2: Embedder */}
             <div className={`absolute top-8 right-8 p-2 border w-24 transition-all duration-300 ${stage === 2 ? 'border-blue-500 bg-blue-900/10' : 'border-white/10 bg-black'}`}>
-                <div className="text-blue-500 text-[8px] mb-1">EMBEDDER</div>
+                <div className="text-info text-[8px] mb-1">EMBEDDER</div>
                 <div className="font-mono text-[7px] text-gray-400 tracking-tighter">
                     {stage >= 2 ? '[0.21, -0.54, ...]' : 'Waiting...'}
                 </div>
@@ -104,7 +104,7 @@ export const RagVisualizer: React.FC = () => {
 
             {/* Node 3: Vector DB */}
             <div className={`absolute top-24 right-8 p-2 border w-24 transition-all duration-300 ${stage === 3 ? 'border-green-500 bg-green-900/10' : 'border-white/10 bg-black'}`}>
-                <div className="text-green-500 text-[8px] mb-1">VECTOR STORE</div>
+                <div className="text-ok text-[8px] mb-1">VECTOR STORE</div>
                 <div className="flex gap-1 mt-1">
                     <div className={`w-2 h-2 rounded-sm ${stage === 3 ? 'bg-green-400 animate-bounce' : 'bg-gray-800'}`}></div>
                     <div className={`w-2 h-2 rounded-sm ${stage === 3 ? 'bg-green-400 animate-bounce delay-75' : 'bg-gray-800'}`}></div>
@@ -124,7 +124,7 @@ export const RagVisualizer: React.FC = () => {
             <div className={`absolute bottom-0 left-0 w-full border-t transition-all duration-300 p-3 ${stage === 4 || stage === 5 ? 'bg-white/5 border-white/20' : 'bg-black border-white/5'}`}>
                 <div className="flex items-center justify-between mb-2">
                     <span className="text-[8px] text-gray-500">LLM CONTEXT WINDOW</span>
-                    <span className={`text-[8px] ${stage === 5 ? 'text-white' : 'text-gray-700'}`}>GENERATING...</span>
+                    <span className={`text-[8px] ${stage === 5 ? 'text-white' : 'text-gray-500'}`}>GENERATING...</span>
                 </div>
                 
                 <div className="flex gap-2 h-12 items-center justify-center">
@@ -137,7 +137,7 @@ export const RagVisualizer: React.FC = () => {
                      <div className={`h-full w-24 border border-green-500/30 bg-green-500/5 flex flex-col items-center justify-center gap-1 ${stage >= 4 ? 'opacity-100' : 'opacity-20'}`}>
                          <div className="w-16 h-1 bg-green-500/40"></div>
                          <div className="w-16 h-1 bg-green-500/40"></div>
-                         <span className="text-[7px] text-green-400">CONTEXT</span>
+                         <span className="text-[7px] text-ok">CONTEXT</span>
                      </div>
                      <span className="text-gray-600">=</span>
                      {/* Output Block */}
