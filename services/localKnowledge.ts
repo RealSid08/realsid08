@@ -50,6 +50,30 @@ export function formatWorkstreams(lane: 'active' | 'archive' | 'all'): string {
     .join('\n');
 }
 
+/**
+ * Every role and project that lists a technology in its stack or mentions it in its
+ * write-up, with the page card id to link. Lets "where has he used X" be answered
+ * from one lookup instead of reading every role.
+ */
+export function formatWorkByTech(tech: string): string {
+  const needle = tech.trim().toLowerCase();
+  if (!needle) return 'Give a technology to look for.';
+  const mentions = (tags: string[], text: string[]) =>
+    tags.some((tag) => tag.toLowerCase().includes(needle)) || text.some((line) => line.toLowerCase().includes(needle));
+  const roles = EXPERIENCES.filter((exp) => mentions(exp.tech, exp.description)).map(
+    (exp) => `- **${exp.company}** — ${exp.role} (${exp.period}) · card id exp-${exp.id} · stack: ${exp.tech.join(', ')}`,
+  );
+  const projects = PROJECTS.filter((project) => mentions(project.tech, project.bullets ?? [project.description])).map(
+    (project) => `- **${project.title}** — ${project.subtitle ?? 'project'}${project.period ? ` (${project.period})` : ''}${project.type === 'live-demo' ? '' : ` · card id project-${project.id}`} · stack: ${project.tech.join(', ')}`,
+  );
+  if (roles.length + projects.length === 0) return `Nothing in his roles or projects mentions ${tech}.`;
+  return [
+    `Work that uses or mentions ${tech} (${roles.length + projects.length} in total; name every one):`,
+    ...(roles.length ? ['Roles:', ...roles] : []),
+    ...(projects.length ? ['Projects:', ...projects] : []),
+  ].join('\n');
+}
+
 export function localPortfolioAnswer(question: string): string {
   const q = question.toLowerCase();
   const parts: string[] = [];

@@ -14,7 +14,7 @@ import type { ServerResponse } from 'http';
 import { z } from 'zod';
 import { pipeJsonRender } from '@json-render/core';
 import { PROFILE } from '../constants';
-import { formatProfile, formatProject, formatRole, formatSkills, formatWorkstreams } from '../services/localKnowledge';
+import { formatProfile, formatProject, formatRole, formatSkills, formatWorkByTech, formatWorkstreams } from '../services/localKnowledge';
 import { CHAT_MODEL_ID } from './chatModel';
 import { uiSpecPrompt } from './portfolioUiCatalog';
 import { CARD_IDS, SECTION_IDS, TARGET_IDS } from './portfolioIds';
@@ -95,10 +95,9 @@ Operating the page. You control the page the visitor is looking at, and moving i
   ParkAlong also expand_card to open the screenshots.
 - When the visitor asks to filter, sort, see only X, hide something, change theme or take a tour, do it with the page
   tool and say what you did in one short clause.
-- For "where has he used <tech>" questions, filter_work by that tech so the page shows exactly where. Then answer from all
-  of the work, not the first hit: call listWorkstreams to see which roles list the tech, read each one that does (and the
-  projects), and name every role or project that used it, linking each on first mention. If the page filter shows more
-  cards than you named, your answer is incomplete.
+- For "where has he used <tech>" questions, call findWorkByTech once, filter_work by that tech, and name every role and
+  project it returns, linking each on first mention. Do not read the roles one by one; the lookup already lists them all
+  with their stacks. Read a single role or project only if the visitor asks what he did with the tech there.
 - At most three page actions per turn. Do not start a walkthrough unless asked. Every action is undoable by the visitor;
   if they ask to undo or reset, call reset_view.
 
@@ -255,6 +254,11 @@ export function buildPortfolioTools() {
           try { return JSON.stringify(await searchGithub(kind, query, state)); }
           catch (error) { return `GitHub search failed: ${error instanceof Error ? error.message : 'unknown error'}`; }
         },
+      }),
+      findWorkByTech: tool({
+        description: 'Find every role and project that uses or mentions a technology, e.g. Convex, React Native, Supabase. Returns card ids to link.',
+        inputSchema: z.object({ tech: z.string().min(1).max(60) }),
+        execute: async ({ tech }) => formatWorkByTech(tech),
       }),
       listWorkstreams: tool({
         description: 'List active contracts or archive roles as a compact index.',

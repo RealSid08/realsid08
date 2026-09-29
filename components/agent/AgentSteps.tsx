@@ -38,6 +38,7 @@ const describe = (tool: string, input: Record<string, unknown> = {}, output?: un
     case 'lookupProject': return { label: `Read ${nameOf(input.id)}`, page: false };
     case 'lookupSkills': return { label: input.cluster ? `Read ${input.cluster} skills` : 'Read skills', page: false };
     case 'lookupProfile': return { label: 'Read profile', page: false };
+    case 'findWorkByTech': return { label: `Checked his work for ${input.tech ?? 'a technology'}`, page: false };
     case 'listWorkstreams': return { label: 'Listed roles', page: false };
     case 'lookupGitHub': return { label: `GitHub ${repoOf(input)}`, page: false };
     case 'browseGitHubCode': return { label: `Read ${repoOf(input)}${input.path ? `/${input.path}` : ''}`, page: false };

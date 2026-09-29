@@ -16,6 +16,7 @@ import { PortfolioLink } from '../components/agent/PortfolioLink';
 import { asOfLabel, portfolioEvidenceRegistry } from '../components/agent/PortfolioEvidence';
 import { pageIntentsFromMessages } from '../services/agent/pageIntent';
 import { TOOLS, toolByName } from '../services/agent/registry';
+import { formatWorkByTech } from '../services/localKnowledge';
 import { SLASH_COMMANDS, matchCommands, parseSlash } from '../services/agent/commands';
 import { CARD_IDS, isTargetId } from '../lib/portfolioIds';
 import { transcribeAudio, TranscriptionError } from '../lib/transcribe';
@@ -124,6 +125,15 @@ check('fetch times are shown for people, not as raw ISO strings', () => {
   assert.equal(asOfLabel('2026-09-29 12:00 UTC'), '2026-09-29 12:00 UTC', 'other formats pass through');
 });
 
+check('tech lookups name every role and project that uses the tech, with card ids', () => {
+  const convex = formatWorkByTech('convex');
+  ['Besmak Components', 'Kenspire Advisors', 'Foodly'].forEach((name) => assert.ok(convex.includes(name), `Convex should include ${name}`));
+  ['exp-besmak', 'exp-kenspire', 'project-foodly'].forEach((id) => assert.ok(convex.includes(id) && isTargetId(id), `${id} should be a real card id`));
+  assert.ok(!convex.includes('HiDa'), 'unrelated roles are not listed');
+  assert.match(formatWorkByTech('cobol'), /Nothing in his roles/);
+  assert.match(formatWorkByTech('  '), /Give a technology/);
+});
+
 check('slash commands only run registered tools with valid targets', () => {
   const ids = SLASH_COMMANDS.map((command) => command.id);
   assert.equal(new Set(ids).size, ids.length, 'command ids must be unique');
@@ -192,7 +202,7 @@ check('the model is told about every act tool the page can run', () => {
 
 check('lookups are still offered to the model', () => {
   const serverTools = buildPortfolioTools() as Record<string, unknown>;
-  ['lookupRole', 'lookupProject', 'lookupSkills', 'lookupProfile', 'lookupGitHub', 'browseGitHubCode', 'lookupGitHubIssues', 'lookupGitHubPullRequests', 'searchGitHub', 'listWorkstreams'].forEach((name) =>
+  ['lookupRole', 'lookupProject', 'lookupSkills', 'lookupProfile', 'lookupGitHub', 'browseGitHubCode', 'lookupGitHubIssues', 'lookupGitHubPullRequests', 'searchGitHub', 'findWorkByTech', 'listWorkstreams'].forEach((name) =>
     assert.ok(name in serverTools, `missing ${name}`),
   );
 });
