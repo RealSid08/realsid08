@@ -22,7 +22,7 @@ const components = {
         title: z.string(),
         meta: z.string().describe('Role and period, or project type and period'),
         summary: z.string().describe('One or two sentences of concrete evidence'),
-        stack: z.array(z.string()).max(5),
+        stack: z.array(z.string()).max(5).describe('Tags copied from the Stack line of the tool result; never add your own'),
       }),
       slots: ['default'],
       description: 'One role or project, with a button that shows it on the page. Children may be Metric or SourceLink.',

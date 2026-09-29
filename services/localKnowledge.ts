@@ -34,6 +34,7 @@ export function formatProfile(): string {
     `GitHub: ${PROFILE.github}`,
     `Resume: ${PROFILE.resumeUrl}`,
     `Education: ${EDUCATION.degree}, ${EDUCATION.school}, ${EDUCATION.campus}. Graduating ${EDUCATION.graduating}.`,
+    `High Distinctions: ${EDUCATION.distinctions.map((item) => `${item.unit} (${item.mark})`).join(', ')}.`,
   ].join('\n');
 }
 

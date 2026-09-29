@@ -20,7 +20,7 @@ import { EXPERIENCES, PROJECTS, SKILLS } from '../constants';
 import { ProjectExhibits } from '../components/ProjectExhibits';
 import { Experience } from '../components/Experience';
 import { NODE_POS } from '../components/SkillsMap';
-import { formatWorkByTech } from '../services/localKnowledge';
+import { formatProfile, formatWorkByTech } from '../services/localKnowledge';
 import { SLASH_COMMANDS, matchCommands, parseSlash } from '../services/agent/commands';
 import { CARD_IDS, isTargetId } from '../lib/portfolioIds';
 import { transcribeAudio, TranscriptionError } from '../lib/transcribe';
@@ -145,6 +145,11 @@ check('every card the page tools can target carries the data they filter and sor
     assert.match(tag, /data-tech="[^"]+"/, `${tag.slice(0, 60)} needs data-tech`);
     assert.match(tag, /data-title="[^"]+"/, `${tag.slice(0, 60)} needs data-title`);
   });
+});
+
+check('the profile lookup includes the High Distinctions', () => {
+  const profile = formatProfile();
+  assert.match(profile, /High Distinctions: .*Concurrent Programming \(98\)/);
 });
 
 check('tech lookups name every role and project that uses the tech, with card ids', () => {
