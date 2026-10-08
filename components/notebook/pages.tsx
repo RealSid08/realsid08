@@ -83,6 +83,16 @@ export const PAGES: Page[] = [
       <>
         <Run left="Sidhaarth Krishnan" right="Melbourne" />
         <p className="hw" style={{ margin: '14px 0 0' }}>hi! this is what I’ve been building ↓</p>
+        <figure className="me">
+          <span className="tape" />
+          <img
+            src="/work/notebook/me-working.jpg"
+            alt="Sidhaarth working at his laptop"
+            decoding="async"
+            {...zoomable('me', '/work/notebook/full/me-working.jpg', 'me, mid-build')}
+          />
+          <figcaption>me, mid-build</figcaption>
+        </figure>
         <h1 data-mark>I build software people use every day, and the <em>tools</em> I build it with.</h1>
         <p className="lede">
           When I run into a real-world problem, or a company brings me one, I build the software that solves it. For
@@ -91,7 +101,7 @@ export const PAGES: Page[] = [
           in the city, fuel prices I couldn’t trust. I love this work, and I care most that what I build gets used.
         </p>
         <p className="lab">How I work</p>
-        <p className="body" style={{ margin: '0 0 18px' }}>
+        <p className="body" style={{ margin: '0 0 12px', fontSize: 12.5 }}>
           I own the whole job: understanding the problem, designing the system, and shipping something people rely on.
           Coding agents let me move faster, so I use them heavily, and I hold their work to the same standard as mine:
           tested, run for real, and read line by line before it ships.
