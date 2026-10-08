@@ -192,12 +192,13 @@ export const PROJECTS: ProjectItem[] = [
     subtitle: 'Social-to-Place Restaurant Discovery',
     period: 'Final-Year Honours Project, Mar 2026 – Present',
     description:
-      'Wrote the backend and most of the iOS app for a team product that turns Instagram and TikTok restaurant posts into saved places on a personal map.',
+      'Wrote the backend and rebuilt the iOS and Android app for a team product that turns Instagram and TikTok restaurant posts into saved places on a personal map.',
     bullets: [
-      'Wrote the backend and most of the iOS app for a team product that turns Instagram and TikTok restaurant posts into saved places on a personal map.',
+      'Wrote the backend and rebuilt the iOS and Android app for a team product that turns Instagram and TikTok restaurant posts into saved places on a personal map.',
+      'Redesigned the React Native app around a map-first Explore tab with photo pins, a reel feed that plays Instagram and TikTok videos in the app, and photo-led place and collection pages. Cut the uncached map query from about 9 seconds to 1.1 by keeping per-place totals in one row.',
       'Built the AI pipeline: Apify fetches the post, Gemini with Maps grounding identifies the restaurant, and Google Places verifies it. Caching, retries and idempotent webhooks make reruns safe, and embeddings power search.',
     ],
-    tech: ['iOS', 'React Native', 'Convex', 'Apify', 'Gemini', 'Google Places'],
+    tech: ['iOS', 'Android', 'React Native', 'Convex', 'Apify', 'Gemini', 'Google Places'],
     type: 'visualization',
     featured: true,
     link: 'https://foodly-app-mauve.vercel.app',

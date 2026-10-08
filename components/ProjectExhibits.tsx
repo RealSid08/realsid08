@@ -44,7 +44,7 @@ type Shot = {
   src: string;
   alt: string;
   caption: string;
-  shape: 'wide' | 'phone';
+  shape: 'wide' | 'phone' | 'android';
 };
 
 /** Real captures from the shipped builds, labelled by platform and screen. */
@@ -63,28 +63,52 @@ const SHOTS: Record<string, Shot[]> = {
       shape: 'wide',
     },
     {
-      src: '/work/foodly/foodly-ios-place.png',
-      alt: 'Foodly iOS app showing the Grazia Restaurant page above the Instagram reel it was saved from',
-      caption: 'iOS · a saved Reel resolves to the restaurant page',
+      src: '/work/foodly/foodly-ios-welcome.png',
+      alt: 'Foodly iOS welcome screen with a scrolling mosaic of restaurant photos above the line "Every food reel you saved, finally on a map."',
+      caption: 'iOS · welcome, built from real saved places',
       shape: 'phone',
     },
     {
-      src: '/work/foodly/foodly-ios-discover.png',
-      alt: 'Foodly iOS discovery map over Melbourne with restaurant, collection and filter controls',
-      caption: 'iOS · discovery map with filters',
+      src: '/work/foodly/foodly-ios-place.png',
+      alt: 'Foodly iOS place page for Reine & La Rue with a full-bleed photo, open hours, save, hype and directions',
+      caption: 'iOS · a photo-led place page',
       shape: 'phone',
+    },
+    {
+      src: '/work/foodly/foodly-ios-reels.png',
+      alt: 'Foodly iOS reel feed playing an Instagram reel of Snow Monkey Ramen with hype, save and share controls',
+      caption: 'iOS · the reel feed, playing in the app',
+      shape: 'phone',
+    },
+    {
+      src: '/work/foodly/foodly-ios-collection.png',
+      alt: 'Foodly iOS private collection called Date night in the CBD with five saved restaurants',
+      caption: 'iOS · a private collection of 5 places',
+      shape: 'phone',
+    },
+    {
+      src: '/work/foodly/foodly-android-explore.png',
+      alt: 'Foodly Android Explore map of Melbourne with photo pins, reel badges and a swipeable strip of places',
+      caption: 'Android · map-first Explore with photo pins',
+      shape: 'android',
+    },
+    {
+      src: '/work/foodly/foodly-android-reels.png',
+      alt: 'Foodly Android reel feed showing a food reel linked to Project 281 Coffee Roasters',
+      caption: 'Android · every reel links to its place',
+      shape: 'android',
     },
     {
       src: '/work/foodly/foodly-android-place.png',
-      alt: 'Foodly Android app showing the Marmelo page with its source Reel and cuisine tags',
-      caption: 'Android · the same place page with its source post',
-      shape: 'phone',
+      alt: 'Foodly Android place page for Gimlet with a full-bleed photo, open hours and actions',
+      caption: 'Android · the same place page',
+      shape: 'android',
     },
     {
-      src: '/work/foodly/foodly-android-add.png',
-      alt: 'Foodly Android add screen showing a pasted link moving through check, save, read, match and done',
-      caption: 'Android · pasting a link starts the match pipeline',
-      shape: 'phone',
+      src: '/work/foodly/foodly-android-search.png',
+      alt: 'Foodly Android search results for "handmade pasta date night" listing Italian restaurants',
+      caption: 'Android · semantic search by craving',
+      shape: 'android',
     },
   ],
   parkalong: [
@@ -122,7 +146,7 @@ const ShotCard: React.FC<{ shot: Shot }> = ({ shot }) => (
       alt={shot.alt}
       loading="lazy"
       className={`block w-full object-cover object-top ${
-        shot.shape === 'wide' ? 'aspect-[16/9]' : 'aspect-[9/19.5]'
+        { wide: 'aspect-[16/9]', phone: 'aspect-[9/19.5]', android: 'aspect-[9/16]' }[shot.shape]
       }`}
     />
     <figcaption className="px-3 py-2 border-t border-white/10 font-mono text-[10px] leading-snug text-gray-500">
@@ -133,7 +157,7 @@ const ShotCard: React.FC<{ shot: Shot }> = ({ shot }) => (
 
 const ShotGallery: React.FC<{ shots: Shot[] }> = ({ shots }) => {
   const wide = shots.filter((shot) => shot.shape === 'wide');
-  const phone = shots.filter((shot) => shot.shape === 'phone');
+  const phone = shots.filter((shot) => shot.shape !== 'wide');
 
   return (
     <div className="mb-6 space-y-3">
