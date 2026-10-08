@@ -1,10 +1,11 @@
-import { createPortfolioChatResponse, isUiMessageArray } from './lib/portfolioChat';
 import { getGithubPayload, GithubLookupError } from './lib/github';
 import { transcribeAudio, TranscriptionError } from './lib/transcribe';
 
 type Env = {
   ASSETS: { fetch: (request: Request) => Promise<Response> };
   OPENAI_API_KEY?: string;
+  /** Where the chat assistant runs. Code mode needs Node, so it lives on Vercel rather than in this Worker. */
+  AGENT_ORIGIN?: string;
 };
 
 const json = (body: unknown, status = 200, headers?: HeadersInit) =>
@@ -42,17 +43,21 @@ export default {
 
     if (url.pathname === '/api/chat') {
       if (request.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
-      if (!env.OPENAI_API_KEY) return json({ error: 'Chat unavailable' }, 500);
+      if (!env.AGENT_ORIGIN) return json({ error: 'Chat unavailable' }, 500);
+      if (Number(request.headers.get('content-length')) > 512 * 1024) return json({ error: 'Conversation too long' }, 413);
       try {
-        const body: unknown = await request.json();
-        const messages = typeof body === 'object' && body !== null && 'messages' in body
-          ? (body as { messages: unknown }).messages
-          : undefined;
-        if (!isUiMessageArray(messages)) return json({ error: 'Invalid messages' }, 400);
-        return createPortfolioChatResponse({ apiKey: env.OPENAI_API_KEY, messages });
+        // Stream the assistant's reply straight through.
+        const upstream = await fetch(new URL('/api/chat', env.AGENT_ORIGIN), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: request.body,
+        });
+        const headers = new Headers(upstream.headers);
+        headers.set('Cache-Control', 'no-store');
+        return new Response(upstream.body, { status: upstream.status, headers });
       } catch (error) {
-        console.error('Chat API error:', error instanceof Error ? error.message : 'unknown');
-        return json({ error: 'Chat unavailable' }, 500);
+        console.error('Chat proxy error:', error instanceof Error ? error.message : 'unknown');
+        return json({ error: 'Chat unavailable' }, 502);
       }
     }
 

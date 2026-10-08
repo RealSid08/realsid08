@@ -1,41 +1,26 @@
 import { createOpenAI } from '@ai-sdk/openai';
+import { experimental_codeModeTool as codeModeTool } from '@ai-sdk/code-mode';
 import {
+  convertToModelMessages,
   createUIMessageStream,
   createUIMessageStreamResponse,
-  convertToModelMessages,
+  isStepCount,
   pipeUIMessageStreamToResponse,
   smoothStream,
-  stepCountIs,
   streamText,
   tool,
+  toolSearch,
   type UIMessage,
 } from 'ai';
 import type { ServerResponse } from 'http';
 import { z } from 'zod';
 import { pipeJsonRender } from '@json-render/core';
-import { EXPERIENCES, PROFILE, PROJECTS } from '../constants';
-import { formatProfile, formatProject, formatRole, formatSkills, formatWorkByTech, formatWorkstreams } from '../services/localKnowledge';
-import { CHAT_MODEL_ID } from './chatModel';
-import { uiSpecPrompt } from './portfolioUiCatalog';
-import { CARD_IDS, SECTION_IDS, TARGET_IDS } from './portfolioIds';
-import { formatRepoForModel, formatReposForModel, getGithubPayload, getPublicRepo, isAllowedAccount, listPublicRepos, searchGithub } from './github';
-
-// Derived from the page data so a new role or project is lookup-able without touching the tools.
-const ROLE_IDS = EXPERIENCES.map((exp) => exp.id) as [string, ...string[]];
-const PROJECT_IDS = PROJECTS.map((project) => project.id) as [string, ...string[]];
-
-/**
- * Page-control tools run in the browser, not on the server. The server tool
- * acknowledges the intent and the agent bar executes it against the page
- * registry, which is also what the command palette and WebMCP call.
- */
-const pageTool = <Shape extends z.ZodRawShape>(description: string, shape: Shape) =>
-  tool({
-    description: `${description} This drives the page the visitor is looking at.`,
-    inputSchema: z.object(shape),
-    execute: async () => 'Queued on the page.',
-  });
-
+import { PROFILE } from '../constants.js';
+import { formatProfile, formatProject, formatRole, formatSkills, formatWorkByTech, formatWorkIndex } from '../services/localKnowledge.js';
+import { CHAT_MODEL_ID } from './chatModel.js';
+import { uiSpecPrompt } from './portfolioUiCatalog.js';
+import { CARD_IDS, SECTION_IDS, TARGET_IDS } from './portfolioIds.js';
+import { formatRepoForModel, formatReposForModel, getGithubPayload, getPublicRepo, isAllowedAccount, listPublicRepos, searchGithub } from './github.js';
 
 const PROFILE_LINKS = [
   `Résumé (PDF): ${PROFILE.resumeUrl}`,
@@ -45,264 +30,244 @@ const PROFILE_LINKS = [
   `Email: mailto:${PROFILE.email}`,
 ].join('\n');
 
-const CHAT_SYSTEM = `You are the assistant on Sidhaarth Krishnan's portfolio site. Visitors are mostly recruiters,
-hiring managers and engineers deciding whether he is worth talking to. You sit in a small panel over the page and can
-operate the page itself.
+const CHAT_SYSTEM = `You are the assistant inside Sidhaarth Krishnan's portfolio, a notebook visitors flip through on his site.
+The people asking are mostly recruiters, hiring managers and engineers deciding whether he is worth a conversation.
 
-Voice:
-- Talk like a sharp engineer who knows his work well, not like a resume summariser. Direct, specific, warm, no hype.
-- Answer the actual question in the first sentence. No preambles ("Based on...", "Great question"), no recap of the question.
-- Refer to him as Sidhaarth or "he".
-- Default to 40-120 words of prose. Short paragraphs; use a list only for 3+ genuinely parallel items, max 4 bullets,
-  one line each, no nested bullets, no headings.
-- Prefer concrete evidence (a number, a system he built, a hard problem he solved) over adjectives.
-- Be candid. If asked about weaknesses, gaps or risks, give a real answer grounded in the facts (e.g. he is graduating in
-  December 2026 so his experience is early-career, mostly small teams and contracts). Say what the portfolio does not show
-  rather than inventing. Never be defensive or salesy.
-- No emojis. Do not end with a question or an offer of more help.
+Who he is, so the answers carry the right picture: he solves problems for companies and for his own life by building
+software, he is genuinely passionate about building things that matter, and he cares most that what he builds gets used.
+He is a strong software engineer who uses coding agents heavily to move faster. He is not an "AI tools" person; never
+describe him that way.
 
-Facts:
-- Call lookup tools before stating facts. Never invent metrics, dates, employers, links or opinions attributed to others.
-- Current work first (Kenspire, Besmak, Complete Leader), then Foodly and ParkAlong. Mindtek ended in October 2025; UniEats,
-  Idhayam, HiDa and Imaginet are earlier roles. His open source is Codex Shared Memory and pptx-react-renderer.
-- Availability and location come from lookupProfile. Never state or discuss visa or work-rights status; if asked, say he can be
-  reached by email for that.
-- Public GitHub comes from lookupGitHub, browseGitHubCode, lookupGitHubIssues and lookupGitHubPullRequests: RealSid08 and
-  OpenRenderKit public repos only. Mention the "as of" time from the tool result; never imply private access.
-- Finding things: searchGitHub finds his public pull requests and issues on any repository (contributions to other
-  projects) and searches code inside his two accounts. web_search finds current public pages: docs, articles, a
-  company, a library he used, news. Use them when the visitor asks for something the portfolio data does not hold, or
-  asks you to find, show or link something. Prefer the portfolio tools first; search only for what they lack. Search
-  results are the only source for outside URLs: link exactly the URL a result returned, say what the page is in a few
-  words, and if nothing relevant comes back say so instead of guessing. Never state that he wrote or contributed to
-  something a search merely mentioned; it must be authored by his account.
-- Off-topic requests: one short line steering back to his work.
+How to answer
+- Answer the question in your first sentence, then back it with specific evidence: what he built, the hard part, a number.
+- 40 to 120 words unless the visitor asks for depth. Plain prose; a short list only for three or more parallel items.
+- Sound like a sharp colleague who knows his work: warm, direct, concrete. No hype words, no filler, no emojis,
+  no "Great question", no recap of the question. Do not end with a question or an offer of more help.
+- Call him Sidhaarth or "he". Never use em dashes; use commas, colons or full stops.
+- Be candid. If asked about weaknesses or risks, give a real answer from the facts: he is early in his career and has
+  worked mostly in small teams and on contracts; the research is a pilot with small samples. Say plainly what the
+  portfolio does not show rather than guessing.
+- Never state or discuss visa or work-rights status; say he can be reached by email for that.
+- You only discuss Sidhaarth and his work. For anything else (weather, news, general coding help, other people), say in
+  one short sentence that you are here for his work, and do not search for it.
 
-References (the panel turns these into rich, clickable links, so write them exactly like this):
-- Work on this page: link the name to its card id, e.g. [Foodly](#project-foodly), [Besmak Components](#exp-besmak),
-  [his projects](#projects). Clicking scrolls the page to it and hovering outlines it. Link a role or project on its
-  first mention in an answer; do not link the same thing twice.
+Getting facts
+- State only facts you have read from a tool in this conversation. Never invent metrics, dates, employers, links or opinions.
+- Look things up with the \`code\` tool: write a short program that calls \`tools.*\`, runs independent calls together
+  with Promise.all, and returns only the parts you need. The latest "Code mode capability update" message lists the
+  tools available right now.
+- tools.listWork, tools.lookupRole, tools.lookupProject and tools.findWorkByTech are always there; call several in one
+  program when you need them. Everything else (his skills, profile and contact details, public GitHub repos, code,
+  issues and pull requests) loads on demand: call tools.search({ query }) inside code, then use what it found in your
+  next code call.
+- Current work comes first: Kenspire and Besmak (client platforms in production), then his own projects Foodly,
+  Switchyard, ParkAlong and ServoGrid, then the research pilot and smaller tools.
+- GitHub covers the public RealSid08 and OpenRenderKit accounts only; mention the "as of" time and never imply private access.
+- web_search is only for context about his work that the portfolio lacks (a company he worked for, a library he used).
+  Link exactly the URL it returns, and never claim he wrote something a search merely mentions.
+- Contact questions: give his email address as the link text, mention LinkedIn or the résumé if useful, and turn_to contact.
+
+Showing things in the notebook
+- The notebook moves with the conversation, which is the best part of this site. When your answer centres on one role,
+  project or section, call turn_to with its page id and circle: true. Page ids appear in lookup results as "page id ...".
+- Never narrate page moves in your answer ("I've turned to...", "I've opened..."); the panel already shows them.
+- For "where has he used X", call findWorkByTech, then mark_work with X. mark_work turns to the contents page and ticks
+  every entry itself, so do not also call turn_to.
+- Use tour, focus, set_theme and reset_view only when the visitor asks. At most two page actions per answer.
+
+Links (the panel renders these as rich, clickable references)
+- Link a role or project on its first mention to its page id, e.g. [Foodly](#project-foodly), [Besmak](#exp-besmak).
+  Sections: ${SECTION_IDS.map((id) => `#${id}`).join(', ')}. Clicking turns the notebook there; hovering highlights it.
 - His profiles, which you can link without a lookup:
 ${PROFILE_LINKS}
-  Link these when they help the visitor's next step, not by habit: the résumé or email when they ask about hiring,
-  contact or availability; GitHub when they ask about code; LinkedIn for background or references.
-- GitHub: link the exact repository, file, issue or pull request URL from a tool result, e.g.
-  [OpenRenderKit/ParkAlong](https://github.com/OpenRenderKit/ParkAlong). For files, link the blob URL with the file path
-  as the text.
-- Link text is always the thing's name, never "here", "link" or a bare URL. Each reference stands alone.
-- Never invent a URL or a card id. Card ids: ${CARD_IDS.join(', ')}. Section ids: ${SECTION_IDS.join(', ')}.
+  Link these when they are the visitor's next step (email or résumé for hiring, GitHub for code), not by habit.
+- Link text is always the thing's name, never "here" or a bare URL. Never invent a URL or a page id.
+- Never write citation markers or source tags in the text; links are the citations.
+  Page ids: ${CARD_IDS.join(', ')}.
 
-Operating the page. You control the page the visitor is looking at, and moving it is the best part of this site:
-- When your answer centres on one role or project, show it: navigate_to its card id and highlight it. For Foodly and
-  ParkAlong also expand_card to open the screenshots.
-- When the visitor asks to filter, sort, see only X, hide something, change theme or take a tour, do it with the page
-  tool and say what you did in one short clause.
-- For "where has he used <tech>" questions, call findWorkByTech once, filter_work by that tech, and name every role and
-  project it returns, linking each on first mention. Do not read the roles one by one; the lookup already lists them all
-  with their stacks. Read a single role or project only if the visitor asks what he did with the tech there.
-- At most three page actions per turn. Do not start a walkthrough unless asked. Every action is undoable by the visitor;
-  if they ask to undo or reset, call reset_view.
-
-Rich answers. Beneath the prose you can stream UI components (spec below). Use them whenever they carry the answer
-better than prose, and keep the prose to one to three sentences when you do:
-- One or two specific roles or projects: a WorkCard each (with a MetricRow of sourced numbers when there are any).
-- Comparing two or three things: Compare, with each column's target set to its card id.
-- Career overview or "what has he done": Timeline, newest first, with targets.
-- Public GitHub repositories: RepoList with the as-of time.
-- When a follow-up action on the page would help, add one or two PageButtons (show a card, filter by a tech, start a tour).
-- Simple factual answers (availability, location, contact) stay text only.
-- Every value in a component must come from a tool result. Never put page actions you already ran in a PageButton.
+Rich answers
+Below the prose you can add UI components when they carry the answer better than text; keep the prose to one to three
+sentences when you do. One or two roles or projects: a WorkCard each. Comparing two or three: Compare. A career
+overview: Timeline, newest first. Public repositories: RepoList. A useful next step in the notebook: one or two
+PageButtons. Simple factual answers (contact, location, availability) stay as text. Every value must come from a tool result.
 
 ${uiSpecPrompt()}
 - Write the prose answer first, then the spec block. Never repeat the prose inside components.
 - Use EvidenceBoard only for public issues and pull requests.`;
 
-async function createPortfolioChatStream(options: {
-  apiKey: string;
-  messages: UIMessage[];
-}) {
-  const openai = createOpenAI({ apiKey: options.apiKey });
-
-  return streamText({
-    model: openai(CHAT_MODEL_ID),
-    system: CHAT_SYSTEM,
-    messages: await convertToModelMessages(options.messages),
-    stopWhen: stepCountIs(8),
-    experimental_transform: smoothStream({ chunking: 'word', delayInMs: 12 }),
-    providerOptions: {
-      openai: {
-        reasoningEffort: 'low',
-      },
-    },
-    onError: ({ error }) => {
-      console.error('Portfolio chat stream error:', error instanceof Error ? error.message : 'unknown');
-    },
-    tools: {
-      ...buildPortfolioTools(),
-      // Provider-executed: OpenAI runs the search and returns cited pages.
-      web_search: openai.tools.webSearch({ searchContextSize: 'low' }),
-    },
+/**
+ * Page tools run in the browser. The server acknowledges the call and the agent
+ * bar turns the notebook; the same names are in services/agent/registry.ts.
+ */
+const pageTool = <Shape extends z.ZodRawShape>(description: string, shape: Shape) =>
+  tool({
+    description: `${description} This moves the notebook the visitor is looking at.`,
+    inputSchema: z.object(shape),
+    execute: async () => 'Done on the page.',
   });
+
+const githubCall = async (run: () => Promise<unknown>, label: string) => {
+  try {
+    return await run();
+  } catch (error) {
+    return `${label} failed: ${error instanceof Error ? error.message : 'unknown error'}`;
+  }
+};
+
+const account = z.enum(['RealSid08', 'OpenRenderKit']).default('RealSid08');
+
+/** Lookups the model reaches through code mode. Deferred ones load only when a search finds them. */
+export function buildLookupTools() {
+  return {
+    listWork: tool({
+      description: 'Index of every role and project, newest first, with ids for the other lookups and notebook page ids.',
+      inputSchema: z.object({}),
+      execute: async () => formatWorkIndex(),
+    }),
+    lookupRole: tool({
+      description: 'Everything about one role: what he built, numbers, stack. Use an id from listWork, e.g. besmak.',
+      inputSchema: z.object({ id: z.string() }),
+      execute: async ({ id }) => formatRole(id) ?? 'No such role. Call listWork for ids.',
+    }),
+    lookupProject: tool({
+      description: 'Everything about one project: the problem, what he built, numbers, stack, repo. Use an id from listWork, e.g. parkalong.',
+      inputSchema: z.object({ id: z.string() }),
+      execute: async ({ id }) => formatProject(id) ?? 'No such project. Call listWork for ids.',
+    }),
+    findWorkByTech: tool({
+      description: 'Every role and project that uses or mentions a technology (e.g. Convex, SwiftUI, Rust), with page ids.',
+      inputSchema: z.object({ tech: z.string().min(1).max(60) }),
+      execute: async ({ tech }) => formatWorkByTech(tech),
+    }),
+    lookupSkills: tool({
+      deferLoading: true,
+      description: 'His skills by area: languages, web and mobile, backend and data, AI and coding agents, cloud, testing.',
+      inputSchema: z.object({ cluster: z.string().optional() }),
+      execute: async ({ cluster }) => formatSkills(cluster),
+    }),
+    lookupProfile: tool({
+      deferLoading: true,
+      description: 'His location, availability, education, High Distinctions and contact details.',
+      inputSchema: z.object({}),
+      execute: async () => formatProfile(),
+    }),
+    lookupGitHub: tool({
+      deferLoading: true,
+      description: 'Public GitHub repositories for RealSid08 or OpenRenderKit, or one repository with its languages, with a fetched-at time.',
+      inputSchema: z.object({ account, repo: z.string().optional().describe('A repository name for a single repo') }),
+      execute: async ({ account: owner, repo }) => {
+        if (!isAllowedAccount(owner)) return 'Only his public GitHub accounts are available.';
+        return githubCall(async () => (repo ? formatRepoForModel(await getPublicRepo(owner, repo)) : formatReposForModel(await listPublicRepos(owner))), 'GitHub lookup');
+      },
+    }),
+    browseGitHubCode: tool({
+      deferLoading: true,
+      description: 'List a public repository directory or read a text file (README, source code).',
+      inputSchema: z.object({ account, repo: z.string(), path: z.string().optional().describe('File or directory; omit for the root') }),
+      execute: async ({ account: owner, repo, path }) =>
+        githubCall(() => getGithubPayload(new URLSearchParams({ account: owner, repo, view: 'code', ...(path ? { path } : {}) })), 'GitHub code lookup'),
+    }),
+    lookupGitHubIssues: tool({
+      deferLoading: true,
+      description: 'Recent public issues in one of his repositories, or one issue with its first comments.',
+      inputSchema: z.object({ account, repo: z.string(), number: z.number().int().positive().optional(), state: z.enum(['open', 'closed', 'all']).default('all') }),
+      execute: async ({ account: owner, repo, number, state }) =>
+        githubCall(() => getGithubPayload(new URLSearchParams({ account: owner, repo, view: 'issues', state, ...(number ? { number: String(number) } : {}) })), 'GitHub issue lookup'),
+    }),
+    lookupGitHubPullRequests: tool({
+      deferLoading: true,
+      description: 'Recent public pull requests in one of his repositories, or one pull request with its changed files.',
+      inputSchema: z.object({ account, repo: z.string(), number: z.number().int().positive().optional(), state: z.enum(['open', 'closed', 'all']).default('all') }),
+      execute: async ({ account: owner, repo, number, state }) =>
+        githubCall(() => getGithubPayload(new URLSearchParams({ account: owner, repo, view: 'pulls', state, ...(number ? { number: String(number) } : {}) })), 'GitHub pull request lookup'),
+    }),
+    searchGitHub: tool({
+      deferLoading: true,
+      description: 'Search GitHub: "pulls" and "issues" find his public pull requests and issues on any repository, including other people’s open source; "code" searches inside his public repositories.',
+      inputSchema: z.object({ kind: z.enum(['pulls', 'issues', 'code']), query: z.string().max(100).default(''), state: z.enum(['open', 'closed', 'all']).default('all') }),
+      execute: async ({ kind, query, state }) => githubCall(() => searchGithub(kind, query, state), 'GitHub search'),
+    }),
+  };
 }
 
-export async function streamPortfolioChat(options: {
-  apiKey: string;
-  messages: UIMessage[];
-  response: ServerResponse;
-}): Promise<void> {
+/** Page tools the model calls directly, so the browser sees them and moves the notebook. */
+export function buildPageTools() {
+  return {
+    turn_to: pageTool('Turn the notebook to a section, role or project; set circle to ring its title in pen.', {
+      target: z.enum(TARGET_IDS).describe('Page id, e.g. project-foodly, exp-besmak or contact'),
+      circle: z.boolean().optional(),
+    }),
+    mark_work: pageTool('Turn to the contents and tick every entry whose work uses a technology or matches a phrase.', {
+      query: z.string().min(1).max(60),
+    }),
+    focus: pageTool('Dim everything on the open pages except one entry.', {
+      target: z.enum(TARGET_IDS).optional(),
+    }),
+    tour: pageTool('Step through the work one entry at a time.', {
+      action: z.enum(['start', 'next', 'prev', 'stop']),
+    }),
+    set_theme: pageTool('Turn the desk lamp on (light) or off (dark).', {
+      theme: z.enum(['light', 'dark']),
+    }),
+    reset_view: pageTool('Undo every page change the assistant made.', {}),
+  };
+}
+
+/** Every tool the model can reach, and who may call it. Exported so scripts/verify-agent.ts can check the wiring. */
+export function buildPortfolioTools() {
+  const lookups = buildLookupTools();
+  return {
+    tools: {
+      code: codeModeTool({
+        toolDiscovery: 'conversation',
+        executionPolicy: { timeoutMs: 25_000, maxBridgeRequests: 24, maxInFlightBridgeRequests: 8, maxResultBytes: 200_000 },
+      }),
+      search: toolSearch({ maxResults: 4 }),
+      ...lookups,
+      ...buildPageTools(),
+    },
+    // Lookups and search run only inside code; page tools stay direct so the browser sees them.
+    callers: Object.fromEntries([...Object.keys(lookups), 'search'].map((name) => [name, ['code'] as const])) as Record<string, readonly ['code']>,
+  };
+}
+
+function createPortfolioChatStream(options: { apiKey: string; messages: UIMessage[] }) {
+  const openai = createOpenAI({ apiKey: options.apiKey });
+  const { tools, callers } = buildPortfolioTools();
+  return (async () =>
+    streamText({
+      model: openai(CHAT_MODEL_ID),
+      system: CHAT_SYSTEM,
+      messages: await convertToModelMessages(options.messages),
+      stopWhen: isStepCount(8),
+      experimental_transform: smoothStream({ chunking: 'word', delayInMs: 12 }),
+      providerOptions: { openai: { reasoningEffort: 'low' } },
+      onError: ({ error }) => {
+        console.error('Portfolio chat stream error:', error instanceof Error ? error.message : 'unknown');
+      },
+      tools: {
+        ...tools,
+        // Provider-executed: OpenAI runs the search and returns cited pages.
+        web_search: openai.tools.webSearch({ searchContextSize: 'low' }),
+      },
+      experimental_toolCallers: callers as never,
+    }))();
+}
+
+export async function streamPortfolioChat(options: { apiKey: string; messages: UIMessage[]; response: ServerResponse }): Promise<void> {
   const result = await createPortfolioChatStream(options);
   const stream = createUIMessageStream({
     execute: ({ writer }) => writer.merge(pipeJsonRender(result.toUIMessageStream())),
   });
-  pipeUIMessageStreamToResponse({
-    response: options.response,
-    stream,
-  });
+  pipeUIMessageStreamToResponse({ response: options.response, stream });
 }
 
-export async function createPortfolioChatResponse(options: {
-  apiKey: string;
-  messages: UIMessage[];
-}): Promise<Response> {
+export async function createPortfolioChatResponse(options: { apiKey: string; messages: UIMessage[] }): Promise<Response> {
   const result = await createPortfolioChatStream(options);
   const stream = createUIMessageStream({
     execute: ({ writer }) => writer.merge(pipeJsonRender(result.toUIMessageStream())),
   });
   return createUIMessageStreamResponse({ stream });
-}
-
-/**
- * The tool surface handed to the model. Exported so the page-tool names can be
- * checked against the browser registry (see scripts/verify-agent.ts).
- */
-export function buildPortfolioTools() {
-  return {
-      lookupRole: tool({
-        description: 'Fetch a specific employer/role from Sidhaarth\'s resume.',
-        inputSchema: z.object({
-          id: z.enum(ROLE_IDS).describe('Role id, e.g. besmak, kenspire, foodly is a project not a role'),
-        }),
-        execute: async ({ id }) => formatRole(id) ?? 'Role not found.',
-      }),
-      lookupProject: tool({
-        description: 'Fetch a project or open-source package: Foodly, ParkAlong, TBRGS, RAG, Aura, Codex Shared Memory or pptx-react-renderer.',
-        inputSchema: z.object({
-          id: z.enum(PROJECT_IDS),
-        }),
-        execute: async ({ id }) => formatProject(id) ?? 'Project not found.',
-      }),
-      lookupSkills: tool({
-        description: 'Fetch skill clusters (languages, frontend, backend, agentic, cloud, testing).',
-        inputSchema: z.object({
-          cluster: z.string().optional().describe('Optional cluster name or id'),
-        }),
-        execute: async ({ cluster }) => formatSkills(cluster),
-      }),
-      lookupProfile: tool({
-        description: 'Fetch location, availability, education, and contact links.',
-        inputSchema: z.object({}),
-        execute: async () => formatProfile(),
-      }),
-      lookupGitHub: tool({
-        description:
-          'Fetch public GitHub work for Sidhaarth: an account overview (RealSid08 or OpenRenderKit) or one repository. Private repositories are never included.',
-        inputSchema: z.object({
-          account: z.enum(['RealSid08', 'OpenRenderKit']).optional(),
-          repo: z.string().optional().describe('Repository name for a single repo lookup'),
-        }),
-        execute: async ({ account, repo }) => {
-          const target = account ?? 'RealSid08';
-          if (!isAllowedAccount(target)) return 'Only public GitHub accounts are available.';
-          try {
-            if (repo) return formatRepoForModel(await getPublicRepo(target, repo));
-            return formatReposForModel(await listPublicRepos(target));
-          } catch (error) {
-            return `GitHub lookup failed: ${error instanceof Error ? error.message : 'unknown error'}`;
-          }
-        },
-      }),
-      browseGitHubCode: tool({
-        description: 'Browse a public repository directory or read a text file, including README and source code. Only RealSid08 and OpenRenderKit public work.',
-        inputSchema: z.object({ account: z.enum(['RealSid08', 'OpenRenderKit']).default('RealSid08'), repo: z.string(), path: z.string().optional().describe('File or directory path. Omit for repository root.') }),
-        execute: async ({ account, repo, path }) => {
-          try { return JSON.stringify(await getGithubPayload(new URLSearchParams({ account, repo, view: 'code', ...(path ? { path } : {}) }))); }
-          catch (error) { return `GitHub code lookup failed: ${error instanceof Error ? error.message : 'unknown error'}`; }
-        },
-      }),
-      lookupGitHubIssues: tool({
-        description: 'List recent public GitHub issues or inspect one issue and its first comments.',
-        inputSchema: z.object({ account: z.enum(['RealSid08', 'OpenRenderKit']).default('RealSid08'), repo: z.string(), number: z.number().int().positive().optional(), state: z.enum(['open', 'closed', 'all']).default('all') }),
-        execute: async ({ account, repo, number, state }) => {
-          try { return JSON.stringify(await getGithubPayload(new URLSearchParams({ account, repo, view: 'issues', state, ...(number ? { number: String(number) } : {}) }))); }
-          catch (error) { return `GitHub issue lookup failed: ${error instanceof Error ? error.message : 'unknown error'}`; }
-        },
-      }),
-      lookupGitHubPullRequests: tool({
-        description: 'List recent public GitHub pull requests or inspect one PR summary and changed file patches.',
-        inputSchema: z.object({ account: z.enum(['RealSid08', 'OpenRenderKit']).default('RealSid08'), repo: z.string(), number: z.number().int().positive().optional(), state: z.enum(['open', 'closed', 'all']).default('all') }),
-        execute: async ({ account, repo, number, state }) => {
-          try { return JSON.stringify(await getGithubPayload(new URLSearchParams({ account, repo, view: 'pulls', state, ...(number ? { number: String(number) } : {}) }))); }
-          catch (error) { return `GitHub PR lookup failed: ${error instanceof Error ? error.message : 'unknown error'}`; }
-        },
-      }),
-      searchGitHub: tool({
-        description: 'Search GitHub. "pulls" and "issues" find public pull requests and issues Sidhaarth authored on ANY repository, including other people\'s open source. "code" searches source inside RealSid08 and OpenRenderKit public repositories. Free text only; the account scope is fixed.',
-        inputSchema: z.object({
-          kind: z.enum(['pulls', 'issues', 'code']),
-          query: z.string().max(100).default('').describe('Words to look for. Optional for pulls and issues, required for code.'),
-          state: z.enum(['open', 'closed', 'all']).default('all').describe('Pulls and issues only'),
-        }),
-        execute: async ({ kind, query, state }) => {
-          try { return JSON.stringify(await searchGithub(kind, query, state)); }
-          catch (error) { return `GitHub search failed: ${error instanceof Error ? error.message : 'unknown error'}`; }
-        },
-      }),
-      findWorkByTech: tool({
-        description: 'Find every role and project that uses or mentions a technology, e.g. Convex, React Native, Supabase. Returns card ids to link.',
-        inputSchema: z.object({ tech: z.string().min(1).max(60) }),
-        execute: async ({ tech }) => formatWorkByTech(tech),
-      }),
-      listWorkstreams: tool({
-        description: 'List active contracts or archive roles as a compact index.',
-        inputSchema: z.object({
-          lane: z.enum(['active', 'archive', 'all']).default('active'),
-        }),
-        execute: async ({ lane }) => formatWorkstreams(lane),
-      }),
-      navigate_to: pageTool('Scroll the page to a section or a specific card.', {
-        section: z.enum(TARGET_IDS).describe('Section id or card id, e.g. projects or project-foodly'),
-      }),
-      highlight: pageTool('Outline one card or section for a couple of seconds.', {
-        target: z.enum(TARGET_IDS),
-      }),
-      focus_mode: pageTool('Dim everything except one card so it can be read closely.', {
-        target: z.enum(CARD_IDS).optional(),
-      }),
-      walkthrough: pageTool('Step through the work cards one at a time.', {
-        action: z.enum(['start', 'next', 'prev', 'stop']),
-      }),
-      filter_work: pageTool('Show only the work that matches.', {
-        year: z.number().optional(),
-        tech: z.string().optional(),
-        query: z.string().optional().describe('Free text to match against card text'),
-      }),
-      sort_work: pageTool('Reorder the work cards.', {
-        by: z.enum(['year', 'title']),
-        direction: z.enum(['asc', 'desc']).optional(),
-      }),
-      expand_card: pageTool('Open or close a card detail, such as its screenshots.', {
-        target: z.enum(CARD_IDS),
-        expanded: z.boolean().optional(),
-      }),
-      set_theme: pageTool('Switch the site between light and dark.', {
-        theme: z.enum(['light', 'dark']),
-      }),
-      set_visibility: pageTool('Show or hide a section.', {
-        section: z.enum(SECTION_IDS),
-        visible: z.boolean(),
-      }),
-      reset_view: pageTool('Undo every page change the agent made.', {}),
-  };
 }
 
 export function isUiMessageArray(value: unknown): value is UIMessage[] {

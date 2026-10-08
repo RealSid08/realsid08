@@ -1,23 +1,18 @@
 import React, { useState } from 'react';
 import type { UIMessage } from 'ai';
 import { EXPERIENCES, PROJECTS } from '../../constants';
+import { targetName } from '../../lib/portfolioIds';
 
 type ToolPart = { type: string; state?: string; input?: Record<string, unknown>; output?: unknown };
 
 const nameOf = (id: unknown) => {
   const value = String(id ?? '');
-  const bare = value.replace(/^(exp|project)-/, '');
-  return (
-    EXPERIENCES.find((exp) => exp.id === bare)?.company ??
-    PROJECTS.find((project) => project.id === bare)?.title ??
-    bare
-  );
+  return EXPERIENCES.find((exp) => exp.id === value)?.company ?? PROJECTS.find((project) => project.id === value)?.title ?? value;
 };
 
-const repoOf = (input: Record<string, unknown>) =>
-  [input.account ?? 'RealSid08', input.repo].filter(Boolean).join('/');
-
-const SEARCH_LABEL = { pulls: 'pull requests', issues: 'issues', code: 'code' } as const;
+const hostOf = (url: string) => {
+  try { return new URL(url).hostname.replace(/^www\./, ''); } catch { return url; }
+};
 
 /** The web_search output carries what was searched or opened; input is empty. */
 const webAction = (output: unknown) => {
@@ -27,39 +22,57 @@ const webAction = (output: unknown) => {
   return query ? `Searched the web for “${query}”` : 'Searched the web';
 };
 
-const hostOf = (url: string) => {
-  try { return new URL(url).hostname.replace(/^www\./, ''); } catch { return url; }
+const arg = (call: string, key: string) => new RegExp(`${key}\\s*:\\s*['"\`]([^'"\`]+)`).exec(call)?.[1];
+
+/**
+ * A code-mode program, summarised from the host tools it calls:
+ * `tools.lookupProject({ id: 'foodly' })` becomes "Read Foodly".
+ */
+export const describeCode = (js: unknown): string[] => {
+  const source = String(js ?? '');
+  const calls = Array.from(source.matchAll(/tools(?:\.(\w+)|\[['"]([\w-]+)['"]\])\s*\(([^)]*)\)/g)).map((match) => ({ name: match[1] ?? match[2], call: match[3] ?? '' }));
+  const read: string[] = [];
+  const lines: string[] = [];
+  calls.forEach(({ name, call }) => {
+    if (name === 'lookupRole' || name === 'lookupProject') { const id = arg(call, 'id'); if (id) read.push(nameOf(id)); }
+    else if (name === 'listWork') lines.push('Read the index of his work');
+    else if (name === 'search') lines.push(`Looked for a tool${arg(call, 'query') ? ` to ${arg(call, 'query')}` : ''}`);
+    else if (name === 'findWorkByTech') lines.push(`Checked his work for ${arg(call, 'tech') ?? 'a technology'}`);
+    else if (name === 'lookupSkills') lines.push('Read his skills');
+    else if (name === 'lookupProfile') lines.push('Read his profile');
+    else if (name === 'lookupGitHub') lines.push(`GitHub ${[arg(call, 'account') ?? 'RealSid08', arg(call, 'repo')].filter(Boolean).join('/')}`);
+    else if (name === 'browseGitHubCode') lines.push(`Read ${[arg(call, 'repo'), arg(call, 'path')].filter(Boolean).join('/')}`);
+    else if (name === 'lookupGitHubIssues') lines.push(`Issues in ${arg(call, 'repo') ?? 'a repo'}`);
+    else if (name === 'lookupGitHubPullRequests') lines.push(`Pull requests in ${arg(call, 'repo') ?? 'a repo'}`);
+    else if (name === 'searchGitHub') lines.push(`Searched GitHub${arg(call, 'query') ? ` for “${arg(call, 'query')}”` : ''}`);
+  });
+  // Lookups called in a loop, e.g. ids.map((id) => tools.lookupProject({ id })), name their ids in a literal list.
+  if (calls.some(({ name, call }) => (name === 'lookupRole' || name === 'lookupProject') && !arg(call, 'id'))) {
+    const known = new Set([...EXPERIENCES.map((exp) => exp.id), ...PROJECTS.map((project) => project.id)]);
+    Array.from(source.matchAll(/['"`]([a-z0-9-]+)['"`]/g)).forEach((match) => {
+      if (known.has(match[1])) read.push(nameOf(match[1]));
+    });
+  }
+  const unique = Array.from(new Set(read.filter((name) => name && name !== 'undefined')));
+  if (unique.length) lines.unshift(`Read ${unique.join(', ')}`);
+  return lines.length ? Array.from(new Set(lines)) : ['Checked his portfolio'];
 };
 
-/** Plain-language label for a tool call, and whether it changed the page. */
-const describe = (tool: string, input: Record<string, unknown> = {}, output?: unknown): { label: string; page: boolean } => {
+/** Plain-language labels for a tool call, and whether it moved the notebook. */
+const describe = (tool: string, input: Record<string, unknown> = {}, output?: unknown): Array<{ label: string; page: boolean }> => {
+  const read = (label: string) => [{ label, page: false }];
+  const page = (label: string) => [{ label, page: true }];
   switch (tool) {
-    case 'lookupRole': return { label: `Read ${nameOf(input.id)}`, page: false };
-    case 'lookupProject': return { label: `Read ${nameOf(input.id)}`, page: false };
-    case 'lookupSkills': return { label: input.cluster ? `Read ${input.cluster} skills` : 'Read skills', page: false };
-    case 'lookupProfile': return { label: 'Read profile', page: false };
-    case 'findWorkByTech': return { label: `Checked his work for ${input.tech ?? 'a technology'}`, page: false };
-    case 'listWorkstreams': return { label: 'Listed roles', page: false };
-    case 'lookupGitHub': return { label: `GitHub ${repoOf(input)}`, page: false };
-    case 'browseGitHubCode': return { label: `Read ${repoOf(input)}${input.path ? `/${input.path}` : ''}`, page: false };
-    case 'lookupGitHubIssues': return { label: `Issues in ${repoOf(input)}`, page: false };
-    case 'lookupGitHubPullRequests': return { label: `Pull requests in ${repoOf(input)}`, page: false };
-    case 'searchGitHub': {
-      const what = SEARCH_LABEL[input.kind as keyof typeof SEARCH_LABEL] ?? 'GitHub';
-      return { label: `Searched ${what}${input.query ? ` for “${input.query}”` : ''}`, page: false };
-    }
-    case 'web_search': return { label: webAction(output), page: false };
-    case 'navigate_to': return { label: `Scrolled to ${nameOf(input.section)}`, page: true };
-    case 'highlight': return { label: `Pointed at ${nameOf(input.target)}`, page: true };
-    case 'focus_mode': return { label: input.target ? `Focused ${nameOf(input.target)}` : 'Focused the page', page: true };
-    case 'expand_card': return { label: `${input.expanded === false ? 'Closed' : 'Opened'} ${nameOf(input.target)}`, page: true };
-    case 'filter_work': return { label: `Filtered to ${[input.year, input.tech, input.query].filter(Boolean).join(', ') || 'all work'}`, page: true };
-    case 'sort_work': return { label: `Sorted by ${input.by}`, page: true };
-    case 'set_theme': return { label: `Switched to ${input.theme}`, page: true };
-    case 'set_visibility': return { label: `${input.visible ? 'Showed' : 'Hid'} ${input.section}`, page: true };
-    case 'walkthrough': return { label: input.action === 'stop' ? 'Stopped the tour' : 'Started a tour', page: true };
-    case 'reset_view': return { label: 'Reset the page', page: true };
-    default: return { label: tool, page: false };
+    case 'code': return describeCode(input.js).map((label) => ({ label, page: false }));
+    case 'search': return read('Looked for the right tool');
+    case 'web_search': return read(webAction(output));
+    case 'turn_to': return page(`Turned to ${targetName(String(input.target ?? ''))}${input.circle ? ' and circled it' : ''}`);
+    case 'mark_work': return page(`Ticked the work that uses ${input.query ?? 'it'}`);
+    case 'focus': return page(input.target ? `Focused on ${targetName(String(input.target))}` : 'Focused the page');
+    case 'tour': return page(input.action === 'stop' ? 'Ended the tour' : input.action === 'start' ? 'Started a tour' : 'Moved the tour on');
+    case 'set_theme': return page(input.theme === 'dark' ? 'Turned the lamp off' : 'Turned the lamp on');
+    case 'reset_view': return page('Put the notebook back');
+    default: return read(tool);
   }
 };
 
@@ -68,30 +81,26 @@ export const toolPartsOf = (message: UIMessage) =>
 
 const Glyph: React.FC<{ state?: string; page: boolean }> = ({ state, page }) => {
   if (state === 'output-error') return <span className="text-gray-400">×</span>;
-  if (state !== 'output-available') return <span className="inline-block size-1.5 animate-pulse rounded-full bg-gray-400" />;
-  return <span className={page ? 'text-white' : 'text-gray-500'}>{page ? '↳' : '·'}</span>;
+  if (state !== 'output-available') return <span className="inline-block size-1.5 animate-pulse rounded-full bg-mono-accent" />;
+  return <span className={page ? 'text-mono-accent' : 'text-gray-500'}>{page ? '↳' : '·'}</span>;
 };
 
-/** The lookups and page moves behind an answer, shown as a short work log. */
+/** The lookups and page moves behind an answer, as a short work log. */
 export const AgentSteps: React.FC<{ message: UIMessage; streaming: boolean }> = ({ message, streaming }) => {
   const [expanded, setExpanded] = useState(false);
   const parts = toolPartsOf(message);
   if (parts.length === 0) return null;
 
-  const steps = parts.map((part) => ({ ...describe(part.type.replace(/^tool-/, ''), part.input, part.output), state: part.state }));
+  const steps = parts.flatMap((part) => describe(part.type.replace(/^tool-/, ''), part.input, part.output).map((step) => ({ ...step, state: part.state })));
   const reads = steps.filter((step) => !step.page);
   const moves = steps.filter((step) => step.page);
   const collapsed = !streaming && !expanded && reads.length > 2;
   const visible = collapsed ? moves : steps;
 
   return (
-    <div className="mb-1.5 space-y-0.5 font-mono text-[11px] leading-5">
+    <div className="mb-2 space-y-0.5 font-mono text-[11px] leading-5">
       {collapsed && (
-        <button
-          type="button"
-          onClick={() => setExpanded(true)}
-          className="flex items-center gap-1.5 text-gray-500 hover:text-white"
-        >
+        <button type="button" onClick={() => setExpanded(true)} className="flex items-center gap-1.5 text-gray-500 hover:text-white">
           <span>·</span>
           Checked {reads.length} sources
           <span aria-hidden="true">›</span>

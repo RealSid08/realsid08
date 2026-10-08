@@ -133,8 +133,8 @@ const plainText = (children: ReactNode): string | null => {
 };
 
 /**
- * Links in assistant answers. `#project-foodly` style references drive the page
- * (hover outlines the card, click scrolls to it); GitHub, LinkedIn, mail and the
+ * Links in assistant answers. `#project-foodly` style references drive the notebook
+ * (hover highlights the entry, click turns to it and circles it); GitHub, LinkedIn, mail and the
  * résumé get their own marks; anything else gets its site's favicon. Unknown
  * schemes and unknown page targets render as plain text.
  */
@@ -147,7 +147,7 @@ export function PortfolioLink({ href, children }: { href?: string; children: Rea
     return (
       <a
         href={`#${target}`}
-        title={`Show ${targetName(target)} on the page`}
+        title={`Turn to ${targetName(target)} in the notebook`}
         onMouseEnter={() => peek(target)}
         onMouseLeave={() => peek(null)}
         onFocus={() => peek(target)}
@@ -158,7 +158,7 @@ export function PortfolioLink({ href, children }: { href?: string; children: Rea
           peek(null);
           void showOnPage(target);
         }}
-        className="text-white underline decoration-dotted decoration-white/50 underline-offset-[3px] hover:decoration-solid hover:decoration-white"
+        className="text-mono-accent underline decoration-dotted decoration-mono-accent/60 underline-offset-[3px] hover:decoration-solid"
       >
         <WithIcon icon={<PageMark />}>{children}</WithIcon>
       </a>

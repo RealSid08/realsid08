@@ -1,4 +1,10 @@
-import { streamPortfolioChat, isUiMessageArray } from '../lib/portfolioChat';
+import { streamPortfolioChat, isUiMessageArray } from '../lib/portfolioChat.js';
+
+/**
+ * The chat assistant runs here, on Vercel's Node runtime, because AI SDK code mode
+ * needs Node worker threads. realsid08.me's Worker forwards /api/chat to it.
+ */
+export const config = { maxDuration: 60 };
 
 type ChatRequest = {
   method?: string;

@@ -1,14 +1,14 @@
 import { defineCatalog } from '@json-render/core';
 import { schema } from '@json-render/react/schema';
 import { z } from 'zod';
-import { CARD_IDS } from './portfolioIds';
+import { CARD_IDS } from './portfolioIds.js';
 
-const cardId = z.enum(CARD_IDS).describe('Page card id, e.g. project-foodly or exp-besmak');
+const cardId = z.enum(CARD_IDS).describe('Notebook page id, e.g. project-foodly or exp-besmak');
 
 /**
  * Visual vocabulary for facts the assistant has already checked. Components that
- * take a card id wire themselves to the page: hovering outlines the card and the
- * button scrolls to it, so the model never has to write event bindings.
+ * take a page id wire themselves to the notebook: hovering highlights the entry and
+ * the button turns to it, so the model never has to write event bindings.
  */
 const components = {
     Stack: {
@@ -25,7 +25,7 @@ const components = {
         stack: z.array(z.string()).max(5).describe('Tags copied from the Stack line of the tool result; never add your own'),
       }),
       slots: ['default'],
-      description: 'One role or project, with a button that shows it on the page. Children may be Metric or SourceLink.',
+      description: 'One role or project, with a button that turns the notebook to it. Children may be Metric or SourceLink.',
     },
     Metric: {
       props: z.object({ value: z.string().describe('A number from a tool result, e.g. 600 or 34,023'), label: z.string() }),
@@ -65,10 +65,10 @@ const components = {
     PageButton: {
       props: z.object({
         label: z.string(),
-        action: z.enum(['show', 'filter', 'tour']),
-        value: z.string().nullable().describe('Card id for show, tech or keyword for filter, null for tour'),
+        action: z.enum(['show', 'mark', 'tour']),
+        value: z.string().nullable().describe('Page id for show, a technology or keyword for mark, null for tour'),
       }),
-      description: 'A button that changes the page when the visitor clicks it: show a card, filter the work, or start a tour.',
+      description: 'A button that moves the notebook when the visitor clicks it: turn to an entry, tick the work that uses a technology, or start a tour.',
     },
     EvidenceBoard: {
       props: z.object({ title: z.string(), asOf: z.string().describe('Fetch time written for people, e.g. "Sep 29, 2026, 09:51 UTC"') }),
@@ -117,13 +117,13 @@ Example:
 \`\`\`spec
 {"op":"add","path":"/root","value":"stack"}
 {"op":"add","path":"/elements/stack","value":{"type":"Stack","props":{},"children":["foodly","show"]}}
-{"op":"add","path":"/elements/foodly","value":{"type":"WorkCard","props":{"target":"project-foodly","title":"Foodly","meta":"Final-year project · 2026","summary":"<from the tool result>","stack":["React Native","Convex"]},"children":["metrics"]}}
+{"op":"add","path":"/elements/foodly","value":{"type":"WorkCard","props":{"target":"project-foodly","title":"Foodly","meta":"Honours project · 2026","summary":"<from the tool result>","stack":["React Native","Convex"]},"children":["metrics"]}}
 {"op":"add","path":"/elements/metrics","value":{"type":"MetricRow","props":{},"children":["tests"]}}
-{"op":"add","path":"/elements/tests","value":{"type":"Metric","props":{"value":"102","label":"automated tests"},"children":[]}}
-{"op":"add","path":"/elements/show","value":{"type":"PageButton","props":{"label":"Filter to Convex work","action":"filter","value":"convex"},"children":[]}}
+{"op":"add","path":"/elements/tests","value":{"type":"Metric","props":{"value":"<a number from the tool result>","label":"<what it measures>"},"children":[]}}
+{"op":"add","path":"/elements/show","value":{"type":"PageButton","props":{"label":"Tick his Convex work","action":"mark","value":"convex"},"children":[]}}
 \`\`\`
 
-Components (props as JSON Schema; <card id> is one of the card ids listed above):
+Components (props as JSON Schema; <card id> is one of the page ids listed above):
 ${Object.entries(components)
   .map(([name, definition]) => `- ${name}: ${definition.description}${'slots' in definition ? ' Has children.' : ''} Props: ${describeProps(definition.props)}`)
   .join('\n')}`;
