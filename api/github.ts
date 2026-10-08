@@ -1,4 +1,4 @@
-import { getGithubPayload, GithubLookupError } from '../lib/github';
+import { getGithubPayload, GithubLookupError } from '../lib/github.js';
 
 type GithubRequest = {
   method?: string;

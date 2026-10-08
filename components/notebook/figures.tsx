@@ -13,6 +13,18 @@ import {
 
 // Figures animate in when their page turns into view: the engine adds `is-in` to every `[data-reveal]`.
 
+/** Marks a screenshot that opens in the viewer (see Lightbox.tsx). */
+export const zoomable = (group: string, full: string, caption: string, detail = '') => ({
+  'data-zoom': '',
+  'data-group': group,
+  'data-full': full,
+  'data-caption': caption,
+  'data-detail': detail,
+  tabIndex: 0,
+  role: 'button',
+  draggable: false,
+});
+
 const pct = (value: number | null) => (value == null ? '·' : String(Math.round(value * 100)));
 
 /** Cooperation rate per agent and opponent. Missing data stays empty, never zero. */
@@ -91,7 +103,7 @@ export const Replay: React.FC = () => (
         })}
       </div>
     ))}
-    <figcaption>{REPLAY.note}</figcaption>
+    <figcaption><span className="rp-key" aria-hidden="true" /> {REPLAY.note}</figcaption>
   </figure>
 );
 
@@ -194,7 +206,13 @@ export const FoodlyScreens: React.FC = () => (
     {FOODLY_SCREENS.map((screen) => (
       <figure key={screen.src} className="ff-phone">
         <div className={`phone${screen.os === 'Android' ? ' android' : ''}`}>
-          <img src={screen.src} alt={`Foodly ${screen.label}, ${screen.os}`} loading="lazy" decoding="async" />
+          <img
+            src={screen.src}
+            alt={`Foodly ${screen.label}, ${screen.os}`}
+            loading="lazy"
+            decoding="async"
+            {...zoomable('foodly', screen.full, `Foodly · ${screen.label}`, screen.os)}
+          />
         </div>
         <figcaption><span className="os">{screen.os}</span>{screen.label}</figcaption>
       </figure>

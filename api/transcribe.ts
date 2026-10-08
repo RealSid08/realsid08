@@ -1,4 +1,4 @@
-import { transcribeAudio, TranscriptionError } from '../lib/transcribe';
+import { transcribeAudio, TranscriptionError } from '../lib/transcribe.js';
 import type { IncomingMessage, ServerResponse } from 'http';
 
 export default async function handler(req: IncomingMessage, res: ServerResponse) {

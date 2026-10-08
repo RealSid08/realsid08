@@ -4,6 +4,7 @@ import { useTheme } from '../../services/theme';
 import { NotebookEngine, type NotebookState } from './engine';
 import { HomeIcon } from './icons';
 import { PAGES, type Page } from './pages';
+import { useLightbox } from './Lightbox';
 
 const PageFace: React.FC<{ page: Page; index: number; side: 'front' | 'back' }> = ({ page, index, side }) => (
   <div className={`face ${side}`}>
@@ -74,6 +75,7 @@ export const Notebook: React.FC = () => {
   const engine = useRef<NotebookEngine | null>(null);
   const [state, setState] = useState<NotebookState | null>(null);
   const [theme, setTheme] = useTheme();
+  const lightbox = useLightbox(refs.book);
 
   useEffect(() => {
     const el = Object.fromEntries(Object.entries(refs).map(([key, ref]) => [key, ref.current])) as Record<keyof typeof refs, HTMLDivElement>;
@@ -126,9 +128,11 @@ export const Notebook: React.FC = () => {
           <span className="where" aria-live="polite">{state?.label ?? 'Cover'}</span>
           <button type="button" onClick={() => engine.current?.next(1)} disabled={!state?.canGoForward} aria-label="Next page">→</button>
           <button type="button" onClick={() => void engine.current?.home()} aria-label="Home: contents" title="Home"><HomeIcon /></button>
+          <button type="button" className="lamp-inline" onClick={() => setTheme(lampOn ? 'dark' : 'light')} aria-label={lampOn ? 'Turn the desk lamp off (dark mode)' : 'Turn the desk lamp on (light mode)'} title={lampOn ? 'Lamp off' : 'Lamp on'}><LampIcon on={lampOn} /></button>
           <span className="tip">{state?.solo ? 'swipe or tap to turn' : 'click a page · drag a corner · ← →'}</span>
         </nav>
       </main>
+      {lightbox}
     </div>
   );
 };

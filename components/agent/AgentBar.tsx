@@ -130,6 +130,13 @@ const Icon = {
       <path d="M6 15l6-6 6 6" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   ),
+  /** A fresh sheet with a pencil: start a new conversation. */
+  newPage: (
+    <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M13 3H6.5A1.5 1.5 0 005 4.5v15A1.5 1.5 0 006.5 21h11a1.5 1.5 0 001.5-1.5V12" />
+      <path d="M17.6 3.4a1.6 1.6 0 012.3 2.3L13 12.6l-3 .7.7-3z" />
+    </svg>
+  ),
   copy: (
     <svg viewBox="0 0 24 24" className="size-3" fill="none" stroke="currentColor" strokeWidth={1.8} aria-hidden="true">
       <rect x="9" y="9" width="11" height="11" rx="1.5" />
@@ -446,8 +453,8 @@ export const AgentBar: React.FC = () => {
                 <p className="mt-1.5 font-hand text-[16px] leading-none text-mono-accent">answers come from my roles, projects and public GitHub</p>
               </div>
               {messages.length > 0 && (
-                <button type="button" onClick={clearThread} className="rounded-full px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.12em] text-gray-400 hover:bg-white/[0.07] hover:text-white">
-                  New
+                <button type="button" onClick={clearThread} aria-label="Start a new conversation" title="New conversation" className={iconButton}>
+                  {Icon.newPage}
                 </button>
               )}
               <button

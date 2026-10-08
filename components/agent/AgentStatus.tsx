@@ -57,7 +57,7 @@ export const AgentStatus: React.FC = () => {
       const target = event.target as HTMLElement | null;
       if (target && ['INPUT', 'TEXTAREA'].includes(target.tagName)) return;
       if (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft') return;
-      event.stopPropagation();
+      event.stopImmediatePropagation();
       void runTour(event.key === 'ArrowRight' ? 'next' : 'prev');
     };
     window.addEventListener('keydown', onKey, true);

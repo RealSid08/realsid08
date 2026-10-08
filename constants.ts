@@ -5,7 +5,7 @@ export const PROFILE: ProfileInfo = {
   familyName: 'KRISHNAN',
   title: 'Software Engineer',
   tagline:
-    'Software engineer in Melbourne. When a company or my own day has a problem, I build software that solves it.',
+    'Software engineer in Melbourne. When I run into a real-world problem, or a company brings me one, I build the software that solves it.',
   location: 'Melbourne, VIC',
   availability: 'Available for full-time graduate employment from December 2026',
   manifesto:

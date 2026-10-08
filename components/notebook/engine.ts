@@ -21,8 +21,10 @@ export type NotebookState = {
 type Listener = (state: NotebookState) => void;
 
 const TURN_MS = 1050;
-const RIFFLE_MS = 620;
-const RIFFLE_GAP_MS = 85;
+const RIFFLE_MS = 650;
+/** Gap between riffled leaves; longer from a closed cover, where nothing hides the leaves underneath. */
+const RIFFLE_GAP_MS = 180;
+const RIFFLE_GAP_CLOSED_MS = 330;
 const PHONE_BREAKPOINT = 640;
 
 const wait = (ms: number) => new Promise<void>((resolve) => window.setTimeout(resolve, ms));
@@ -35,6 +37,8 @@ export class NotebookEngine {
   private H = 640;
   private CW = 1100;
   private riffling = false;
+  /** While riffling, the engine places leaves itself and paint() leaves them alone. */
+  private manual = false;
   private settleUntil = 0;
   private revealTimer = 0;
   private drag: null | { solo: true; x: number; y: number } | { solo: false; leaf: HTMLElement; dir: number; x: number; a: number; moved: boolean } = null;
@@ -123,10 +127,12 @@ export class NotebookEngine {
 
   private paint() {
     const { s, N, W, solo, el } = this;
-    this.leaves.forEach((leaf, i) => {
-      leaf.classList.toggle('flipped', i < s);
-      if (!leaf.classList.contains('turning')) leaf.style.zIndex = String(i < s ? i + 1 : N - i + 1);
-    });
+    if (!this.manual) {
+      this.leaves.forEach((leaf, i) => {
+        leaf.classList.toggle('flipped', i < s);
+        if (!leaf.classList.contains('turning')) leaf.style.zIndex = String(i < s ? i + 1 : N - i + 1);
+      });
+    }
     el.book.dataset.s = String(s);
     const left = solo && this.p % 2 === 1;
     el.shift.style.transform = solo
@@ -208,8 +214,10 @@ export class NotebookEngine {
   }
 
   /**
-   * Riffle to a spread. Each later leaf rides above the one before, so the stack
-   * fans over cleanly. On a phone, land on `page`, or the spread's first page.
+   * Riffle to a spread. Only the first, middle and last leaves visibly turn; the
+   * leaves between them flip instantly underneath, hidden by the stack they land
+   * under, so a long jump never fans a dozen half-turned pages across the desk.
+   * On a phone, land on `page`, or the spread's first page.
    */
   async go(spread: number, page?: number) {
     const t = Math.max(0, Math.min(this.N, spread));
@@ -223,12 +231,44 @@ export class NotebookEngine {
     const dir = Math.sign(t - this.s);
     const n = Math.abs(t - this.s);
     if (n === 1) { this.step(dir); land(); return this.settled(); }
+
+    const from = this.s;
+    // Leaves in the order they turn: forwards from the top of the right stack, backwards from the top of the left.
+    const order = Array.from({ length: n }, (_, k) => (dir > 0 ? from + k : from - 1 - k));
+    const animated = n <= 3 ? order : [order[0], order[Math.floor(n / 2)], order[n - 1]];
+    const closed = from === 0 || from === this.N;
+    const gap = closed ? RIFFLE_GAP_CLOSED_MS : RIFFLE_GAP_MS;
+
     this.riffling = true;
-    for (let k = 0; k < n; k += 1) {
-      this.step(dir, RIFFLE_MS, 100 + k);
-      if (k < n - 1) await wait(RIFFLE_GAP_MS);
+    this.manual = true;
+    this.s = t;
+    this.p = t === 0 ? 0 : 2 * t - 1;
+    this.slid();
+    this.paint();
+
+    const silently = (leaf: HTMLElement) => {
+      leaf.style.transition = 'none';
+      leaf.classList.add('silent');
+      leaf.style.zIndex = '0';
+      leaf.classList.toggle('flipped', dir > 0);
+    };
+    for (let k = 0; k < animated.length; k += 1) {
+      const leaf = this.leaves[animated[k]];
+      leaf.classList.toggle('flipped', dir > 0);
+      this.turn(leaf, RIFFLE_MS, 100 + k);
+      // The leaves between this one and the next turn while this one still covers them.
+      const next = animated[k + 1];
+      if (next !== undefined) {
+        await wait(gap - 20);
+        order.filter((i) => (dir > 0 ? i > animated[k] && i < next : i < animated[k] && i > next)).forEach((i) => silently(this.leaves[i]));
+        await wait(20);
+      }
     }
-    await wait(RIFFLE_MS);
+    await wait(RIFFLE_MS + 40);
+    this.leaves.forEach((leaf) => leaf.classList.remove('silent'));
+    this.manual = false;
+    this.paint();
+    requestAnimationFrame(() => this.leaves.forEach((leaf) => { if (!leaf.classList.contains('turning')) leaf.style.transition = ''; }));
     this.riffling = false;
     land();
     return this.settled();
@@ -378,7 +418,7 @@ export class NotebookEngine {
 
     on(book, 'pointerdown', (event) => {
       const target = event.target as HTMLElement;
-      if (target.closest('[data-go], a[href], button') || this.riffling) return;
+      if (target.closest('[data-go], a[href], button, [data-zoom]') || this.riffling) return;
       if (this.solo) { this.drag = { solo: true, x: event.clientX, y: event.clientY }; return; }
       const leaf = target.closest<HTMLElement>('.leaf');
       if (!leaf) return;
@@ -398,6 +438,7 @@ export class NotebookEngine {
       const base = drag.dir > 0 ? 0 : -180;
       drag.a = Math.max(-180, Math.min(0, base + (dx / (this.W * 1.1)) * 180));
       drag.leaf.style.transition = 'none';
+      drag.leaf.classList.add('dragging');
       drag.leaf.style.zIndex = '100';
       drag.leaf.style.transform = `rotateY(${drag.a}deg)`;
       drag.leaf.style.setProperty('--t', String(-drag.a / 180));
@@ -415,6 +456,7 @@ export class NotebookEngine {
         return;
       }
       const { leaf, dir, a, moved } = drag;
+      leaf.classList.remove('dragging');
       leaf.style.transition = '';
       leaf.style.transform = '';
       leaf.style.removeProperty('--t');
@@ -428,7 +470,7 @@ export class NotebookEngine {
     on(window, 'keydown', (event) => {
       const target = event.target as HTMLElement | null;
       if (target && (['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName) || target.isContentEditable)) return;
-      if (event.metaKey || event.ctrlKey || event.altKey) return;
+      if (event.metaKey || event.ctrlKey || event.altKey || event.defaultPrevented || document.querySelector('.lb')) return;
       if (event.key === 'ArrowRight') this.next(1);
       if (event.key === 'ArrowLeft') this.next(-1);
     });
