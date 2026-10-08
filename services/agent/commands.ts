@@ -7,7 +7,7 @@ export type SlashCommand = {
   /** what it does, shown in the menu */
   hint: string;
   group: 'Go to' | 'Ask' | 'Page';
-  /** placeholder for a command that takes text after it, e.g. `/filter convex` */
+  /** placeholder for a command that takes text after it, e.g. `/find convex` */
   arg?: string;
   /** page tools to run, in order; also checked against the registry in verify-agent */
   steps?: (arg: string) => ToolStep[];
@@ -17,46 +17,37 @@ export type SlashCommand = {
   local?: 'resume' | 'clear';
 };
 
-/** Scroll to a card, open its screenshots if it has any, and outline it. Sections just scroll. */
-export const showCard = (target: string): ToolStep[] =>
-  /^(exp|project)-/.test(target)
-    ? [
-        { tool: 'navigate_to', args: { section: target } },
-        ...(target.startsWith('project-') ? [{ tool: 'expand_card', args: { target, expanded: true } }] : []),
-        { tool: 'highlight', args: { target } },
-      ]
-    : [{ tool: 'navigate_to', args: { section: target } }];
+/** Turn to a page and ring it in pen. */
+export const showCard = (target: string): ToolStep[] => [{ tool: 'turn_to', args: { target, circle: /^(exp|project)-/.test(target) } }];
+
+const goTo = (id: string, target: string, hint: string): SlashCommand => ({ id, group: 'Go to', hint, steps: () => showCard(target) });
 
 /**
  * `/` commands are the quick way in. Page commands reuse the same tool registry
- * the assistant and WebMCP call, so they show up in the activity log and undo.
+ * external agents call, so they show up in the activity log and can be undone.
  */
 export const SLASH_COMMANDS: SlashCommand[] = [
-  { id: 'projects', group: 'Go to', hint: 'Foodly, ParkAlong and the rest', steps: () => [{ tool: 'navigate_to', args: { section: 'projects' } }] },
-  { id: 'experience', group: 'Go to', hint: 'Current roles and earlier work', steps: () => [{ tool: 'navigate_to', args: { section: 'experience' } }] },
-  { id: 'skills', group: 'Go to', hint: 'Languages, stack and tooling', steps: () => [{ tool: 'navigate_to', args: { section: 'skills' } }] },
-  { id: 'contact', group: 'Go to', hint: 'Email, LinkedIn, GitHub', steps: () => [{ tool: 'navigate_to', args: { section: 'contact' } }] },
-  { id: 'foodly', group: 'Go to', hint: 'Open the Foodly screenshots', steps: () => showCard('project-foodly') },
-  { id: 'parkalong', group: 'Go to', hint: 'Open the ParkAlong screenshots', steps: () => showCard('project-parkalong') },
+  goTo('work', 'work', 'Kenspire and Besmak, in production'),
+  goTo('foodly', 'project-foodly', 'Every food reel you saved, on one map'),
+  goTo('switchyard', 'project-switchyard', 'One gateway for every coding agent'),
+  goTo('parkalong', 'project-parkalong', 'Parking, time limits and prices on one map'),
+  goTo('servogrid', 'project-servogrid', 'Fuel prices that admit when they are stale'),
+  goTo('research', 'project-llm-cooperation', 'Do coding agents cooperate?'),
+  goTo('also', 'also', 'Tools and experiments'),
+  goTo('contact', 'contact', 'Email, GitHub, LinkedIn, résumé'),
 
-  { id: 'tour', group: 'Page', hint: 'Step through the work one card at a time', steps: () => [{ tool: 'walkthrough', args: { action: 'start' } }] },
-  {
-    id: 'filter',
-    group: 'Page',
-    arg: 'tech or keyword',
-    hint: 'Only show matching work, e.g. /filter convex',
-    steps: (arg) => [{ tool: 'filter_work', args: /^\d{4}$/.test(arg) ? { year: Number(arg) } : { query: arg } }],
-  },
-  { id: 'theme', group: 'Page', hint: 'Switch light or dark', steps: () => [{ tool: 'set_theme', args: { theme: globalThis.document?.documentElement.dataset.theme === 'dark' ? 'light' : 'dark' } }] },
+  { id: 'tour', group: 'Page', hint: 'Turn through the work one entry at a time', steps: () => [{ tool: 'tour', args: { action: 'start' } }] },
+  { id: 'find', group: 'Page', arg: 'tech or keyword', hint: 'Tick the work that uses it, e.g. /find convex', steps: (arg) => [{ tool: 'mark_work', args: { query: arg } }] },
+  { id: 'lamp', group: 'Page', hint: 'Turn the desk lamp on or off', steps: () => [{ tool: 'set_theme', args: { theme: globalThis.document?.documentElement.dataset.theme === 'dark' ? 'light' : 'dark' } }] },
   { id: 'reset', group: 'Page', hint: 'Undo everything the assistant changed', steps: () => [{ tool: 'reset_view', args: {} }] },
-  { id: 'resume', group: 'Page', hint: 'Open the PDF', local: 'resume' },
+  { id: 'resume', group: 'Page', hint: 'Download the PDF', local: 'resume' },
   { id: 'clear', group: 'Page', hint: 'Start a new conversation', local: 'clear' },
 
+  { id: 'now', group: 'Ask', hint: 'What he is working on right now', prompt: () => 'What is Sidhaarth working on right now, and what does he own in each?' },
   { id: 'github', group: 'Ask', hint: 'What he has shipped publicly, with links', prompt: () => 'What has Sidhaarth shipped on GitHub recently? Link the repos.' },
-  { id: 'opensource', group: 'Ask', hint: 'Packages and tools he has published', prompt: () => 'What open source has Sidhaarth built? Link the repos.' },
-  { id: 'compare', group: 'Ask', hint: 'Foodly vs ParkAlong, side by side', prompt: () => 'Compare Foodly and ParkAlong: what was hard about each, and what does each show about him as an engineer?' },
-  { id: 'hire', group: 'Ask', hint: 'The honest case for and against', prompt: () => 'Give me the honest case for and against hiring Sidhaarth as a graduate engineer.' },
-  { id: 'stack', group: 'Ask', arg: 'technology', hint: 'Where he has used it, e.g. /stack convex', prompt: (arg) => `Where has Sidhaarth used ${arg} in real work? Show me on the page.` },
+  { id: 'compare', group: 'Ask', hint: 'ParkAlong vs ServoGrid, side by side', prompt: () => 'Compare ParkAlong and ServoGrid: what problem each solves, what was hard, and what each shows about him as an engineer.' },
+  { id: 'hire', group: 'Ask', hint: 'The honest case for and against', prompt: () => 'Give me the honest case for and against hiring Sidhaarth.' },
+  { id: 'stack', group: 'Ask', arg: 'technology', hint: 'Where he has used it, e.g. /stack convex', prompt: (arg) => `Where has Sidhaarth used ${arg} in real work? Show me in the notebook.` },
 ];
 
 /** Splits `/filter convex` into the command text and its argument. */

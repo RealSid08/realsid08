@@ -1,17 +1,6 @@
-import {
-  expandCard,
-  filterWork,
-  focusMode,
-  getState,
-  highlight,
-  navigateTo,
-  resetView,
-  setTheme,
-  setVisibility,
-  sortWork,
-  walkthrough,
-} from './actions';
-import { formatProfile, formatProject, formatRole, formatSkills, formatWorkstreams } from '../localKnowledge';
+import { focusOn, getState, markWork, resetView, setTheme, tour, turnTo } from './actions';
+import { formatProfile, formatProject, formatRole, formatSkills, formatWorkByTech, formatWorkIndex } from '../localKnowledge';
+import { SECTION_IDS, TARGET_IDS } from '../../lib/portfolioIds';
 
 export type AgentTool = {
   name: string;
@@ -22,225 +11,116 @@ export type AgentTool = {
   run: (args: Record<string, unknown>) => unknown | Promise<unknown>;
 };
 
-const str = (description: string, values?: string[]) =>
+const str = (description: string, values?: readonly string[]) =>
   values ? { type: 'string', enum: values, description } : { type: 'string', description };
 
-const SECTIONS = [
-  'top',
-  'skills',
-  'experience',
-  'projects',
-  'education',
-  'contact',
-];
+const target = str(`A page id: a section (${SECTION_IDS.join(', ')}) or a role or project such as project-foodly or exp-besmak`, TARGET_IDS);
+
+const github = async (params: Record<string, string>) => {
+  const response = await fetch(`/api/github?${new URLSearchParams(params)}`);
+  if (!response.ok) return { error: `GitHub lookup failed (${response.status})` };
+  return response.json();
+};
 
 /**
- * The single source of truth for what the agent can do. Consumed by the
- * in-page agent, the slash commands and the WebMCP registration.
+ * What the notebook can do, for the slash commands and for external agents over
+ * WebMCP. The chat assistant's page tools (lib/portfolioChat.ts) use the same names.
  */
 export const TOOLS: AgentTool[] = [
   {
-    name: 'lookup_role',
-    description: 'Read a specific employer or role from Sidhaarth’s portfolio.',
+    name: 'list_work',
+    description: 'List every role and project in Sidhaarth’s portfolio, with ids and notebook page ids.',
     kind: 'read',
-    inputSchema: { type: 'object', properties: { id: str('Role id', ['besmak', 'complete-leader', 'kenspire', 'mindtek', 'unieats', 'idhayam', 'hida', 'imaginet']) }, required: ['id'] },
-    run: ({ id }) => formatRole(String(id)) ?? 'Role not found.',
+    inputSchema: { type: 'object', properties: {} },
+    run: () => formatWorkIndex(),
+  },
+  {
+    name: 'lookup_role',
+    description: 'Read one of Sidhaarth’s roles in full.',
+    kind: 'read',
+    inputSchema: { type: 'object', properties: { id: str('Role id from list_work, e.g. besmak') }, required: ['id'] },
+    run: ({ id }) => formatRole(String(id)) ?? 'Role not found. Call list_work for ids.',
   },
   {
     name: 'lookup_project',
-    description: 'Read a featured project from Sidhaarth’s portfolio.',
+    description: 'Read one of Sidhaarth’s projects in full.',
     kind: 'read',
-    inputSchema: { type: 'object', properties: { id: str('Project id', ['foodly', 'parkalong', 'tbrgs', 'rag-viz', 'aura']) }, required: ['id'] },
-    run: ({ id }) => formatProject(String(id)) ?? 'Project not found.',
+    inputSchema: { type: 'object', properties: { id: str('Project id from list_work, e.g. foodly') }, required: ['id'] },
+    run: ({ id }) => formatProject(String(id)) ?? 'Project not found. Call list_work for ids.',
   },
   {
     name: 'lookup_skills',
-    description: 'Read skill clusters: languages, frontend, backend, agentic, cloud, or testing.',
+    description: 'Read his skills: languages, web and mobile, backend, AI and coding agents, cloud, testing.',
     kind: 'read',
-    inputSchema: { type: 'object', properties: { cluster: str('Optional cluster name or id') } },
+    inputSchema: { type: 'object', properties: { cluster: str('Optional cluster name') } },
     run: ({ cluster }) => formatSkills(cluster ? String(cluster) : undefined),
   },
   {
     name: 'lookup_profile',
-    description: 'Read Sidhaarth’s location, availability, education, and public contact details.',
+    description: 'Read his location, availability, education and public contact details.',
     kind: 'read',
     inputSchema: { type: 'object', properties: {} },
     run: () => formatProfile(),
   },
   {
-    name: 'list_workstreams',
-    description: 'List active contracts or earlier roles.',
+    name: 'find_work_by_tech',
+    description: 'Find every role and project that uses or mentions a technology.',
     kind: 'read',
-    inputSchema: { type: 'object', properties: { lane: str('Workstream group', ['active', 'archive', 'all']) } },
-    run: ({ lane }) => formatWorkstreams(lane === 'archive' || lane === 'all' ? lane : 'active'),
+    inputSchema: { type: 'object', properties: { tech: str('A technology, e.g. Convex') }, required: ['tech'] },
+    run: ({ tech }) => formatWorkByTech(String(tech ?? '')),
+  },
+  {
+    name: 'get_public_repos',
+    description: 'List public GitHub repositories for RealSid08 or OpenRenderKit, with a fetched-at time.',
+    kind: 'read',
+    inputSchema: { type: 'object', properties: { account: str('Account', ['RealSid08', 'OpenRenderKit']) } },
+    run: ({ account }) => github({ account: account ? String(account) : 'RealSid08' }),
   },
   {
     name: 'get_state',
-    description: 'Read what the visitor is currently looking at: theme, focus mode, hidden sections.',
+    description: 'Read what the visitor is looking at: the open pages, the theme, and any tour.',
     kind: 'read',
     inputSchema: { type: 'object', properties: {} },
     run: () => getState(),
   },
   {
-    name: 'navigate_to',
-    description: 'Scroll the page to a section or a specific card.',
+    name: 'turn_to',
+    description: 'Turn the notebook to a section, role or project. Set circle to ring its title in pen.',
     kind: 'act',
-    inputSchema: { type: 'object', properties: { section: str(`Section id (${SECTIONS.join(', ')}) or a card id such as project-foodly`) }, required: ['section'] },
-    run: ({ section }) => navigateTo(String(section)),
+    inputSchema: { type: 'object', properties: { target, circle: { type: 'boolean' } }, required: ['target'] },
+    run: ({ target: id, circle: ring }) => turnTo(String(id), Boolean(ring)),
   },
   {
-    name: 'highlight',
-    description: 'Point at one card or section by briefly outlining it.',
+    name: 'focus',
+    description: 'Dim everything on the open pages except one role, project or section.',
     kind: 'act',
-    inputSchema: {
-      type: 'object',
-      properties: { target: str('Element id, e.g. project-foodly'), durationMs: { type: 'number' } },
-      required: ['target'],
-    },
-    run: ({ target, durationMs }) => highlight(String(target), Number(durationMs) || undefined),
+    inputSchema: { type: 'object', properties: { target } },
+    run: ({ target: id }) => focusOn(id ? String(id) : undefined),
   },
   {
-    name: 'focus_mode',
-    description: 'Dim everything except one card so it can be read closely.',
+    name: 'mark_work',
+    description: 'Turn to the contents and tick every entry whose work uses a technology or matches a phrase.',
     kind: 'act',
-    inputSchema: { type: 'object', properties: { target: str('Element id to keep in focus') } },
-    run: ({ target }) => focusMode(target ? String(target) : undefined),
+    inputSchema: { type: 'object', properties: { query: str('A technology or phrase, e.g. Convex or SwiftUI') }, required: ['query'] },
+    run: ({ query }) => markWork(String(query ?? '')),
   },
   {
-    name: 'walkthrough',
-    description: 'Step through the work one card at a time.',
+    name: 'tour',
+    description: 'Step through the work one entry at a time.',
     kind: 'act',
-    inputSchema: {
-      type: 'object',
-      properties: { action: str('Step', ['start', 'next', 'prev', 'stop']) },
-      required: ['action'],
-    },
-    run: ({ action }) => walkthrough(String(action) as 'start' | 'next' | 'prev' | 'stop'),
+    inputSchema: { type: 'object', properties: { action: str('Step', ['start', 'next', 'prev', 'stop']) }, required: ['action'] },
+    run: ({ action }) => tour(String(action) as 'start' | 'next' | 'prev' | 'stop'),
   },
-  {
-    name: 'filter_work',
-    description: 'Show only the work that matches a year, a technology or a search phrase.',
-    kind: 'act',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        year: { type: 'number', description: 'Only show work from this year' },
-        tech: str('Only show work that uses this technology'),
-        query: str('Free text to match against the card text'),
-      },
-    },
-    run: ({ year, tech, query }) =>
-      filterWork({
-        year: year === undefined || year === null ? undefined : Number(year),
-        tech: tech === undefined || tech === null ? undefined : String(tech),
-        query: query === undefined || query === null ? undefined : String(query),
-      }),
-  },
-  {
-    name: 'sort_work',
-    description: 'Reorder the work cards by year or title.',
-    kind: 'act',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        by: str('Sort key', ['year', 'title']),
-        direction: str('Direction', ['asc', 'desc']),
-      },
-      required: ['by'],
-    },
-    run: ({ by, direction }) => sortWork(String(by) as 'year' | 'title', (direction as 'asc' | 'desc') ?? 'desc'),
-  },
-  {
-    name: 'expand_card',
-    description: 'Open or close the extra detail on a card, such as its screenshots.',
-    kind: 'act',
-    inputSchema: {
-      type: 'object',
-      properties: { target: str('Element id, e.g. project-foodly'), expanded: { type: 'boolean' } },
-      required: ['target'],
-    },
-    run: ({ target, expanded }) => expandCard(String(target), expanded === undefined ? true : Boolean(expanded)),
-  },
-  {
-    name: 'get_public_repos',
-    description: 'Read the public GitHub repositories for RealSid08 or OpenRenderKit, with a fetched-at timestamp.',
-    kind: 'read',
-    inputSchema: {
-      type: 'object',
-      properties: { account: str('Account', ['RealSid08', 'OpenRenderKit']) },
-    },
-    run: async ({ account }) => {
-      const target = account ? String(account) : 'RealSid08';
-      const response = await fetch(`/api/github?account=${encodeURIComponent(target)}`);
-      if (!response.ok) return { error: `GitHub lookup failed (${response.status})` };
-      return response.json();
-    },
-  },
-  {
-    name: 'get_public_repo',
-    description: 'Read one public GitHub repository and its languages from RealSid08 or OpenRenderKit.',
-    kind: 'read',
-    inputSchema: {
-      type: 'object',
-      properties: { account: str('Account', ['RealSid08', 'OpenRenderKit']), repo: str('Repository name') },
-      required: ['repo'],
-    },
-    run: async ({ account, repo }) => {
-      const target = account ? String(account) : 'RealSid08';
-      const response = await fetch(`/api/github?account=${encodeURIComponent(target)}&repo=${encodeURIComponent(String(repo))}`);
-      if (!response.ok) return { error: `GitHub lookup failed (${response.status})` };
-      return response.json();
-    },
-  },
-  ...([
-    ['browse_public_code', 'code', 'Browse a public GitHub repository directory or read a text source file or README.'],
-    ['get_public_issues', 'issues', 'List public GitHub issues or read one issue and its comments.'],
-    ['get_public_pull_requests', 'pulls', 'List public GitHub pull requests or read one PR and its changed file patches.'],
-  ] as const).map(([name, view, description]): AgentTool => ({
-    name, description, kind: 'read',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        account: str('Account', ['RealSid08', 'OpenRenderKit']),
-        repo: str('Public repository name'),
-        ...(view === 'code' ? { path: str('Optional path to a directory or text file') } : {
-          number: { type: 'number', description: 'Optional issue or PR number' },
-          state: str('State for listing', ['open', 'closed', 'all']),
-        }),
-      },
-      required: ['repo'],
-    },
-    run: async ({ account, repo, path, number, state }) => {
-      const params = new URLSearchParams({ account: account ? String(account) : 'RealSid08', repo: String(repo), view });
-      if (view === 'code' && path) params.set('path', String(path));
-      if (view !== 'code' && number) params.set('number', String(number));
-      if (view !== 'code' && state) params.set('state', String(state));
-      const response = await fetch(`/api/github?${params}`);
-      if (!response.ok) return { error: `GitHub lookup failed (${response.status}): ${((await response.json()) as { error?: string }).error ?? 'unknown'}` };
-      return response.json();
-    },
-  })),
   {
     name: 'set_theme',
-    description: 'Switch between light and dark.',
+    description: 'Turn the desk lamp on (light) or off (dark).',
     kind: 'act',
     inputSchema: { type: 'object', properties: { theme: str('Theme', ['light', 'dark']) }, required: ['theme'] },
-    run: ({ theme }) => setTheme(String(theme) as 'light' | 'dark'),
-  },
-  {
-    name: 'set_visibility',
-    description: 'Show or hide a section of the page.',
-    kind: 'act',
-    inputSchema: {
-      type: 'object',
-      properties: { section: str('Section id', SECTIONS), visible: { type: 'boolean' } },
-      required: ['section', 'visible'],
-    },
-    run: ({ section, visible }) => setVisibility(String(section), Boolean(visible)),
+    run: ({ theme }) => setTheme(String(theme) === 'dark' ? 'dark' : 'light'),
   },
   {
     name: 'reset_view',
-    description: 'Undo every change the agent made to the page.',
+    description: 'Undo every change the assistant made to the page.',
     kind: 'act',
     inputSchema: { type: 'object', properties: {} },
     run: () => resetView(),

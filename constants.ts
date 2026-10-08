@@ -1,15 +1,15 @@
-import { EducationInfo, ExperienceItem, ProfileInfo, ProjectItem, SkillCluster } from './types';
+import type { EducationInfo, ExperienceItem, ProfileInfo, ProjectItem, SkillCluster } from './types.js';
 
 export const PROFILE: ProfileInfo = {
   givenName: 'SIDHAARTH',
   familyName: 'KRISHNAN',
   title: 'Software Engineer',
   tagline:
-    'Software engineer in Melbourne. I build multi-tenant web, mobile and AI products, from Convex backends and AWS infrastructure to native iOS apps.',
+    'Software engineer in Melbourne. When a company or my own day has a problem, I build software that solves it.',
   location: 'Melbourne, VIC',
   availability: 'Available for full-time graduate employment from December 2026',
   manifesto:
-    'He splits work across parallel coding agents in isolated Git worktrees, then checks every change with automated tests, real app runs and human review.',
+    'He owns the whole job: understanding the problem, designing the system and shipping something people rely on. He uses coding agents heavily to move faster and holds their work to the same standard as his own: tested, run for real and read line by line before it ships.',
   phone: '+61 475 508 390',
   email: 'krishnansidhaarth@gmail.com',
   linkedin: 'https://www.linkedin.com/in/sidhaarth-krishnan',
@@ -209,15 +209,94 @@ export const PROJECTS: ProjectItem[] = [
     subtitle: 'Native iOS Parking Finder',
     period: 'Aug 2026 – Present',
     description:
-      'Built a SwiftUI and MapKit app that puts live City of Melbourne bay sensors, time limits, prices and 38,000+ statewide parking records on one map, and labels what is live and what is static.',
+      'A SwiftUI and MapKit app that answers is there parking, how long can I stay and what will it cost, on one map for Victoria.',
     bullets: [
-      'Built a SwiftUI and MapKit app that puts live City of Melbourne bay sensors, time limits, prices and 38,000+ statewide parking records on one map, and labels what is live and what is static.',
-      'Made catalogue loading 43 times faster (23.3 to 0.53 seconds) by profiling the decoder and reusing date parsing, then added a spatial index for map queries. 160 unit and UI tests run in CI.',
+      'Finding parking in Melbourne means checking a council sensor map, the street sign, a payment app and car park websites. ParkAlong answers the three questions in one map: is there parking, how long can I stay, and what will it cost.',
+      'Combines live City of Melbourne bay sensors with 38,610 public parking records across Victoria. Choosing a stay length filters to spots that allow it. It never invents a price, and forecasts appear only when they pass held-out accuracy gates.',
+      'Made the first statewide catalogue load 43 times faster (23.3 to 0.53 seconds): the decoder was building new date formatters for every record. Then added a spatial index for map queries. 230+ Swift unit and UI tests and 72 data-pipeline tests run in CI.',
     ],
     tech: ['Swift', 'SwiftUI', 'MapKit', 'XCTest', 'GitHub Actions'],
     type: 'visualization',
     featured: true,
     githubUrl: 'https://github.com/OpenRenderKit/ParkAlong',
+  },
+  {
+    id: 'switchyard',
+    title: 'Switchyard',
+    subtitle: 'Open-source Rust gateway for coding agents',
+    period: '2026',
+    description:
+      'A local gateway that puts every coding agent and provider account behind one endpoint, with failover on rate limits and a control room for usage.',
+    bullets: [
+      'Developers who use Codex, Claude Code and OpenCode also juggle their accounts: each tool is wired to one provider, a rate limit ends the session, and nothing shows usage across all of them.',
+      'Switchyard runs on your own machine. Every client points at one endpoint; it speaks each provider’s native API (OpenAI Responses and Chat Completions, Anthropic Messages, Gemini), keeps Responses WebSockets open, and moves the next request to another account when one hits its limit, following Retry-After.',
+      'Ships as one Rust binary with the control room embedded, for macOS, Linux and Windows. Loopback by default, hashed client keys, metadata-only history: prompts are never stored.',
+      'Started from a public request by a T3 Code developer for this in Rust, with a real UI and WebSockets.',
+    ],
+    tech: ['Rust', 'TypeScript', 'SSE', 'WebSockets', 'SQLite'],
+    type: 'open-source',
+    githubUrl: 'https://github.com/RealSid08/switchyard',
+  },
+  {
+    id: 'servogrid',
+    title: 'ServoGrid',
+    subtitle: 'Native iOS fuel prices you can trust',
+    period: '2026',
+    description:
+      'A map-first iPhone app for Australian fuel prices where every price shows how fresh and how trustworthy it is.',
+    bullets: [
+      'Fuel apps show every price as if it were current, even when it is hours old or from a feed that stopped updating.',
+      'Every price carries its status: live, scheduled, delayed, cached or unavailable. Freshness comes from the provider’s own timestamps, so a recent network check cannot make an old price look new, and thin evidence says “insufficient data” instead of inventing a trend.',
+      'Live WA FuelWatch data including tomorrow’s prices; NSW and Tasmania adapters ready for credentials stored in Keychain; states without reusable data are shown as unavailable and never scraped. No account, analytics or server.',
+      '34 automated tests (27 unit, 7 UI journeys) and a run on a physical iPhone 17 Pro.',
+    ],
+    tech: ['Swift', 'SwiftUI', 'MapKit', 'Keychain', 'VoiceOver', 'XCTest'],
+    type: 'open-source',
+    githubUrl: 'https://github.com/RealSid08/ServoGrid',
+  },
+  {
+    id: 'llm-cooperation',
+    title: 'Do coding agents cooperate?',
+    subtitle: 'Research pilot on agents in the prisoner’s dilemma',
+    period: 'Oct 2026',
+    description:
+      'A pilot study of how Claude Code, Codex and OpenCode agents play the noisy repeated prisoner’s dilemma.',
+    bullets: [
+      'Each round two players cooperate or betray. Agents played ten-round games against scripted opponents (always betrays, a copycat, win-stay, random) and themselves, with 5% of moves flipped at random. Every move is a fresh, stateless harness call with tools and instruction files disabled.',
+      'Both Claude Code and Codex cooperate fully with anyone who cooperates back. They split after a betrayal: Claude Code cooperates again 70% of the time, Codex 9% (it plays like a grudge-holder).',
+      'Forgiving has a cost: against a random player Claude Code averaged 2.03 points a round, Codex 2.33.',
+      'A pilot: 3 games per cell for Claude Code and Codex; five OpenCode models have partial data after the subscription hit its usage limit.',
+    ],
+    tech: ['Python', 'uv', 'pytest', 'Claude Code', 'Codex', 'OpenCode'],
+    type: 'open-source',
+    githubUrl: 'https://github.com/RealSid08/llm-cooperation-pilot',
+  },
+  {
+    id: 't3-wall',
+    title: 't3-wall',
+    subtitle: 'Ambient dashboard',
+    description: 'A read-only portrait kiosk for T3 Code showing running agents, subscription limits and usage across machines.',
+    tech: ['TypeScript', 'Go', 'T3 Code'],
+    type: 'open-source',
+    githubUrl: 'https://github.com/RealSid08/t3-wall',
+  },
+  {
+    id: 'hs-heist',
+    title: 'HS: Heist',
+    subtitle: 'WebMCP game',
+    description: 'A first-person heist game where a WebMCP agent plays your partner through ten tools and remembers its failures.',
+    tech: ['WebMCP', 'TypeScript'],
+    type: 'open-source',
+    githubUrl: 'https://github.com/RealSid08/openai-webmcp-challenge',
+  },
+  {
+    id: 'cursor-subagents',
+    title: 'Cursor Subagents',
+    subtitle: 'Codex plugin',
+    description: 'One skill that lets Codex hand a bounded task to Cursor CLI, then review and verify the diff.',
+    tech: ['Python', 'Codex', 'Cursor CLI', 'Agent skills'],
+    type: 'open-source',
+    githubUrl: 'https://github.com/RealSid08/cursor-subagents',
   },
   {
     id: 'tbrgs',
@@ -250,7 +329,7 @@ export const PROJECTS: ProjectItem[] = [
     title: 'Codex Shared Memory',
     subtitle: 'MCP memory server',
     description:
-      'A Python and SQLite MCP server that syncs AI agent memory across devices, self-hosted on a Raspberry Pi over Tailscale.',
+      'A self-hosted Python and SQLite MCP server that shares AI agent memory snapshots across machines over SSH, with an offline cache.',
     tech: ['Python', 'SQLite', 'MCP', 'Tailscale', 'Raspberry Pi'],
     type: 'open-source',
     githubUrl: 'https://github.com/RealSid08/codex-shared-memory',
@@ -267,64 +346,3 @@ export const PROJECTS: ProjectItem[] = [
     link: 'https://www.npmjs.com/package/pptx-react-renderer',
   },
 ];
-
-export const WORKTREE_IDS = ['kenspire', 'besmak', 'complete-leader'] as const;
-
-const generatePortfolioContext = () => `
-[IDENTITY]
-- **Name**: Sidhaarth Krishnan
-- **Title**: Software engineer and final-year Software Engineering (Honours) student
-- **Location**: ${PROFILE.location}
-- **Availability**: ${PROFILE.availability}
-- **Phone**: ${PROFILE.phone}
-- **Email**: ${PROFILE.email}
-- **LinkedIn**: ${PROFILE.linkedin}
-- **GitHub**: ${PROFILE.github}
-- **How he works**: ${PROFILE.manifesto}
-- **Experience**: 1+ year of commercial experience shipping production web, mobile, and AI-enabled products.
-
-[CORE SKILLS]
-${SKILLS.map(cluster => `- **${cluster.label}**: ${cluster.items.join(', ')}`).join('\n')}
-
-[CURRENT ROLES]
-${EXPERIENCES.filter(e => e.lane === 'active').map(e => `
-- **${e.role}** at **${e.company}** (${e.period})${e.location ? ` — ${e.location}` : ''}${e.employmentType ? ` [${e.employmentType}]` : ''}
-  ${e.description.map(d => `  * ${d}`).join('\n')}
-  *Stack*: ${e.tech.join(', ')}
-`).join('\n')}
-
-[EARLIER EXPERIENCE]
-${EXPERIENCES.filter(e => e.lane === 'archive').map(e => `
-- **${e.role}** at **${e.company}** (${e.period})
-  ${e.description.map(d => `  * ${d}`).join('\n')}
-  *Stack*: ${e.tech.join(', ')}
-`).join('\n')}
-
-[PROJECTS AND OPEN SOURCE]
-${PROJECTS.map(p => `
-- **${p.title}**${p.subtitle ? ` — ${p.subtitle}` : ''}${p.period ? ` (${p.period})` : ` (${p.type})`}
-  ${p.bullets ? p.bullets.map(b => `  * ${b}`).join('\n') : p.description}
-  *Stack*: ${p.tech.join(', ')}
-  ${p.githubUrl ? `*Repo*: ${p.githubUrl}` : ''}
-  ${p.link ? `*Link*: ${p.link}` : ''}
-`).join('\n')}
-
-[EDUCATION]
-- ${EDUCATION.degree}, ${EDUCATION.school}, ${EDUCATION.campus}. Graduating: ${EDUCATION.graduating}.
-- High Distinctions: ${EDUCATION.distinctions.map((d) => `${d.unit} (${d.mark})`).join(', ')}.
-`;
-
-export const SYSTEM_INSTRUCTION_CHAT = `You answer questions about Sidhaarth Krishnan on his portfolio site. Write like a colleague who knows the work: plain, specific, and short.
-
-Sidhaarth works on three things right now — Kenspire Advisors, Besmak Components and Complete Leader — with earlier work at Mindtek AI. Lead with those, his projects (Foodly, ParkAlong) and open source (Codex Shared Memory, pptx-react-renderer), and his availability from December 2026 when they are relevant, rather than older roles like HiDa.
-
-[KNOWLEDGE BASE]
-${generatePortfolioContext()}
-
-[STYLE]
-- Short paragraphs or a short list. Markdown is fine.
-- Specifics and numbers over adjectives. No hype, no emojis.
-- Two or three sentences is usually enough. Depth when it is asked for.
-- If something is not in the knowledge base, say so and point to the résumé or email.
-- On availability and location: Melbourne, full-time from December 2026. Do not state or discuss visa or work-rights status; if asked, say to email him.
-`;

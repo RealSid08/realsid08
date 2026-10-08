@@ -11,33 +11,24 @@ import { pipeJsonRender } from '@json-render/core';
 import { JSONUIProvider, Renderer } from '@json-render/react';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { buildPortfolioTools } from '../lib/portfolioChat';
+import { buildLookupTools, buildPortfolioTools } from '../lib/portfolioChat';
 import { PortfolioLink } from '../components/agent/PortfolioLink';
 import { asOfLabel, portfolioEvidenceRegistry } from '../components/agent/PortfolioEvidence';
 import { pageIntentsFromMessages } from '../services/agent/pageIntent';
 import { TOOLS, toolByName } from '../services/agent/registry';
-import { EXPERIENCES, PROJECTS, SKILLS } from '../constants';
-import { ProjectExhibits } from '../components/ProjectExhibits';
-import { Experience } from '../components/Experience';
-import { NODE_POS } from '../components/SkillsMap';
-import { formatProfile, formatWorkByTech } from '../services/localKnowledge';
+import { EXPERIENCES, PROJECTS } from '../constants';
+import { Notebook } from '../components/notebook/Notebook';
+import { PAGES } from '../components/notebook/pages';
+import { CONTENTS } from '../components/notebook/contents';
+import { describeCode } from '../components/agent/AgentSteps';
+import { withoutCitationTokens } from '../lib/replyText';
+import { formatProfile, formatWorkByTech, matchingTargets } from '../services/localKnowledge';
+import { experimental_runCodeMode as runCodeMode } from '@ai-sdk/code-mode';
 import { SLASH_COMMANDS, matchCommands, parseSlash } from '../services/agent/commands';
-import { CARD_IDS, isTargetId } from '../lib/portfolioIds';
+import { CARD_IDS, TARGET_IDS, TOUR, isTargetId } from '../lib/portfolioIds';
 import { transcribeAudio, TranscriptionError } from '../lib/transcribe';
 
-const REQUIRED_TOOLS = [
-  'get_state',
-  'navigate_to',
-  'highlight',
-  'focus_mode',
-  'walkthrough',
-  'filter_work',
-  'sort_work',
-  'expand_card',
-  'set_visibility',
-  'set_theme',
-  'reset_view',
-];
+const REQUIRED_TOOLS = ['get_state', 'turn_to', 'focus', 'mark_work', 'tour', 'set_theme', 'reset_view'];
 
 const results: string[] = [];
 const check = (label: string, fn: () => void) => {
@@ -129,22 +120,33 @@ check('fetch times are shown for people, not as raw ISO strings', () => {
   assert.equal(asOfLabel('2026-09-29 12:00 UTC'), '2026-09-29 12:00 UTC', 'other formats pass through');
 });
 
-check('portfolio data is consistent: unique ids, every skill cluster has a graph node', () => {
+check('portfolio data is consistent: unique ids, page ids point at real roles and projects', () => {
   const ids = [...EXPERIENCES.map((exp) => `exp-${exp.id}`), ...PROJECTS.map((project) => `project-${project.id}`)];
-  assert.equal(new Set(ids).size, ids.length, 'card ids must be unique');
-  assert.deepEqual(SKILLS.map((cluster) => cluster.id).sort(), Object.keys(NODE_POS).sort(), 'SKILLS and the SkillsMap nodes must match');
+  assert.equal(new Set(ids).size, ids.length, 'role and project ids must be unique');
+  CARD_IDS.forEach((id) => assert.ok(ids.includes(id), `${id} has no role or project behind it`));
   PROJECTS.filter((project) => project.type === 'open-source').forEach((project) =>
     assert.ok(project.githubUrl?.startsWith('https://github.com/'), `${project.id} needs a public repo link`));
 });
 
-check('every card the page tools can target carries the data they filter and sort on', () => {
-  const html = renderToStaticMarkup(createElement('div', null, createElement(Experience), createElement(ProjectExhibits)));
-  const tags = html.match(/<div[^>]*\bid="(?:exp|project)-[^"]+"[^>]*>/g) ?? [];
-  assert.equal(tags.length, EXPERIENCES.length + PROJECTS.filter((project) => project.type !== 'live-demo').length, 'one element per card id');
-  tags.forEach((tag) => {
-    assert.match(tag, /data-tech="[^"]+"/, `${tag.slice(0, 60)} needs data-tech`);
-    assert.match(tag, /data-title="[^"]+"/, `${tag.slice(0, 60)} needs data-title`);
+check('the notebook renders every page id the assistant can turn to, and its contents covers them', () => {
+  const html = renderToStaticMarkup(createElement(Notebook));
+  const rendered = new Set(Array.from(html.matchAll(/data-target="([^"]+)"/g)).flatMap((match) => match[1].split(' ')));
+  TARGET_IDS.forEach((id) => assert.ok(rendered.has(id), `${id} is not in the notebook`));
+  rendered.forEach((id) => assert.ok(isTargetId(id), `${id} is rendered but the assistant does not know it`));
+  assert.equal(PAGES.length % 2, 0, 'a notebook needs an even number of pages');
+  TOUR.forEach((id) => assert.ok(isTargetId(id), `the tour stops at unknown ${id}`));
+  CONTENTS.forEach((row) => {
+    assert.ok(row.spread > 0 && row.spread < PAGES.length / 2, `${row.title} points past the notebook`);
+    row.targets.forEach((id) => assert.ok(isTargetId(id), `${row.title} covers unknown ${id}`));
   });
+  assert.ok(!/graduating dec 2026/i.test(html), 'the notebook should not carry the graduation date');
+});
+
+check('ticking the contents finds the right work', () => {
+  const convex = matchingTargets('convex');
+  ['exp-besmak', 'exp-kenspire', 'project-foodly'].forEach((id) => assert.ok(convex.includes(id), `Convex should tick ${id}`));
+  assert.ok(matchingTargets('swiftui').includes('project-parkalong'));
+  assert.equal(matchingTargets('  ').length, 0);
 });
 
 check('the profile lookup includes the High Distinctions', () => {
@@ -156,7 +158,7 @@ check('the profile lookup includes the High Distinctions', () => {
 check('tech lookups name every role and project that uses the tech, with card ids', () => {
   const convex = formatWorkByTech('convex');
   ['Besmak Components', 'Kenspire Advisors', 'Foodly'].forEach((name) => assert.ok(convex.includes(name), `Convex should include ${name}`));
-  ['exp-besmak', 'exp-kenspire', 'project-foodly'].forEach((id) => assert.ok(convex.includes(id) && isTargetId(id), `${id} should be a real card id`));
+  ['exp-besmak', 'exp-kenspire', 'project-foodly'].forEach((id) => assert.ok(convex.includes(`page id ${id}`) && isTargetId(id), `${id} should be a real page id`));
   assert.ok(!convex.includes('HiDa'), 'unrelated roles are not listed');
   assert.match(formatWorkByTech('cobol'), /Nothing in his roles/);
   assert.match(formatWorkByTech('  '), /Give a technology/);
@@ -171,7 +173,7 @@ check('slash commands only run registered tools with valid targets', () => {
     const steps = command.steps?.(command.arg ? 'convex' : '') ?? [];
     steps.forEach((step) => {
       assert.ok(toolByName(step.tool), `/${command.id} runs unknown tool ${step.tool}`);
-      const target = (step.args.section ?? step.args.target) as string | undefined;
+      const target = step.args.target as string | undefined;
       if (target) assert.ok(isTargetId(target), `/${command.id} points at unknown target ${target}`);
     });
     if (command.prompt) assert.ok(command.prompt('convex').length > 10, `/${command.id} needs a prompt`);
@@ -179,11 +181,11 @@ check('slash commands only run registered tools with valid targets', () => {
 });
 
 check('slash parsing and matching support arguments and prefixes', () => {
-  assert.deepEqual(parseSlash('/filter convex'), { name: 'filter', arg: 'convex', hasSpace: true });
+  assert.deepEqual(parseSlash('/find convex'), { name: 'find', arg: 'convex', hasSpace: true });
   assert.equal(parseSlash('hello'), null);
   assert.equal(matchCommands('/').length, SLASH_COMMANDS.length);
-  assert.deepEqual(matchCommands('/proj').map((command) => command.id).slice(0, 1), ['projects']);
-  assert.deepEqual(matchCommands('/filter convex').map((command) => command.id), ['filter']);
+  assert.deepEqual(matchCommands('/park').map((command) => command.id).slice(0, 1), ['parkalong']);
+  assert.deepEqual(matchCommands('/find convex').map((command) => command.id), ['find']);
   assert.equal(matchCommands('/zzzz').length, 0);
 });
 
@@ -219,7 +221,7 @@ check('every registry tool has a description, a schema and a run function', () =
 });
 
 check('the model is told about every act tool the page can run', () => {
-  const serverTools = buildPortfolioTools() as Record<string, unknown>;
+  const serverTools = buildPortfolioTools().tools as Record<string, unknown>;
   const actTools = TOOLS.filter((tool) => tool.kind === 'act').map((tool) => tool.name);
   actTools.forEach((name) => {
     assert.ok(name in serverTools, `server tools are missing ${name}`);
@@ -228,11 +230,35 @@ check('the model is told about every act tool the page can run', () => {
   assert.ok(Object.keys(serverTools).length >= 17, 'expected the lookups plus the page tools');
 });
 
-check('lookups are still offered to the model', () => {
-  const serverTools = buildPortfolioTools() as Record<string, unknown>;
-  ['lookupRole', 'lookupProject', 'lookupSkills', 'lookupProfile', 'lookupGitHub', 'browseGitHubCode', 'lookupGitHubIssues', 'lookupGitHubPullRequests', 'searchGitHub', 'findWorkByTech', 'listWorkstreams'].forEach((name) =>
-    assert.ok(name in serverTools, `missing ${name}`),
-  );
+check('lookups run through code mode, and only the core ones load up front', () => {
+  const { tools, callers } = buildPortfolioTools();
+  const all = tools as Record<string, { deferLoading?: boolean }>;
+  const lookups = ['listWork', 'lookupRole', 'lookupProject', 'lookupSkills', 'lookupProfile', 'findWorkByTech', 'lookupGitHub', 'browseGitHubCode', 'lookupGitHubIssues', 'lookupGitHubPullRequests', 'searchGitHub'];
+  ['code', 'search', ...lookups].forEach((name) => assert.ok(name in all, `missing ${name}`));
+  [...lookups, 'search'].forEach((name) => assert.deepEqual(callers[name], ['code'], `${name} should only be callable from code`));
+  const upFront = lookups.filter((name) => !all[name].deferLoading);
+  assert.deepEqual(upFront.sort(), ['findWorkByTech', 'listWork', 'lookupProject', 'lookupRole'], 'everything else loads through search');
+  TOOLS.filter((tool) => tool.kind === 'act').forEach((tool) => assert.equal(callers[tool.name], undefined, `${tool.name} must stay directly callable`));
+});
+
+await checkAsync('code mode runs lookups in its sandbox', async () => {
+  const lookups = buildLookupTools();
+  const result = (await runCodeMode({
+    js: "const [index, park] = await Promise.all([tools.listWork({}), tools.lookupProject({ id: 'parkalong' })]); return { hasIndex: index.includes('besmak'), park: park.split('\\n')[0] };",
+    tools: { listWork: lookups.listWork, lookupProject: lookups.lookupProject },
+  })) as { hasIndex: boolean; park: string };
+  assert.ok(result.hasIndex, 'the index lists his roles');
+  assert.match(result.park, /ParkAlong.*page id project-parkalong/);
+});
+
+check('stray citation tokens never reach the reader', () => {
+  assert.equal(withoutCitationTokens('Public repos only. \uE200cite\uE202turn0\uE201'), 'Public repos only. ');
+});
+
+check('code-mode steps read as plain language', () => {
+  assert.deepEqual(describeCode("const [a, b] = await Promise.all([tools.lookupProject({ id: 'foodly' }), tools.lookupProject({ id: 'parkalong' })]);"), ['Read Foodly, ParkAlong']);
+  assert.deepEqual(describeCode("return await tools.findWorkByTech({ tech: 'Convex' })"), ['Checked his work for Convex']);
+  assert.deepEqual(describeCode("const ids = ['kenspire', 'switchyard']; return Promise.all(ids.map((id) => id === 'kenspire' ? tools.lookupRole({ id }) : tools.lookupProject({ id })));"), ['Read Kenspire Advisors, Switchyard']);
 });
 
 const runDictationChecks = async () => {
@@ -265,9 +291,9 @@ check('page intents ignore unfinished calls, lookups and replays', () => {
       role: 'assistant',
       parts: [
         { type: 'text', text: 'Here it is.' },
-        { type: 'tool-navigate_to', state: 'output-available', input: { section: 'projects' } },
-        { type: 'tool-lookupProject', state: 'output-available', input: { id: 'foodly' } },
-        { type: 'tool-highlight', state: 'input-streaming', input: { target: 'project-foodly' } },
+        { type: 'tool-turn_to', state: 'output-available', input: { target: 'projects' } },
+        { type: 'tool-code', state: 'output-available', input: { js: 'return 1' } },
+        { type: 'tool-mark_work', state: 'input-streaming', input: { query: 'convex' } },
         { type: 'tool-get_state', state: 'output-available', input: {} },
       ],
     },
@@ -276,7 +302,7 @@ check('page intents ignore unfinished calls, lookups and replays', () => {
   const fresh = pageIntentsFromMessages(messages, new Set());
   assert.deepEqual(
     fresh.map((intent) => [intent.name, intent.args]),
-    [['navigate_to', { section: 'projects' }]],
+    [['turn_to', { target: 'projects' }]],
   );
   assert.equal(pageIntentsFromMessages(messages, new Set(fresh.map((intent) => intent.id))).length, 0);
 });
@@ -515,14 +541,14 @@ const runWebMcpChecks = async () => {
 
 const runStreamChecks = async () => {
   type ServerTool = { execute?: (input: unknown, options: unknown) => Promise<unknown> };
-  const serverTools = buildPortfolioTools() as unknown as Record<string, ServerTool>;
+  const serverTools = buildPortfolioTools().tools as unknown as Record<string, ServerTool>;
 
   await checkAsync('the server page tool answers the model when it is called', async () => {
-    const output = await serverTools.navigate_to?.execute?.(
-      { section: 'projects' },
+    const output = await serverTools.turn_to?.execute?.(
+      { target: 'projects', circle: true },
       { toolCallId: 'call-1', messages: [] },
     );
-    assert.equal(output, 'Queued on the page.');
+    assert.equal(output, 'Done on the page.');
   });
 
   await checkAsync('a streamed tool call becomes a page intent the bar can run', async () => {
@@ -535,10 +561,10 @@ const runStreamChecks = async () => {
         writer.write({
           type: 'tool-input-available',
           toolCallId: 'call-1',
-          toolName: 'navigate_to',
-          input: { section: 'projects' },
+          toolName: 'turn_to',
+          input: { target: 'projects' },
         });
-        writer.write({ type: 'tool-output-available', toolCallId: 'call-1', output: 'Queued on the page.' });
+        writer.write({ type: 'tool-output-available', toolCallId: 'call-1', output: 'Done on the page.' });
         writer.write({ type: 'finish' });
       },
     });
@@ -552,14 +578,14 @@ const runStreamChecks = async () => {
 
     const partTypes = messages.flatMap((message) => (message.parts ?? []).map((part) => part.type));
     assert.ok(
-      partTypes.includes('tool-navigate_to'),
-      `expected a tool-navigate_to part, saw ${partTypes.join(', ')}`,
+      partTypes.includes('tool-turn_to'),
+      `expected a tool-turn_to part, saw ${partTypes.join(', ')}`,
     );
 
     const intents = pageIntentsFromMessages(messages, new Set());
     assert.deepEqual(
       intents.map((intent) => [intent.name, intent.args]),
-      [['navigate_to', { section: 'projects' }]],
+      [['turn_to', { target: 'projects' }]],
     );
   });
 };

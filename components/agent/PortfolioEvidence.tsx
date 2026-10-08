@@ -18,7 +18,7 @@ export const asOfLabel = (value: string) => {
   return `${MONTHS[Number(month) - 1]} ${Number(day)}, ${year}, ${hour}:${minute} UTC`;
 };
 
-/** Hover outlines the card on the page; nothing is recorded until the visitor clicks. */
+/** Hover highlights the entry in the notebook; nothing is recorded until the visitor clicks. */
 const peekProps = (target: string | null | undefined) =>
   target && isTargetId(target)
     ? { onMouseEnter: () => peek(target), onMouseLeave: () => peek(null) }
@@ -31,9 +31,9 @@ const ShowButton: React.FC<{ target: string; children?: React.ReactNode }> = ({ 
       peek(null);
       void showOnPage(target);
     }}
-    className="shrink-0 border border-white/20 px-2 py-1 font-mono text-[9px] uppercase tracking-[0.16em] text-gray-300 transition-colors hover:border-white hover:text-white"
+    className="shrink-0 rounded-full border border-white/20 px-2.5 py-1 font-mono text-[9.5px] uppercase tracking-[0.12em] text-gray-300 transition-colors hover:border-mono-accent hover:text-mono-accent"
   >
-    {children ?? 'Show ↗'}
+    {children ?? 'Turn to ↗'}
   </button>
 );
 
@@ -41,11 +41,11 @@ export const { registry: portfolioEvidenceRegistry } = defineRegistry(portfolioU
   components: {
     Stack: ({ children }) => <div className="space-y-2">{children}</div>,
     WorkCard: ({ props, children }) => (
-      <section {...peekProps(props.target)} className="mt-2 border border-white/15 bg-white/[0.03] p-2.5" aria-label={props.title}>
+      <section {...peekProps(props.target)} className="mt-2.5 rounded-xl border border-white/15 bg-white/[0.03] p-3" aria-label={props.title}>
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <p className={label}>{props.meta}</p>
-            <strong className="mt-0.5 block text-[13px] text-white">{props.title}</strong>
+            <strong className="mt-0.5 block font-serif text-[19px] font-normal leading-tight text-white">{props.title}</strong>
           </div>
           {isTargetId(props.target) && <ShowButton target={props.target} />}
         </div>
@@ -53,7 +53,7 @@ export const { registry: portfolioEvidenceRegistry } = defineRegistry(portfolioU
         {(props.stack ?? []).length > 0 && (
           <div className="mt-2 flex flex-wrap gap-1">
             {(props.stack ?? []).map((item) => (
-              <span key={item} className="border border-white/10 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-wider text-gray-400">{item}</span>
+              <span key={item} className="rounded-full border border-white/10 px-2 py-0.5 font-mono text-[9.5px] text-gray-400">{item}</span>
             ))}
           </div>
         )}
@@ -62,13 +62,13 @@ export const { registry: portfolioEvidenceRegistry } = defineRegistry(portfolioU
     ),
     Metric: ({ props }) => (
       <div className="min-w-0 border-l border-white/20 pl-2">
-        <p className="font-display text-[18px] font-bold leading-none text-white">{props.value}</p>
+        <p className="font-serif text-[24px] leading-none text-white">{props.value}</p>
         <p className="mt-1 text-[10px] leading-snug text-gray-400">{props.label}</p>
       </div>
     ),
     MetricRow: ({ children }) => <div className="mt-2 grid grid-cols-2 gap-3 sm:grid-cols-3">{children}</div>,
     Compare: ({ props }) => (
-      <div className="mt-2 overflow-x-auto border border-white/15">
+      <div className="mt-2.5 overflow-x-auto rounded-xl border border-white/15">
         <table className="w-full border-collapse text-left text-[11px]">
           <thead>
             <tr className="border-b border-white/15">
@@ -109,7 +109,7 @@ export const { registry: portfolioEvidenceRegistry } = defineRegistry(portfolioU
           const target = item.target && isTargetId(item.target) ? item.target : null;
           return (
             <li key={`${item.period}-${item.title}`} {...peekProps(target)} className="relative py-1.5 pl-3">
-              <span className="absolute -left-[3.5px] top-3 size-1.5 bg-white" aria-hidden="true" />
+              <span className="absolute -left-[3.5px] top-3 size-1.5 rounded-full bg-mono-accent" aria-hidden="true" />
               <p className={label}>{item.period}</p>
               {target ? (
                 <button
@@ -129,7 +129,7 @@ export const { registry: portfolioEvidenceRegistry } = defineRegistry(portfolioU
       </ol>
     ),
     RepoList: ({ props }) => (
-      <div className="mt-2 border border-white/15">
+      <div className="mt-2.5 overflow-hidden rounded-xl border border-white/15">
         <p className={`${label} border-b border-white/10 px-2.5 py-1.5`}>Public GitHub · as of {asOfLabel(props.asOf)}</p>
         <ul className="divide-y divide-white/10">
           {(props.repos ?? []).map((repo) => (
@@ -157,18 +157,18 @@ export const { registry: portfolioEvidenceRegistry } = defineRegistry(portfolioU
           onClick={() => {
             peek(null);
             if (target) void showOnPage(target);
-            if (props.action === 'filter' && value) void runSteps([{ tool: 'filter_work', args: { query: value } }]);
-            if (props.action === 'tour') void runSteps([{ tool: 'walkthrough', args: { action: 'start' } }]);
+            if (props.action === 'mark' && value) void runSteps([{ tool: 'mark_work', args: { query: value } }]);
+            if (props.action === 'tour') void runSteps([{ tool: 'tour', args: { action: 'start' } }]);
           }}
-          title={target ? `Show ${targetName(target)} on the page` : undefined}
-          className="mr-1.5 mt-2 inline-flex items-center gap-1.5 border border-white/25 px-2.5 py-1.5 font-mono text-[10px] uppercase tracking-[0.14em] text-gray-200 transition-colors hover:border-white hover:text-white"
+          title={target ? `Turn to ${targetName(target)} in the notebook` : undefined}
+          className="mr-1.5 mt-2.5 inline-flex items-center gap-1.5 rounded-full border border-mono-accent/40 px-3 py-1.5 text-[12px] text-mono-accent transition-colors hover:border-mono-accent hover:bg-mono-accent/[0.06]"
         >
           {props.label}
         </button>
       );
     },
     EvidenceBoard: ({ props, children }) => (
-      <section className="mt-2 border border-white/15 bg-white/[0.03] p-2.5" aria-label={props.title}>
+      <section className="mt-2.5 rounded-xl border border-white/15 bg-white/[0.03] p-3" aria-label={props.title}>
         <div className="mb-2 flex flex-wrap items-baseline justify-between gap-x-3 border-b border-white/10 pb-1.5">
           <strong className="text-[12px] text-white">{props.title}</strong>
           <span className={label}>{asOfLabel(props.asOf)}</span>

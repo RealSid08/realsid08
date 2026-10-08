@@ -1,77 +1,16 @@
-import React from 'react';
-import { ThreeBackground } from './components/ThreeBackground';
-import { AgentBar } from './components/agent/AgentBar';
-import { Experience } from './components/Experience';
-import { Hero } from './components/Hero';
-import { SkillsMap } from './components/SkillsMap';
-import { ProjectExhibits } from './components/ProjectExhibits';
-import { FadeInSection } from './components/FadeInSection';
-import { ThemeToggle } from './components/ThemeToggle';
-import { EDUCATION, PROFILE } from './constants';
+import React, { Suspense, lazy } from 'react';
+import { Notebook } from './components/notebook/Notebook';
 
-const App: React.FC = () => {
-  return (
-    <div className="min-h-screen text-white selection:bg-white selection:text-black relative font-sans animate-appear">
-      <ThreeBackground />
+// The assistant pulls in the chat and markdown stack, so the notebook paints first.
+const AgentBar = lazy(() => import('./components/agent/AgentBar').then((module) => ({ default: module.AgentBar })));
+
+const App: React.FC = () => (
+  <>
+    <Notebook />
+    <Suspense fallback={null}>
       <AgentBar />
-      <ThemeToggle />
-      <Hero />
-
-      <main className="relative z-10 container mx-auto px-4 md:px-6 pb-20 md:pb-32 max-w-7xl">
-        <SkillsMap />
-
-        <section id="experience" className="mb-24 md:mb-40 scroll-mt-16">
-          <Experience />
-        </section>
-
-        <ProjectExhibits />
-
-        <section id="education" className="mb-24 md:mb-40 scroll-mt-16">
-          <FadeInSection>
-            <div className="border border-white/10 bg-black/50 p-6 md:p-10 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
-              <div>
-                <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-gray-500 mb-3">Education</p>
-                <h2 className="text-2xl md:text-4xl font-bold">{EDUCATION.school}</h2>
-                <p className="text-gray-400 mt-3 text-sm md:text-base">{EDUCATION.degree}</p>
-                <p className="mt-5 font-mono text-[10px] uppercase tracking-[0.2em] text-gray-500">High Distinctions</p>
-                <ul className="mt-2 flex flex-wrap gap-2" aria-label="High Distinctions">
-                  {EDUCATION.distinctions.map((item) => (
-                    <li key={item.unit} className="border border-white/10 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-gray-400">
-                      {item.unit} <span className="text-white">{item.mark}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div className="font-mono text-xs uppercase tracking-[0.2em] text-gray-400 text-left md:text-right">
-                <p>{EDUCATION.campus}</p>
-                <p className="text-white mt-2">Graduating {EDUCATION.graduating}</p>
-              </div>
-            </div>
-          </FadeInSection>
-        </section>
-
-
-        <FadeInSection>
-          <footer id="contact" className="text-center py-12 border-t border-white/10 scroll-mt-16">
-            <div className="flex flex-col items-center gap-4">
-              <h3 className="text-lg md:text-xl font-light tracking-widest">SIDHAARTH KRISHNAN</h3>
-              <p className="text-gray-500 text-xs font-mono px-4">{PROFILE.phone}</p>
-              <div className="flex flex-wrap justify-center gap-4 md:gap-6 text-xs uppercase tracking-widest text-gray-400 mt-4">
-                <a href={PROFILE.linkedin} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors p-2 md:p-0">LinkedIn</a>
-                <a href={PROFILE.github} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors p-2 md:p-0">GitHub</a>
-                <a href={`mailto:${PROFILE.email}`} className="hover:text-white transition-colors p-2 md:p-0">Email</a>
-                <a
-                  href={PROFILE.resumeUrl}
-                  download="Sidhaarth_Krishnan_Resume.pdf"
-                  className="hover:text-white transition-colors p-2 md:p-0"
-                >Résumé</a>
-              </div>
-            </div>
-          </footer>
-        </FadeInSection>
-      </main>
-    </div>
-  );
-};
+    </Suspense>
+  </>
+);
 
 export default App;

@@ -106,98 +106,101 @@ body {
   background: rgb(var(--fg) / 0.4);
 }
 
-/* Agent focus mode: everything except the focused card steps back. */
-[data-agent-dim] {
-  opacity: 0.22;
-  filter: saturate(0.5);
-  transition: opacity 300ms ease, filter 300ms ease;
-  pointer-events: none;
-}
-
-/* Cards the assistant can point at land below the top edge, not flush against it. */
-[id^='exp-'],
-[id^='project-'] {
-  scroll-margin-top: 5rem;
-}
-
-/* A soft outline while the visitor hovers a reference to a card in the chat. */
-[data-agent-peek] {
-  outline: 1px solid rgb(var(--fg) / 0.55);
-  outline-offset: 4px;
-  transition: outline-color 200ms ease;
-}
-
 /*
- * A slow band of light that travels around the idle composer, inviting a
- * question. It fades out once the visitor is typing or reading a reply.
+ * The assistant is an index card on the desk: ink on paper, a fountain-pen blue
+ * for anything it points at. Tailwind's role colours (white = ink, black = paper)
+ * read these variables, so every agent component picks up the paper palette.
  */
-@property --agent-glow-angle {
-  syntax: '<angle>';
-  initial-value: 0deg;
-  inherits: false;
+.agent-paper {
+  --bg: 251 248 240;
+  --panel: 244 238 226;
+  --fg: 28 25 21;
+  --accent: 39 71 201;
+  --ok: 46 125 50;
+  --info: 39 71 201;
+  --g100: 34 30 26;
+  --g200: 48 43 37;
+  --g300: 62 56 49;
+  --g400: 92 85 76;
+  --g500: 112 104 93;
+  --g600: 134 126 114;
+  --g700: 200 191 175;
+  --g800: 226 219 204;
+  --g900: 240 235 224;
+  color: rgb(var(--fg));
+  color-scheme: light;
+  font-family: Inter, system-ui, sans-serif;
+}
+html[data-theme='dark'] .agent-paper {
+  --bg: 236 229 213;
+  --panel: 226 218 200;
 }
 
-.agent-glow {
+.agent-shell { position: fixed; z-index: 50; display: flex; flex-direction: column; gap: 8px; }
+.agent-card {
   position: relative;
-  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 14px;
+  background-color: rgb(var(--bg));
+  background-image: radial-gradient(circle, rgba(60, 50, 40, 0.12) 1px, transparent 1.3px);
+  background-size: 20px 20px;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.6) inset, 0 24px 48px -20px rgba(0, 0, 0, 0.65), 0 2px 6px rgba(0, 0, 0, 0.25);
 }
 
-.agent-glow::before,
-.agent-glow::after {
-  content: '';
-  position: absolute;
-  inset: -1px;
-  pointer-events: none;
-  background: conic-gradient(
-    from var(--agent-glow-angle),
-    transparent 0deg 250deg,
-    rgb(var(--accent) / 0.15) 285deg,
-    rgb(var(--accent) / 0.9) 330deg,
-    rgb(var(--accent) / 0.15) 350deg,
-    transparent 360deg
-  );
-  opacity: 0;
-  transition: opacity 600ms ease;
-  animation: agent-glow-spin 7s linear infinite;
-}
+/* Compact: a slim card under the book. */
+/* No transform here: it would trap the fixed toast inside the strip. */
+.agent-strip { left: 0; right: 0; bottom: 12px; margin: 0 auto; width: min(560px, calc(100vw - 24px)); }
+.agent-strip .agent-card { border-radius: 16px; }
 
-/* the crisp travelling edge */
-.agent-glow::before {
-  z-index: 1;
-  padding: 1px;
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
-}
+/* Open on a wide screen: docked beside the book, which slides over to make room. */
+.agent-docked { top: 12px; right: 12px; bottom: 12px; width: 400px; animation: agent-dock 420ms cubic-bezier(0.6, 0.05, 0.3, 1); }
+.agent-docked .agent-card { flex: 1; min-height: 0; }
+@keyframes agent-dock { from { transform: translateX(24px); opacity: 0; } }
 
-/* the soft light it casts */
-.agent-glow::after {
-  z-index: -1;
-  inset: -3px;
-  filter: blur(10px);
-}
+/* Open on a phone or tablet: a sheet that rises from the bottom. */
+.agent-sheet { left: 0; right: 0; bottom: 0; align-items: center; }
+.agent-sheet .agent-card { width: min(640px, 100vw); max-height: min(78dvh, 640px); min-height: 50dvh; border-radius: 18px 18px 0 0; animation: agent-rise 320ms cubic-bezier(0.2, 0.8, 0.2, 1); }
+@keyframes agent-rise { from { transform: translateY(40px); opacity: 0; } }
+.agent-scrim { position: fixed; inset: 0; z-index: -1; background: rgba(10, 6, 3, 0.4); border: 0; cursor: default; }
 
-.agent-glow-idle::before {
-  opacity: 0.85;
-}
+.agent-composer { display: flex; align-items: flex-end; gap: 4px; padding: 8px 8px 8px 14px; }
+.agent-composer > span { align-self: center; margin-right: 4px; }
 
-.agent-glow-idle::after {
-  opacity: 0.4;
-}
+/* What the assistant just did, pinned to the top of the desk so it never covers the page controls. */
+.agent-toast { position: fixed; z-index: 55; top: 12px; left: 50%; width: min(520px, calc(100vw - 96px)); transform: translateX(-50%); pointer-events: none; }
+.agent-docked .agent-toast { left: calc(50% - 206px); }
 
-html[data-theme='dark'] .agent-glow-idle::after {
-  opacity: 0.3;
+/* Closed: a leather tab with the pen, matching the notebook cover. */
+.agent-launch { position: fixed; z-index: 50; right: 16px; bottom: 16px; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+.agent-launch-button {
+  position: relative; display: flex; align-items: center; gap: 8px; padding: 10px 16px 10px 14px; border-radius: 999px;
+  background: radial-gradient(ellipse at 30% 20%, #2f4a3c, #1b2c23 70%); color: #ebcd85;
+  box-shadow: inset 0 0 0 1px rgba(235, 205, 133, 0.25), 0 12px 24px -10px rgba(0, 0, 0, 0.7);
+  font: 500 12px/1 'JetBrains Mono', monospace; letter-spacing: 0.04em; transition: transform 160ms ease, box-shadow 160ms ease;
 }
+.agent-launch-button:hover { transform: translateY(-1px); box-shadow: inset 0 0 0 1px rgba(235, 205, 133, 0.45), 0 16px 28px -10px rgba(0, 0, 0, 0.75); }
+.agent-launch-button:focus-visible { outline: 2px solid #ffd27a; outline-offset: 3px; }
+@media (max-width: 639px) {
+  .agent-launch { right: 10px; bottom: 10px; }
+  .agent-launch-button { padding: 12px; }
+  .agent-launch-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  /* Leave room on the controls row for the pen button. */
+  html.agent-launcher .nb-desk.solo .ctrl { padding-right: 46px; }
+}
+.agent-unread { position: absolute; top: 4px; right: 4px; width: 8px; height: 8px; border-radius: 50%; background: #e0533a; box-shadow: 0 0 0 2px rgb(var(--bg)); }
+.agent-launch-button .agent-unread { box-shadow: 0 0 0 2px #1b2c23; }
 
-@keyframes agent-glow-spin {
-  to {
-    --agent-glow-angle: 360deg;
-  }
-}
+/* The visitor's questions are written in pen; answers are typeset. */
+.agent-question { margin-left: auto; width: fit-content; max-width: 88%; font: 500 21px/1.1 'Caveat', cursive; color: rgb(var(--accent)); text-align: right; white-space: pre-wrap; overflow-wrap: anywhere; }
+.agent-starter { border: 1px solid rgb(var(--fg) / 0.16); border-radius: 999px; padding: 6px 12px; background: rgb(var(--bg)); text-align: left; font-size: 12.5px; color: rgb(var(--g300)); transition: border-color 150ms ease, color 150ms ease; }
+.agent-starter:hover, .agent-starter:focus-visible { border-color: rgb(var(--fg) / 0.55); color: rgb(var(--fg)); }
+.agent-note { pointer-events: auto; border-radius: 10px; padding: 6px 12px; background: rgb(var(--bg)); font-size: 11.5px; color: rgb(var(--g300)); box-shadow: 0 8px 18px -10px rgba(0, 0, 0, 0.6); }
+.agent-thinking path { fill: none; stroke: rgb(var(--accent)); stroke-width: 2; stroke-linecap: round; stroke-dasharray: 160; stroke-dashoffset: 160; animation: agent-scribble 1.6s ease-in-out infinite; }
+@keyframes agent-scribble { 60% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: -160; } }
 
 @media (prefers-reduced-motion: reduce) {
-  .agent-glow::before,
-  .agent-glow::after {
-    animation: none;
-  }
+  .agent-docked, .agent-sheet .agent-card { animation: none; }
+  .agent-thinking path { animation-duration: 4s; }
 }

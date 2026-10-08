@@ -15,7 +15,7 @@ const Mark: React.FC<{ text: string; query: string }> = ({ text, query }) => {
   if (!query || !text.startsWith(query)) return <>{text}</>;
   return (
     <>
-      <span className="text-white">{query}</span>
+      <span className="text-mono-accent">{query}</span>
       {text.slice(query.length)}
     </>
   );
@@ -66,7 +66,7 @@ export const SlashMenu: React.FC<Props> = ({ commands, active, arg, query, onHov
               onMouseEnter={() => onHover(index)}
               onMouseDown={(event) => event.preventDefault()}
               onClick={() => onPick(command)}
-              className={`mx-1 flex cursor-pointer items-baseline gap-3 px-2 py-1.5 ${selected ? 'bg-white/[0.08]' : ''}`}
+              className={`mx-1.5 flex cursor-pointer items-baseline gap-3 rounded-lg px-2 py-1.5 ${selected ? 'bg-white/[0.07]' : ''}`}
             >
               <span className="min-w-[6.5rem] shrink-0 whitespace-nowrap font-mono text-[12px] text-gray-300">
                 /<Mark text={command.id} query={query} />
