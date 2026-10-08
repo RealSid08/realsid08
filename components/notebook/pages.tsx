@@ -2,6 +2,7 @@ import React from 'react';
 import { PROFILE } from '../../constants';
 import { CONTENTS } from './contents';
 import {
+  zoomable,
   AfterOutcome,
   CoopHeatmap,
   FoodlyFlow,
@@ -84,10 +85,10 @@ export const PAGES: Page[] = [
         <p className="hw" style={{ margin: '14px 0 0' }}>hi! this is what I’ve been building ↓</p>
         <h1 data-mark>I build software people use every day, and the <em>tools</em> I build it with.</h1>
         <p className="lede">
-          When a company or my own day has a problem, I build software that solves it. For companies, that’s a task
-          platform for about 600 staff at Besmak and a planning platform at Kenspire. For me, it’s Foodly, ParkAlong and
-          ServoGrid: food I meant to try, parking in the city, fuel prices I couldn’t trust. I love this work, and I care
-          most that what I build gets used.
+          When I run into a real-world problem, or a company brings me one, I build the software that solves it. For
+          companies, that’s a task platform for about 600 staff at Besmak, and a platform at Kenspire that turns goals
+          and procedures into scheduled work. For me, it’s Foodly, ParkAlong and ServoGrid: food I meant to try, parking
+          in the city, fuel prices I couldn’t trust. I love this work, and I care most that what I build gets used.
         </p>
         <p className="lab">How I work</p>
         <p className="body" style={{ margin: '0 0 18px' }}>
@@ -274,12 +275,12 @@ export const PAGES: Page[] = [
         <div className="pair">
           <figure>
             <span className="tape" />
-            <div className="phone"><img src="/work/notebook/parkalong-map-light.jpg" alt="ParkAlong map of live parking, light mode" loading="lazy" decoding="async" /></div>
+            <div className="phone"><img src="/work/notebook/parkalong-map-light.jpg" alt="ParkAlong map of live parking, light mode" loading="lazy" decoding="async" {...zoomable('parkalong', '/work/notebook/full/parkalong-map-light.jpg', 'ParkAlong · live bays, by day', 'iOS')} /></div>
             <figcaption>live bays, by day</figcaption>
           </figure>
           <figure>
             <span className="tape" style={{ '--tape': 'rgba(210,73,31,0.55)' } as React.CSSProperties} />
-            <div className="phone"><img src="/work/notebook/parkalong-zone-dark.jpg" alt="ParkAlong zone detail with the time limit and price, dark mode" loading="lazy" decoding="async" /></div>
+            <div className="phone"><img src="/work/notebook/parkalong-zone-dark.jpg" alt="ParkAlong zone detail with the time limit and price, dark mode" loading="lazy" decoding="async" {...zoomable('parkalong', '/work/notebook/full/parkalong-zone-dark.jpg', 'ParkAlong · zone rules, by night', 'iOS')} /></div>
             <figcaption>zone rules, by night</figcaption>
           </figure>
         </div>
@@ -318,7 +319,7 @@ export const PAGES: Page[] = [
         <ServoBoard />
         <figure className="shot">
           <span className="tape" style={{ '--tape': 'rgba(125,200,225,0.75)' } as React.CSSProperties} />
-          <div className="phone"><img src="/work/notebook/servogrid-station-detail.jpg" alt="ServoGrid station detail with the evidence behind a price" loading="lazy" decoding="async" /></div>
+          <div className="phone"><img src="/work/notebook/servogrid-station-detail.jpg" alt="ServoGrid station detail with the evidence behind a price" loading="lazy" decoding="async" {...zoomable('servogrid', '/work/notebook/full/servogrid-station-detail.jpg', 'ServoGrid · a station and the evidence behind its price', 'iOS')} /></div>
         </figure>
         <div className="note-l">
           <p className="hw">every price wears its status, even the missing ones →</p>
@@ -368,7 +369,7 @@ export const PAGES: Page[] = [
         <AfterOutcome />
         <p className="lab" style={{ marginTop: 10 }}>Fig. 3 · A real game · A = cooperate, B = betray</p>
         <div className="replays"><Replay /></div>
-        <p className="hw" style={{ margin: '8px 0 0', fontSize: 17, lineHeight: 1.05 }}>forgiving isn’t free: against a random player, Claude Code averaged 2.03 points a round and Codex 2.33</p>
+        <p className="hw" style={{ margin: '10px 0 0', fontSize: 18, lineHeight: 1.05 }}>the catch: forgiveness gets exploited. Against a player who moves at random, Codex out-scored Claude Code, 2.33 points a round to 2.03.</p>
       </>
     ),
   },
@@ -402,12 +403,12 @@ export const PAGES: Page[] = [
         <Run left="Pinned" right={<b>Also</b>} />
         <figure className="pin pin-a">
           <span className="tape" />
-          <img src="/work/notebook/heist-chase.jpg" alt="HS: Heist, a first-person chase" loading="lazy" decoding="async" />
+          <img src="/work/notebook/heist-chase.jpg" alt="HS: Heist, a first-person chase" loading="lazy" decoding="async" {...zoomable('also', '/work/notebook/full/heist-chase.jpg', 'HS: Heist · the agent plays your partner', 'WebMCP game')} />
           <figcaption>HS: Heist · the agent plays your partner</figcaption>
         </figure>
         <figure className="pin pin-b">
           <span className="tape" style={{ '--tape': 'rgba(160,150,140,0.6)' } as React.CSSProperties} />
-          <img src="/work/notebook/t3-wall.jpg" alt="t3-wall, a dashboard of running agents and subscription limits" loading="lazy" decoding="async" />
+          <img src="/work/notebook/t3-wall.jpg" alt="t3-wall, a dashboard of running agents and subscription limits" loading="lazy" decoding="async" {...zoomable('also', '/work/notebook/full/t3-wall.jpg', 't3-wall · agents and limits at a glance', 'Ambient dashboard')} />
           <figcaption>t3-wall · agents and limits at a glance</figcaption>
         </figure>
         <p className="hw pin-note">tools for my own agent setup, and a few experiments ↗</p>

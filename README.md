@@ -1,6 +1,6 @@
 # Sidhaarth Krishnan
 
-Software engineer in Melbourne. When a company or my own day has a problem, I build software that solves it.
+Software engineer in Melbourne. When I run into a real-world problem, or a company brings me one, I build the software that solves it.
 
 **[realsid08.me](https://realsid08.me)** · [GitHub](https://github.com/RealSid08) · [LinkedIn](https://www.linkedin.com/in/sidhaarth-krishnan) · [Email](mailto:krishnansidhaarth@gmail.com)
 

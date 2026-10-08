@@ -20,7 +20,7 @@ import { formatProfile, formatProject, formatRole, formatSkills, formatWorkByTec
 import { CHAT_MODEL_ID } from './chatModel.js';
 import { uiSpecPrompt } from './portfolioUiCatalog.js';
 import { CARD_IDS, SECTION_IDS, TARGET_IDS } from './portfolioIds.js';
-import { formatRepoForModel, formatReposForModel, getGithubPayload, getPublicRepo, isAllowedAccount, listPublicRepos, searchGithub } from './github.js';
+import { formatRepoForModel, formatReposForModel, getGithubPayload, isAllowedAccount, type RepoDetail, type RepoList } from './github.js';
 
 const PROFILE_LINKS = [
   `Résumé (PDF): ${PROFILE.resumeUrl}`,
@@ -106,6 +106,19 @@ const pageTool = <Shape extends z.ZodRawShape>(description: string, shape: Shape
     execute: async () => 'Done on the page.',
   });
 
+/**
+ * GitHub reads. With its own GITHUB_TOKEN the server asks GitHub directly; without one (the Vercel
+ * deployment), it reads through the site's /api/github, which runs on Cloudflare with the token.
+ */
+const github = async <T = unknown>(params: Record<string, string>): Promise<T> => {
+  const proxy = process.env.GITHUB_PROXY_ORIGIN;
+  if (process.env.GITHUB_TOKEN || !proxy) return getGithubPayload(new URLSearchParams(params)) as Promise<T>;
+  const response = await fetch(new URL(`/api/github?${new URLSearchParams(params)}`, proxy));
+  const body = (await response.json().catch(() => ({}))) as T & { error?: string };
+  if (!response.ok) throw new Error(body.error ?? `GitHub lookup failed (${response.status})`);
+  return body;
+};
+
 const githubCall = async (run: () => Promise<unknown>, label: string) => {
   try {
     return await run();
@@ -157,7 +170,7 @@ export function buildLookupTools() {
       inputSchema: z.object({ account, repo: z.string().optional().describe('A repository name for a single repo') }),
       execute: async ({ account: owner, repo }) => {
         if (!isAllowedAccount(owner)) return 'Only his public GitHub accounts are available.';
-        return githubCall(async () => (repo ? formatRepoForModel(await getPublicRepo(owner, repo)) : formatReposForModel(await listPublicRepos(owner))), 'GitHub lookup');
+        return githubCall(async () => (repo ? formatRepoForModel(await github<RepoDetail>({ account: owner, repo })) : formatReposForModel(await github<RepoList>({ account: owner }))), 'GitHub lookup');
       },
     }),
     browseGitHubCode: tool({
@@ -165,27 +178,27 @@ export function buildLookupTools() {
       description: 'List a public repository directory or read a text file (README, source code).',
       inputSchema: z.object({ account, repo: z.string(), path: z.string().optional().describe('File or directory; omit for the root') }),
       execute: async ({ account: owner, repo, path }) =>
-        githubCall(() => getGithubPayload(new URLSearchParams({ account: owner, repo, view: 'code', ...(path ? { path } : {}) })), 'GitHub code lookup'),
+        githubCall(() => github({ account: owner, repo, view: 'code', ...(path ? { path } : {}) }), 'GitHub code lookup'),
     }),
     lookupGitHubIssues: tool({
       deferLoading: true,
       description: 'Recent public issues in one of his repositories, or one issue with its first comments.',
       inputSchema: z.object({ account, repo: z.string(), number: z.number().int().positive().optional(), state: z.enum(['open', 'closed', 'all']).default('all') }),
       execute: async ({ account: owner, repo, number, state }) =>
-        githubCall(() => getGithubPayload(new URLSearchParams({ account: owner, repo, view: 'issues', state, ...(number ? { number: String(number) } : {}) })), 'GitHub issue lookup'),
+        githubCall(() => github({ account: owner, repo, view: 'issues', state, ...(number ? { number: String(number) } : {}) }), 'GitHub issue lookup'),
     }),
     lookupGitHubPullRequests: tool({
       deferLoading: true,
       description: 'Recent public pull requests in one of his repositories, or one pull request with its changed files.',
       inputSchema: z.object({ account, repo: z.string(), number: z.number().int().positive().optional(), state: z.enum(['open', 'closed', 'all']).default('all') }),
       execute: async ({ account: owner, repo, number, state }) =>
-        githubCall(() => getGithubPayload(new URLSearchParams({ account: owner, repo, view: 'pulls', state, ...(number ? { number: String(number) } : {}) })), 'GitHub pull request lookup'),
+        githubCall(() => github({ account: owner, repo, view: 'pulls', state, ...(number ? { number: String(number) } : {}) }), 'GitHub pull request lookup'),
     }),
     searchGitHub: tool({
       deferLoading: true,
       description: 'Search GitHub: "pulls" and "issues" find his public pull requests and issues on any repository, including other people’s open source; "code" searches inside his public repositories.',
       inputSchema: z.object({ kind: z.enum(['pulls', 'issues', 'code']), query: z.string().max(100).default(''), state: z.enum(['open', 'closed', 'all']).default('all') }),
-      execute: async ({ kind, query, state }) => githubCall(() => searchGithub(kind, query, state), 'GitHub search'),
+      execute: async ({ kind, query, state }) => githubCall(() => github({ view: 'search', kind, q: query, state }), 'GitHub search'),
     }),
   };
 }

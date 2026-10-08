@@ -30,14 +30,14 @@ export const REPLAY = {
     { who: 'Claude Code', moves: 'AAAAAAAAAA', flips: '..........' },
     { who: 'Copycat', moves: 'BAAAAAAAAA', flips: 'x.........' },
   ],
-  note: 'In round 1 a random flip made the copycat betray. Claude Code cooperated anyway, the copycat copied it, and both cooperated for the rest of the game.',
+  note: 'Round 1: a random flip (outlined) turned the copycat’s move into a betrayal. Claude Code cooperated anyway, the copycat copied it, and they cooperated for the rest of the game.',
 };
 
 export const FOODLY_SCREENS = [
-  { src: '/work/notebook/foodly-ios-explore.jpg', os: 'iOS', label: 'Explore map' },
-  { src: '/work/notebook/foodly-android-reels.jpg', os: 'Android', label: 'Reels, played in the app' },
-  { src: '/work/notebook/foodly-ios-place.jpg', os: 'iOS', label: 'Place page' },
-  { src: '/work/notebook/foodly-android-search.jpg', os: 'Android', label: 'Search by craving' },
+  { src: '/work/notebook/foodly-ios-explore.jpg', full: '/work/notebook/full/foodly-ios-explore.jpg', os: 'iOS', label: 'Explore map' },
+  { src: '/work/notebook/foodly-android-reels.jpg', full: '/work/notebook/full/foodly-android-reels.jpg', os: 'Android', label: 'Reels, played in the app' },
+  { src: '/work/notebook/foodly-ios-place.jpg', full: '/work/notebook/full/foodly-ios-place.jpg', os: 'iOS', label: 'Place page' },
+  { src: '/work/notebook/foodly-android-search.jpg', full: '/work/notebook/full/foodly-android-search.jpg', os: 'Android', label: 'Search by craving' },
 ];
 
 export const FOODLY_FLOW = [
