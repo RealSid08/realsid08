@@ -45,6 +45,8 @@ On the server (`lib/portfolioChat.ts`) the model gets two tools up front: `code`
 
 Cloudflare Workers serves the Vite build and the `/api/transcribe` and `/api/github` routes. Pushing to `main` triggers Cloudflare Builds (`npm run build`, then `npx wrangler deploy`).
 
+Other branches automatically get Workers Builds preview uploads with preview URLs (`npm run build`, then `npx wrangler versions upload`).
+
 The chat assistant runs on Vercel instead (project `realsid08`, `https://realsid08.vercel.app`), because code mode needs Node worker threads, which Workers do not have. The Worker forwards `/api/chat` to `AGENT_ORIGIN` in `wrangler.jsonc`. Deploy the assistant with `vercel deploy --prod`; its `OPENAI_API_KEY` is set on the Vercel project.
 
 Set `OPENAI_API_KEY` (for dictation) and `GITHUB_TOKEN` as Worker secrets with `npx wrangler secret put <NAME>`. Use a classic GitHub token with no scopes, which only raises the public rate limit.
