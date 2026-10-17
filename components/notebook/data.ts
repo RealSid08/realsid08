@@ -76,3 +76,31 @@ export const SERVOGRID_BOARD: Array<[grade: string, price: string, state: string
   ['DSL', '191.8', 'cached', 'last seen 18:00'],
   ['LPG', '---.-', 'unavailable', 'no verified feed'],
 ];
+
+/**
+ * Stretch: the week that went wrong, from the pitch deck. Cell = row * 7 + day
+ * (rows: breakfast, lunch, dinner). Each wave takes more meals away: three days
+ * end with two meals, three with one meal and a coffee, one with a single meal.
+ */
+export const STRETCH_WEEK_WAVES: Array<Array<[cell: number, becomes: 'skip' | 'coffee']>> = [
+  [[0, 'skip'], [2, 'skip'], [4, 'skip'], [1, 'coffee'], [3, 'coffee']],
+  [[8, 'skip'], [10, 'skip'], [5, 'coffee'], [19, 'skip']],
+  [[6, 'skip'], [13, 'skip']],
+];
+
+/** University of Tasmania student surveys 2022 and 2024; Universities Australia Student Finances Survey. */
+export const STRETCH_STATS: Array<[figure: string, line: string]> = [
+  ['27%', 'often skip meals or go without food'],
+  ['1 in 7', 'go without food or basics because they can’t afford it'],
+  ['+29%', 'student living costs since 2021'],
+];
+
+export const STRETCH_FLOW = [
+  ['You', 'a budget, your diet, your kitchen'],
+  ['Swipe', 'a deck of meals with Tile'],
+  ['Tile', 'checks Coles, Woolies, Aldi, EatClub near you'],
+  ['Your week', '21 meals, inside the budget'],
+];
+
+/** A few of the 56 file types Stack converts, as they fan into one PDF. */
+export const STACK_FILES = ['.docx', '.heic', '.xlsx', '.key', '.epub'];

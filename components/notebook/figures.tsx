@@ -8,6 +8,9 @@ import {
   OUTCOMES,
   REPLAY,
   SERVOGRID_BOARD,
+  STACK_FILES,
+  STRETCH_FLOW,
+  STRETCH_WEEK_WAVES,
   SWITCHYARD_LOG,
 } from './data';
 
@@ -230,5 +233,87 @@ export const FreshnessTrack: React.FC = () => (
       <div className="ev up" style={{ left: '62%' }}><b>We saw it</b><span>18:02</span><i /></div>
       <div className="ev net" style={{ left: '90%' }}><i /><b>Last checked</b><span>just now</span></div>
     </div>
+  </div>
+);
+
+/** Tile, Stretch's mascot, drawn as in the app. */
+export const Tile: React.FC<{ size?: number; className?: string }> = ({ size = 40, className = 'tile' }) => (
+  <svg className={className} width={size} height={size} viewBox="0 0 100 100" aria-hidden="true">
+    <rect x="13" y="13" width="78" height="80" rx="18" fill="#141310" />
+    <rect x="8" y="8" width="78" height="80" rx="18" fill="#F2361D" stroke="#141310" strokeWidth="3.2" />
+    <circle cx="47" cy="20" r="5.2" fill="#FFE135" stroke="#141310" strokeWidth="2.6" />
+    <ellipse className="tile-eye" cx="36" cy="44" rx="5.6" ry="5.6" fill="#FFFDF7" />
+    <ellipse className="tile-eye" cx="58" cy="44" rx="5.6" ry="5.6" fill="#FFFDF7" />
+    <path d="M31 59 Q47 74 63 59" stroke="#FFFDF7" strokeWidth="6" strokeLinecap="round" fill="none" />
+  </svg>
+);
+
+const DAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+const MEALS = ['B', 'L', 'D'];
+const WEEK_CHANGES = new Map(STRETCH_WEEK_WAVES.flatMap((wave, w) => wave.map(([cell, becomes], k) => [cell, { becomes, delay: 0.7 + w * 0.9 + k * 0.12 }] as const)));
+
+/** My week, ideally, then in reality: meals drop out in waves and turn into coffees. */
+export const StretchWeek: React.FC = () => (
+  <figure className="sw" data-reveal role="img" aria-label="A week of 21 meals. Over the semester it falls to 10: skipped breakfasts and lunches, and three meals that became just a coffee.">
+    <div className="sw-head">
+      <span className="sw-ideal">my week, ideally <b>21 / 21</b></span>
+      <span className="sw-real">my week, in reality <b>10 / 21</b></span>
+    </div>
+    <div className="sw-grid">
+      <span />
+      {DAYS.map((day, i) => <span key={i} className="sw-day">{day}</span>)}
+      {MEALS.map((meal, row) => (
+        <React.Fragment key={meal}>
+          <span className="sw-meal">{meal}</span>
+          {DAYS.map((_, day) => {
+            const change = WEEK_CHANGES.get(row * 7 + day);
+            return (
+              <span
+                key={day}
+                className={`sw-cell${change ? ` sw-${change.becomes}` : ''}`}
+                style={change ? ({ '--d': `${change.delay}s` } as React.CSSProperties) : undefined}
+              >
+                <i className="sw-plate" />
+                {change?.becomes === 'coffee' && <i className="sw-cup" />}
+                {change?.becomes === 'skip' && <i className="sw-x" />}
+              </span>
+            );
+          })}
+        </React.Fragment>
+      ))}
+    </div>
+  </figure>
+);
+
+/** 53 of every 100 students surveyed were food insecure. */
+export const StretchPlates: React.FC = () => (
+  <div className="splates" data-reveal role="img" aria-label="53 of 100 plates are marked: 53% of students surveyed were food insecure">
+    {Array.from({ length: 100 }, (_, i) => (
+      <i key={i} className={i < 53 ? 'on' : undefined} style={{ '--i': i } as React.CSSProperties} />
+    ))}
+  </div>
+);
+
+export const StretchFlow: React.FC = () => (
+  <ol className="sflow" data-reveal>
+    {STRETCH_FLOW.map(([step, detail], index) => (
+      <li key={step} style={{ '--i': index } as React.CSSProperties}>
+        {step === 'Tile' ? <Tile size={22} /> : <b>{step}</b>}
+        <span>{detail}</span>
+      </li>
+    ))}
+  </ol>
+);
+
+/** Any files in, one PDF out. */
+export const StackFan: React.FC = () => (
+  <div className="sk" data-reveal role="img" aria-label="Word, photo, spreadsheet, Keynote and EPUB files fold into one PDF">
+    <div className="sk-in">
+      {STACK_FILES.map((ext, i) => (
+        <span key={ext} style={{ '--i': i, '--r': `${(i % 2 ? 1 : -1) * (2 + i)}deg` } as React.CSSProperties}>{ext}</span>
+      ))}
+    </div>
+    <i className="sk-arrow">→</i>
+    <div className="sk-out"><b>PDF</b><small>one file</small></div>
   </div>
 );

@@ -23,6 +23,11 @@ const PageFace: React.FC<{ page: Page; index: number; side: 'front' | 'back' }> 
 );
 
 /** The leaves never re-render: the engine owns every class and style that moves. */
+const TAB_COUNT = PAGES.filter((page) => page.tab).length;
+/** Tabs share the page edge: 75px apart, closer when there are more of them. */
+const TAB_STEP = Math.min(75, Math.floor(620 / TAB_COUNT));
+const TAB_TOP = TAB_STEP < 75 ? 12 : 22;
+
 const Book = React.memo(function Book() {
   let tabs = 0;
   const leaves = [];
@@ -40,7 +45,7 @@ const Book = React.memo(function Book() {
             href={`#p${2 * i}`}
             data-go={i}
             aria-label={`Turn to ${front.tab}`}
-            style={{ top: 22 + tabIndex * 75, '--c': front.color } as React.CSSProperties}
+            style={{ top: TAB_TOP + tabIndex * TAB_STEP, height: TAB_STEP - 5, '--c': front.color } as React.CSSProperties}
           >
             <span>{front.tab}</span>
             <span className="b" aria-hidden="true">{front.tab}</span>

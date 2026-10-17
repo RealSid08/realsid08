@@ -187,6 +187,25 @@ export const EXPERIENCES: ExperienceItem[] = [
 
 export const PROJECTS: ProjectItem[] = [
   {
+    id: 'stretch',
+    title: 'Stretch',
+    subtitle: 'Free weekly meal planner for students on a budget',
+    period: 'Oct 2026 – Present',
+    description:
+      'An iPhone, Android and web app that plans a student’s week of meals around their budget, diet and the best grocery and eat-out deals near them. Free, so it reaches as many students as possible.',
+    bullets: [
+      'Started from his own life: since moving to Melbourne, uni, side projects and freelance work pushed him from three meals a day to two, and some days one meal and a coffee. Hungry and too tired to cook, he lost focus and his work slipped.',
+      'It is not just him: 53% of uni students surveyed were food insecure in 2024, up from 42% in 2022, and 27% often skip meals (University of Tasmania surveys).',
+      'Onboarding asks for a home location, a weekly budget, diet, cooking skills and kitchen gear, cuisines, pantry and how often you eat out. Tile, an AI agent and the app’s mascot, deals a deck of meals to swipe, then checks live prices at Coles, Woolies and Aldi and eat-out deals such as EatClub near you, and builds a week: three meals a day with recipes, what to buy and where, inside the budget. Prices come from fetched sources and the arithmetic is done in code, not by the model.',
+      'Free, because the students who need it most have the least to spend. The meal plan stays free; a paid tier, if it comes, would cost about a coffee a month. A student usability test led to a shorter onboarding, a redesigned “don’t want” screen, diets that filter every meal, and quicker week rebuilds.',
+      'Selected for the Lyra x Product Counsel Builders Hack showcase, Oct 2026. On iPhone (beta), Android and web at stretch.realsid08.me.',
+    ],
+    tech: ['Expo', 'React Native', 'React', 'Vite', 'Convex', 'AI SDK', 'Claude'],
+    type: 'live-demo',
+    featured: true,
+    link: 'https://stretch.realsid08.me',
+  },
+  {
     id: 'foodly',
     title: 'Foodly',
     subtitle: 'Social-to-Place Restaurant Discovery',
@@ -253,6 +272,24 @@ export const PROJECTS: ProjectItem[] = [
     tech: ['Swift', 'SwiftUI', 'MapKit', 'Keychain', 'VoiceOver', 'XCTest'],
     type: 'open-source',
     githubUrl: 'https://github.com/RealSid08/ServoGrid',
+  },
+  {
+    id: 'pdfstack',
+    title: 'Stack',
+    subtitle: 'Open-source any-file-to-PDF converter (pdfstack)',
+    period: 'Oct 2026',
+    description:
+      'A mobile and desktop web app that turns any mix of files into one PDF, with no account and nothing stored.',
+    bullets: [
+      'Combining photos, a Word document and a spreadsheet into one PDF usually means an ad-filled site, a sign-up and uploading private files to someone else’s server.',
+      'Images and PDFs are prepared in the browser (HEIC and TIFF decoded on demand). Documents go to a stateless Cloudflare Worker that converts them with Browser Rendering and keeps nothing; the final PDF is merged on the device. Drag or keyboard reordering, rotation, A4, Letter or fit-to-image sizing.',
+      'Converts 56 file types including Word, Excel, PowerPoint, Keynote, Pages, Numbers, EPUB, email and code. Every advertised extension has a fixture test, and a live production run passed 27 of 27 checks including corrupt, oversized and hostile inputs.',
+      'Built and deployed in a day. MIT licensed.',
+    ],
+    tech: ['TypeScript', 'React', 'Vite', 'Cloudflare Workers', 'Browser Rendering', 'pdf-lib'],
+    type: 'open-source',
+    githubUrl: 'https://github.com/RealSid08/pdfstack',
+    link: 'https://stack.realsid08.me',
   },
   {
     id: 'llm-cooperation',
