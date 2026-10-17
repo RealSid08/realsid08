@@ -150,13 +150,13 @@ export const PAGES: Page[] = [
         <span className="chip">Won the Lyra × Product Counsel Builders Hack</span>
         <h2 className="t st-title" data-mark>Stretch <Tile /></h2>
         <p className="pitch" style={{ maxWidth: '15em' }}>Stretch your money further, and eat well every week.</p>
+        <StretchWeek />
         <Notes rows={[
           ['the problem', 'I have a habit of skipping meals. Between uni, freelance work and side projects, three meals a day became one meal and a coffee, and by the afternoon I couldn’t focus. Cooking takes planning, and eating well felt like spending money I didn’t have.'],
           ['so', 'Tell Stretch your budget and what you like. Tile, its AI agent, checks Coles, Woolies, Aldi and eat-out deals near you, then plans the week: what to cook, what to buy, and where.'],
         ]} />
-        <StretchWeek />
         <a className="go" href="https://stretch.realsid08.me" target="_blank" rel="noopener noreferrer">Try it free ↗</a>
-        <Sticky style={{ right: 34, bottom: 52, width: 132, transform: 'rotate(3deg)' }}>won the Builders Hack<b>$1,000</b>out of 90+ sign-ups</Sticky>
+        <Sticky wide className="st-win" style={{ right: 34, top: 222, width: 164, transform: 'rotate(3deg)' }}>won the Builders Hack, <b>$1,000</b> out of 90+ sign-ups</Sticky>
       </>
     ),
   },

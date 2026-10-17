@@ -206,7 +206,7 @@ html[data-theme='dark'] .nb-desk .canvas { filter: brightness(0.9) saturate(0.95
 .st-title .tile { width: 54px; height: 54px; transform: rotate(-12deg) translateY(2px); flex: none; }
 .links { display: flex; align-items: center; gap: 22px; margin-top: 12px; }
 .links .go { margin-top: 0; }
-.sw { margin: 16px 0 0; width: 232px; }
+.sw { margin: 4px 0 18px; width: 232px; }
 .sw-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; font: 500 10px var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
 .sw-head b { font-weight: 600; color: var(--ink); }
 .sw-head b i { font-style: normal; transition: opacity 0.4s ease; }
@@ -474,7 +474,9 @@ html[data-theme='dark'] .sheet { background: #f4eee0; }
 .solo .pin-b { top: 296px; right: 26px; }
 .solo .pin-note { top: 310px; left: 30px; width: 140px; }
 .solo .sk-desk { width: 300px; left: 24px; }
-.solo .sw { margin-top: 10px; }
+.solo .sw { margin: 0 0 8px; }
+.solo .st-win { margin-top: 6px !important; }
+.solo .stL-go, .solo [data-page='3'] > .go { margin-top: 8px; }
 .solo .sw-grid { gap: 5px 0; }
 .solo .sw-key { margin-top: 8px; }
 .solo .sk-phone { top: 300px; right: 22px; width: 120px; }
