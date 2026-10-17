@@ -11,15 +11,12 @@ import {
   ParkSpeed,
   Replay,
   ServoBoard,
-  StackFan,
-  StretchFlow,
-  StretchPlates,
   StretchWeek,
   SwitchyardDiagram,
   SwitchyardTerminal,
 } from './figures';
 import { DocIcon, GitHubIcon, LinkedInIcon, MailIcon, RepoLink } from './icons';
-import { STRETCH_STATS, SWITCHYARD_FACTS } from './data';
+import { SWITCHYARD_FACTS } from './data';
 
 /**
  * Every page of the notebook, in reading order. Even pages are right-hand pages
@@ -145,27 +142,20 @@ export const PAGES: Page[] = [
   {
     name: 'Stretch',
     color: '#e8361d',
-    className: 'stL',
     target: 'projects project-stretch',
     content: (
       <>
-        <Run left={<><b>01</b> · Stretch</>} right="the why" />
+        <Run left={<><b>01</b> · Stretch</>} right="iPhone · Android · web" />
         <span className="chip">Won the Lyra × Product Counsel Builders Hack</span>
         <h2 className="t" data-mark>Stretch</h2>
-        <p className="pitch">It started with me skipping meals.</p>
-        <div className="bubbles" aria-label="Messages from home">
-          <p>are you eating properly? 🥺</p>
-          <p>eat three times a day, okay?</p>
-        </div>
-        <StretchWeek />
+        <p className="pitch" style={{ maxWidth: '15em' }}>A week of good meals, planned around your budget and the deals near you.</p>
         <Notes rows={[
-          ['me', 'Since I moved to Melbourne, uni, side projects and freelance work have eaten my time. Three meals a day became two, then one and a coffee.'],
-          ['home', 'My parents and my girlfriend kept telling me to eat properly. I never could: no time to plan meals, and no plan for my money.'],
+          ['the problem', 'I skip meals. Between uni, freelance work and side projects, three meals a day became one and a coffee, and by the afternoon I couldn’t focus. Cooking takes planning, and eating well felt like money I didn’t have.'],
+          ['so', 'Tell Stretch your budget and what you like. Tile, its AI agent, checks Coles, Woolies, Aldi and eat-out deals near you, then plans the week: what to cook, what to buy, and where.'],
         ]} />
-        <div className="loop" aria-label="Hungry, too tired to cook, can't focus, work slips, and round again">
-          <b>hungry</b><i>→</i><b>too tired to cook</b><i>→</i><b>can’t focus</b><i>→</i><b>work slips</b><i className="again">↺</i>
-        </div>
-        <p className="hw margin-note" style={{ right: 40, bottom: 40, transform: 'rotate(-3deg)', textAlign: 'right', fontSize: 19 }}>so I built the fix,<br />for me first. it won →</p>
+        <StretchWeek />
+        <a className="go" href="https://stretch.realsid08.me" target="_blank" rel="noopener noreferrer">Try it free ↗</a>
+        <Sticky style={{ right: 34, bottom: 52, width: 132, transform: 'rotate(3deg)' }}>won the Builders Hack<b>$1,000</b>out of 90+ sign-ups</Sticky>
       </>
     ),
   },
@@ -173,36 +163,26 @@ export const PAGES: Page[] = [
     name: 'Stretch',
     color: '#e8361d',
     tab: 'Stretch',
-    className: 'stR',
+    className: 'pkR stR',
     content: (
       <>
-        <Run left="Why it’s free" right={<b>Stretch</b>} />
-        <p className="st-h">Then I realised it wasn’t just me.</p>
-        <div className="st-stat">
-          <StretchPlates />
-          <div>
-            <b>53%</b>
-            <p>of uni students surveyed were food insecure in 2024, up from 42% two years earlier.</p>
-          </div>
+        <Run left="Screens" right={<b>Stretch</b>} />
+        <div className="pair">
+          <figure>
+            <span className="tape" style={{ '--tape': 'rgba(255, 214, 60, 0.75)' } as React.CSSProperties} />
+            <div className="phone"><img src="/work/notebook/stretch-deck.jpg" alt="Stretch swipe deck: red lentil dal, about 22 cents a serve" loading="lazy" decoding="async" {...zoomable('stretch', '/work/notebook/full/stretch-deck.jpg', 'Stretch · swipe a deck with Tile', 'iPhone')} /></div>
+            <figcaption>swipe, so Tile learns your taste</figcaption>
+          </figure>
+          <figure>
+            <span className="tape" style={{ '--tape': 'rgba(232, 54, 29, 0.45)' } as React.CSSProperties} />
+            <div className="phone"><img src="/work/notebook/stretch-week.jpg" alt="Stretch weekly plan: $29.72 of a $60 budget" loading="lazy" decoding="async" {...zoomable('stretch', '/work/notebook/full/stretch-week.jpg', 'Stretch · a real week, $29.72 of $60', 'iPhone')} /></div>
+            <figcaption>a real week, $29.72 of $60</figcaption>
+          </figure>
         </div>
-        <div className="st-mini">
-          {STRETCH_STATS.map(([figure, line]) => <div key={figure}><b>{figure}</b><span>{line}</span></div>)}
+        <div className="why-free">
+          <p className="hw">why it’s free →</p>
+          <p className="body">More than half of uni students surveyed in 2024 were food insecure. The people who need this most have the least to spend, so the meal plan is free, and stays free.</p>
         </div>
-        <p className="st-src">UTAS student surveys 2022 and 2024 · Universities Australia</p>
-        <p className="st-h">So Stretch is free.</p>
-        <p className="body st-free">
-          The students who need it most have the least to spend. Free means anyone can try it tonight, and that’s how
-          it reaches the most people. The meal plan stays free for good; a paid tier, if it comes, costs about a coffee a month.
-        </p>
-        <StretchFlow />
-        <figure className="st-phone">
-          <span className="tape" style={{ '--tape': 'rgba(255, 225, 53, 0.8)' } as React.CSSProperties} />
-          <div className="phone"><img src="/work/notebook/stretch-week.jpg" alt="Stretch weekly plan: $29.72 of a $60 budget" loading="lazy" decoding="async" {...zoomable('stretch', '/work/notebook/full/stretch-week.jpg', 'Stretch · a real week, $29.72 of $60', 'iPhone')} /></div>
-        </figure>
-        <figure className="st-card">
-          <img src="/work/notebook/stretch-deck.jpg" alt="Stretch swipe deck: red lentil dal, about $0.22 a serve" loading="lazy" decoding="async" {...zoomable('stretch', '/work/notebook/full/stretch-deck.jpg', 'Stretch · swipe a deck with Tile', 'iPhone')} />
-        </figure>
-        <a className="go st-go" href="https://stretch.realsid08.me" target="_blank" rel="noopener noreferrer">Try it free, tonight ↗</a>
       </>
     ),
   },
@@ -415,22 +395,22 @@ export const PAGES: Page[] = [
     content: (
       <>
         <Run left={<><b>07</b> · Stack</>} right="TypeScript · Cloudflare" />
-        <span className="chip">Open source · pdfstack</span>
+        <span className="chip">Open source · free, no sign-up</span>
         <h2 className="t" data-mark>Stack</h2>
-        <p className="pitch">Any files in, one PDF out. No account, and nothing kept.</p>
+        <p className="pitch">Any files in, one PDF out. No sign-up, no ads.</p>
         <Notes rows={[
-          ['the problem', 'Turning a few photos, a Word doc and a spreadsheet into one PDF usually means an ad-filled site, a sign-up, and handing private documents to someone else’s server.'],
-          ['so', 'Photos and PDFs are prepared on your device. Documents go to a stateless Cloudflare Worker that converts them and keeps nothing, and the final PDF is merged in your browser.'],
+          ['the problem', 'A friend texted me: did I know a PDF converter that didn’t ask for money or a sign-up, and wasn’t buried in ads? I hadn’t realised how common that was until he asked.'],
+          ['so', 'Instead of finding a half-decent one, I built one and sent him the link. Photos and PDFs are prepared on your device, documents convert on a Cloudflare Worker that keeps nothing, and the PDF is merged in your browser.'],
         ]} />
-        <StackFan />
         <div className="facts">
           <div><small>Reads</small>56 file types</div>
-          <div><small>Stores</small>nothing, ever</div>
-          <div><small>Merges</small>on your device</div>
+          <div><small>Keeps</small>nothing</div>
+          <div><small>Asks for</small>no account, no money</div>
           <div><small>Runs on</small>Cloudflare Workers</div>
         </div>
         <a className="go" href="https://stack.realsid08.me" target="_blank" rel="noopener noreferrer">Open Stack ↗</a>
         <RepoLink href="https://github.com/RealSid08/pdfstack">Source</RepoLink>
+        <Sticky style={{ right: 34, bottom: 60, width: 118, transform: 'rotate(-3deg)' }}>text to link<b>1 day</b>built and shipped</Sticky>
       </>
     ),
   },
@@ -441,16 +421,20 @@ export const PAGES: Page[] = [
     className: 'skR',
     content: (
       <>
-        <Run left="Screens" right={<b>Stack</b>} />
-        <figure className="shot">
-          <span className="tape" style={{ '--tape': 'rgba(156, 58, 107, 0.45)' } as React.CSSProperties} />
-          <div className="phone"><img src="/work/notebook/stack-mobile.jpg" alt="Stack on a phone: two files ready, Download PDF" loading="lazy" decoding="async" {...zoomable('stack', '/work/notebook/full/stack-mobile.jpg', 'Stack · reorder, then download one PDF', 'Mobile web')} /></div>
+        <Run left="The link I sent" right={<b>Stack</b>} />
+        <figure className="pin sk-desk">
+          <span className="tape" style={{ '--tape': 'rgba(156, 58, 107, 0.35)' } as React.CSSProperties} />
+          <img src="/work/notebook/stack-desktop.jpg" alt="Stack on a laptop: two files in the stack, A4, Download PDF" loading="lazy" decoding="async" {...zoomable('stack', '/work/notebook/full/stack-desktop.jpg', 'Stack · on a laptop', 'Desktop web')} />
+          <figcaption>on a laptop</figcaption>
         </figure>
-        <div className="note-l">
-          <p className="hw">drag to reorder, rotate, download ↓</p>
-          <p className="body">Word, Excel, Keynote, Pages, EPUB, email and code files all convert, and HEIC photos decode on the phone. Every advertised format has a fixture test. A live run against production passed 27 of 27 checks, including corrupt files, oversized uploads and hostile HTML.</p>
+        <figure className="sk-phone">
+          <div className="phone"><img src="/work/notebook/stack-mobile.jpg" alt="Stack on a phone: two files ready to download as one PDF" loading="lazy" decoding="async" {...zoomable('stack', '/work/notebook/full/stack-mobile.jpg', 'Stack · on a phone', 'Mobile web')} /></div>
+        </figure>
+        <div className="sk-note">
+          <p className="hw">drop files in, drag to reorder, download ↓</p>
+          <p className="body">Word, Excel, Keynote, Pages, EPUB, email and code files all convert, and iPhone photos decode on the device. Every format has a test, and a live run against production passed 27 of 27 checks.</p>
+          <div className="tags">{['docx', 'xlsx', 'pptx', 'key', 'pages', 'epub', 'heic', 'md'].map((ext) => <span key={ext}>.{ext}</span>)}</div>
         </div>
-        <p className="hw margin-note" style={{ left: 46, bottom: 50, transform: 'rotate(-2deg)', fontSize: 19 }}>built and shipped in a day ✓</p>
       </>
     ),
   },
@@ -561,7 +545,7 @@ export const PAGES: Page[] = [
             <div className="tags"><span>Next.js</span><span>Supabase</span><span>RAG</span><span>Gemini Live</span></div>
           </div>
           <div data-target="exp-hida">
-            <div className="top"><b data-mark>HiDa</b><em>founder · 2020 to 2021</em></div>
+            <div className="top"><b data-mark>HiDa</b><em>founder · 2016 to 2021</em></div>
             <p>A video-calling app with screen sharing and synced chat, built on WebRTC.</p>
           </div>
         </div>

@@ -163,7 +163,7 @@ export const EXPERIENCES: ExperienceItem[] = [
     id: 'hida',
     role: 'Founder',
     company: 'HiDa',
-    period: 'Aug 2020 – May 2021',
+    period: '2016 – 2021',
     lane: 'archive',
     description: [
       'Built a real-time video conferencing app on the Enablex and Quickblox APIs, with peer-to-peer streaming, dynamic room creation, screen sharing and synchronised chat.',
@@ -281,7 +281,7 @@ export const PROJECTS: ProjectItem[] = [
     description:
       'A mobile and desktop web app that turns any mix of files into one PDF, with no account and nothing stored.',
     bullets: [
-      'Combining photos, a Word document and a spreadsheet into one PDF usually means an ad-filled site, a sign-up and uploading private files to someone else’s server.',
+      'A friend texted Sidhaarth asking for a PDF converter that did not want money or a sign-up and was not full of ads. Rather than find a half-decent one, Sidhaarth built one and sent him the link: no sign-up, no ads, free.',
       'Images and PDFs are prepared in the browser (HEIC and TIFF decoded on demand). Documents go to a stateless Cloudflare Worker that converts them with Browser Rendering and keeps nothing; the final PDF is merged on the device. Drag or keyboard reordering, rotation, A4, Letter or fit-to-image sizing.',
       'Converts 56 file types including Word, Excel, PowerPoint, Keynote, Pages, Numbers, EPUB, email and code. Every advertised extension has a fixture test, and a live production run passed 27 of 27 checks including corrupt, oversized and hostile inputs.',
       'Built and deployed in a day. MIT licensed.',

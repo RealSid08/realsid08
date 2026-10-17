@@ -87,20 +87,3 @@ export const STRETCH_WEEK_WAVES: Array<Array<[cell: number, becomes: 'skip' | 'c
   [[8, 'skip'], [10, 'skip'], [5, 'coffee'], [19, 'skip']],
   [[6, 'skip'], [13, 'skip']],
 ];
-
-/** University of Tasmania student surveys 2022 and 2024; Universities Australia Student Finances Survey. */
-export const STRETCH_STATS: Array<[figure: string, line: string]> = [
-  ['27%', 'often skip meals or go without food'],
-  ['1 in 7', 'go without food or basics because they can’t afford it'],
-  ['+29%', 'student living costs since 2021'],
-];
-
-export const STRETCH_FLOW = [
-  ['You', 'a budget, your diet, your kitchen'],
-  ['Swipe', 'a deck of meals with Tile'],
-  ['Tile', 'checks Coles, Woolies, Aldi, EatClub near you'],
-  ['Your week', '21 meals, inside the budget'],
-];
-
-/** A few of the 56 file types Stack converts, as they fan into one PDF. */
-export const STACK_FILES = ['.docx', '.heic', '.xlsx', '.key', '.epub'];
