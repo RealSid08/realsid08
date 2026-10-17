@@ -202,6 +202,10 @@ html[data-theme='dark'] .nb-desk .canvas { filter: brightness(0.9) saturate(0.95
 .stamp small { display: block; margin-top: 2px; font-size: 8.5px; font-weight: 500; letter-spacing: 0.06em; }
 
 /* Stretch ---------------------------------------------------------------- */
+.st-title { display: flex; align-items: center; gap: 14px; }
+.st-title .tile { width: 54px; height: 54px; transform: rotate(-12deg) translateY(2px); flex: none; }
+.links { display: flex; align-items: center; gap: 22px; margin-top: 12px; }
+.links .go { margin-top: 0; }
 .sw { margin: 16px 0 0; width: 232px; }
 .sw-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; font: 500 10px var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
 .sw-head b { font-weight: 600; color: var(--ink); }
@@ -447,7 +451,12 @@ html[data-theme='dark'] .sheet { background: #f4eee0; }
 .solo .qa { grid-template-columns: 58px 1fr; }
 .solo .qa span { font-size: 18px; }
 .solo .qa p { font-size: 13.5px; }
-.solo .chain, .solo .infra { margin-left: 0; flex-wrap: wrap; }
+.solo .chain { margin-left: 0; flex-wrap: wrap; }
+.solo .infra { margin-left: 0; gap: 6px; }
+.solo .infra i { font-size: 18px; }
+.solo .infra b { padding: 5px 7px; font-size: 11px; }
+.solo .infra b small { white-space: nowrap; }
+.solo .infra b.hub { padding: 8px 9px; }
 .solo .chain { gap: 4px; }
 .solo .chain b { padding: 5px 7px; font-size: 11px; }
 .solo .facts { font-size: 13px; }

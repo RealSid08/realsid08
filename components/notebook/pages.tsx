@@ -13,6 +13,7 @@ import {
   ServoBoard,
   StretchWeek,
   SwitchyardDiagram,
+  Tile,
   SwitchyardTerminal,
 } from './figures';
 import { DocIcon, GitHubIcon, LinkedInIcon, MailIcon, RepoLink } from './icons';
@@ -147,10 +148,10 @@ export const PAGES: Page[] = [
       <>
         <Run left={<><b>01</b> · Stretch</>} right="iPhone · Android · web" />
         <span className="chip">Won the Lyra × Product Counsel Builders Hack</span>
-        <h2 className="t" data-mark>Stretch</h2>
-        <p className="pitch" style={{ maxWidth: '15em' }}>A week of good meals, planned around your budget and the deals near you.</p>
+        <h2 className="t st-title" data-mark>Stretch <Tile /></h2>
+        <p className="pitch" style={{ maxWidth: '15em' }}>Stretch your money further, and eat well every week.</p>
         <Notes rows={[
-          ['the problem', 'I skip meals. Between uni, freelance work and side projects, three meals a day became one and a coffee, and by the afternoon I couldn’t focus. Cooking takes planning, and eating well felt like money I didn’t have.'],
+          ['the problem', 'I have a habit of skipping meals. Between uni, freelance work and side projects, three meals a day became one meal and a coffee, and by the afternoon I couldn’t focus. Cooking takes planning, and eating well felt like spending money I didn’t have.'],
           ['so', 'Tell Stretch your budget and what you like. Tile, its AI agent, checks Coles, Woolies, Aldi and eat-out deals near you, then plans the week: what to cook, what to buy, and where.'],
         ]} />
         <StretchWeek />
@@ -181,7 +182,7 @@ export const PAGES: Page[] = [
         </div>
         <div className="why-free">
           <p className="hw">why it’s free →</p>
-          <p className="body">More than half of uni students surveyed in 2024 were food insecure. The people who need this most have the least to spend, so the meal plan is free, and stays free.</p>
+          <p className="body">More than half of uni students surveyed in 2024 were food insecure. The people who need this most have the least to spend, so the meal plan is free, right now.</p>
         </div>
       </>
     ),
@@ -408,8 +409,10 @@ export const PAGES: Page[] = [
           <div><small>Asks for</small>no account, no money</div>
           <div><small>Runs on</small>Cloudflare Workers</div>
         </div>
-        <a className="go" href="https://stack.realsid08.me" target="_blank" rel="noopener noreferrer">Open Stack ↗</a>
-        <RepoLink href="https://github.com/RealSid08/pdfstack">Source</RepoLink>
+        <div className="links">
+          <a className="go" href="https://stack.realsid08.me" target="_blank" rel="noopener noreferrer">Open Stack ↗</a>
+          <RepoLink href="https://github.com/RealSid08/pdfstack">Source</RepoLink>
+        </div>
         <Sticky style={{ right: 34, bottom: 60, width: 118, transform: 'rotate(-3deg)' }}>text to link<b>1 day</b>built and shipped</Sticky>
       </>
     ),
