@@ -99,8 +99,8 @@ export const PAGES: Page[] = [
         </figure>
         <h1 data-mark>Right now, I’m building <em>Stretch</em>, and it’s free.</h1>
         <p className="lede">
-          Stretch plans a student’s whole week of meals around their budget, their tastes and the best grocery deals
-          near them. I want it in the hands of as many people as possible, so it costs nothing to use.
+          Stretch plans a whole week of meals around your budget, your tastes and the best grocery deals near you. I
+          want it in the hands of as many people as possible, so it costs nothing to use.
         </p>
         <a className="why" href="#p3" data-go={2}><span>Why?</span> Read the story →</a>
         <p className="lab">Client work</p>
