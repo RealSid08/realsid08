@@ -406,6 +406,21 @@ html[data-theme='dark'] .sheet { background: #f4eee0; }
 .ways .ic { width: 18px; height: 18px; }
 .ways li:first-child .ic { width: 22px; height: 22px; }
 
+/* Where you left off: a paper bookmark that slips out above the book ------- */
+.bookmark { position: absolute; top: 0; left: 50%; z-index: 45; display: flex; align-items: stretch; transform: translateX(-50%); animation: nb-bookmark 520ms cubic-bezier(0.2, 0.8, 0.2, 1) both; filter: drop-shadow(0 10px 14px rgba(0, 0, 0, 0.35)); }
+.bookmark-go { display: flex; align-items: baseline; gap: 8px; padding: 9px 14px 14px 16px; border: 0; cursor: pointer; color: var(--ink); background: var(--paper); border-radius: 0 0 0 6px; clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); font: 400 20px/1 var(--serif); }
+.bookmark-go .hw { font-size: 18px; }
+.bookmark-go small { font: 500 10.5px var(--mono); color: var(--muted); letter-spacing: 0.04em; }
+.bookmark-go:hover b, .bookmark-go:focus-visible b { color: var(--nb-accent); }
+.bookmark-x { width: 30px; border: 0; cursor: pointer; color: #fff; font: 16px/1 var(--mono); background: linear-gradient(90deg, #8f1d14, #c2321f 50%, #8f1d14); clip-path: polygon(0 0, 100% 0, 100% 100%, 50% calc(100% - 8px), 0 100%); }
+.bookmark-go:focus-visible, .bookmark-x:focus-visible { outline: 2px solid #ffd27a; outline-offset: 2px; }
+@keyframes nb-bookmark { from { transform: translate(-50%, -100%); } }
+.solo .bookmark { top: 0; max-width: calc(100% - 16px); }
+.bookmark-go > * { white-space: nowrap; }
+.solo .bookmark-go { gap: 6px; font-size: 16px; padding: 8px 10px 11px 12px; }
+.solo .bookmark-go .hw { font-size: 15px; }
+.solo .bookmark-go small { font-size: 9.5px; }
+
 /* Controls --------------------------------------------------------------- */
 .ctrl { display: flex; align-items: center; justify-content: center; gap: 14px; padding: 8px 0 2px; color: rgba(255, 236, 205, 0.85); font: 500 12px var(--mono); flex: none; }
 .ctrl button { cursor: pointer; width: 32px; height: 32px; display: grid; place-items: center; border-radius: 50%; border: 1px solid rgba(255, 236, 205, 0.25); font-size: 14px; color: inherit; background: transparent; }
@@ -511,6 +526,7 @@ html[data-theme='dark'] .sheet { background: #f4eee0; }
   .rp-t, .m1-bar, .pk-bar, .ff li, .hm-cell, .fresh, .sw-dot, .sw-head b i { transition: none !important; }
   .sy-packets { display: none; }
   .pen-mark path, .toc a[data-ticked]::after { animation-duration: 0.01s; }
+  .bookmark { animation: none; }
 }
 
 /* Screenshots open in the viewer ------------------------------------------ */

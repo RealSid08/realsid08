@@ -57,6 +57,19 @@ const Book = React.memo(function Book() {
   return <>{leaves}</>;
 });
 
+/** Where a visitor left off, kept in their browser so a return visit can offer it back. */
+const BOOKMARK_KEY = 'realsid08:notebook:last-page';
+type Bookmark = { page: number; name: string };
+
+const readBookmark = (): Bookmark | null => {
+  try {
+    const saved = JSON.parse(localStorage.getItem(BOOKMARK_KEY) ?? 'null') as Bookmark | null;
+    return saved && Number.isInteger(saved.page) && saved.page > 2 && saved.page < PAGES.length - 1 ? saved : null;
+  } catch {
+    return null;
+  }
+};
+
 const LampIcon: React.FC<{ on: boolean }> = ({ on }) => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <path d="M8 3h8l3 7H5z" fill={on ? 'currentColor' : 'none'} fillOpacity={on ? 0.25 : 0} />
@@ -79,6 +92,7 @@ export const Notebook: React.FC = () => {
   };
   const engine = useRef<NotebookEngine | null>(null);
   const [state, setState] = useState<NotebookState | null>(null);
+  const [bookmark, setBookmark] = useState<Bookmark | null>(null);
   const [theme, setTheme] = useTheme();
   const lightbox = useLightbox(refs.book);
 
@@ -88,19 +102,39 @@ export const Notebook: React.FC = () => {
     engine.current = instance;
     setNotebook(instance);
     const unsubscribe = instance.subscribe(setState);
-    // A #p<number> link opens the notebook at that page.
+    const saved = readBookmark();
+    // Remember the page in view, past the opening spread, for the next visit.
+    const unsave = instance.subscribe((next) => {
+      const page = next.solo ? next.page : 2 * next.spread - 1;
+      if (page > 2 && page < PAGES.length - 1) {
+        try { localStorage.setItem(BOOKMARK_KEY, JSON.stringify({ page, name: PAGES[page].name })); } catch { /* storage off */ }
+      }
+    });
+    // A #p<number> link opens the notebook at that page; otherwise it falls open at the first page.
     const match = /^#p(\d+)$/.exec(window.location.hash);
+    let opener = 0;
     if (match) {
       const page = Number(match[1]);
       void instance.go(page % 2 ? (page + 1) / 2 : page / 2, page);
+    } else {
+      opener = window.setTimeout(() => {
+        void instance.go(1, 1).then(() => setBookmark(saved));
+      }, 450);
     }
     return () => {
+      window.clearTimeout(opener);
+      unsave();
       unsubscribe();
       setNotebook(null);
       instance.destroy();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Once the visitor reaches the bookmarked page by any route, the bookmark has done its job.
+  useEffect(() => {
+    if (bookmark && state && (state.solo ? state.page === bookmark.page : 2 * state.spread - 1 === bookmark.page || 2 * state.spread === bookmark.page)) setBookmark(null);
+  }, [bookmark, state]);
 
   const lampOn = theme === 'light';
 
@@ -128,6 +162,24 @@ export const Notebook: React.FC = () => {
             </div>
           </div>
         </div>
+        {bookmark && (
+          <div className="bookmark" role="status">
+            <button
+              type="button"
+              className="bookmark-go"
+              onClick={() => {
+                const { page } = bookmark;
+                setBookmark(null);
+                void engine.current?.go(page % 2 ? (page + 1) / 2 : page / 2, page);
+              }}
+            >
+              <span className="hw">you left off at</span>
+              <b>{bookmark.name}</b>
+              <small>p. {bookmark.page} →</small>
+            </button>
+            <button type="button" className="bookmark-x" onClick={() => setBookmark(null)} aria-label="Dismiss bookmark">×</button>
+          </div>
+        )}
         <nav className="ctrl" aria-label="Turn pages">
           <button type="button" onClick={() => engine.current?.next(-1)} disabled={!state?.canGoBack} aria-label="Previous page">←</button>
           <span className="where" aria-live="polite">{state?.label ?? 'Cover'}</span>

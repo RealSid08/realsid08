@@ -112,7 +112,7 @@ export const PAGES: Page[] = [
         </p>
         <div data-target="education">
           <p className="lab">Studying</p>
-          <p className="body" style={{ margin: 0 }} data-mark>Bachelor of Engineering (Honours), Software<br />Swinburne University of Technology</p>
+          <p className="body" style={{ margin: 0 }} data-mark>Bachelor of Engineering (Honours), Software<br />Swinburne University of Technology<br />Graduating December 2026</p>
         </div>
       </>
     ),
@@ -155,7 +155,7 @@ export const PAGES: Page[] = [
           ['the problem', 'I have a habit of skipping meals. Between uni, freelance work and side projects, three meals a day became one meal and a coffee, and by the afternoon I couldn’t focus. Cooking takes planning, and eating well felt like spending money I didn’t have.'],
           ['so', 'Tell Stretch your budget and what you like. Tile, its AI agent, checks Coles, Woolies, Aldi and eat-out deals near you, then plans the week: what to cook, what to buy, and where.'],
         ]} />
-        <a className="go" href="https://stretch.realsid08.me" target="_blank" rel="noopener noreferrer">Try it free ↗</a>
+        <a className="go" href="https://stretch.realsid08.me" target="_blank" rel="noopener noreferrer">Start using it today ↗</a>
         <Sticky wide className="st-win" style={{ right: 34, top: 222, width: 164, transform: 'rotate(3deg)' }}>won the Builders Hack, <b>$1,000</b> out of 90+ sign-ups</Sticky>
       </>
     ),
