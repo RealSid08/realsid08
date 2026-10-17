@@ -6,7 +6,7 @@
 export type ContentsRow = { spread: number; title: string; line: string; targets: string[] };
 
 export const CONTENTS: ContentsRow[] = [
-  { spread: 2, title: 'Stretch', line: 'Eat well on a student budget, free', targets: ['project-stretch'] },
+  { spread: 2, title: 'Stretch', line: 'Won the Builders Hack. Eat well, spend less, free', targets: ['project-stretch'] },
   { spread: 3, title: 'Client work', line: 'Kenspire and Besmak, in production', targets: ['exp-kenspire', 'exp-besmak'] },
   { spread: 4, title: 'Foodly', line: 'Every food reel you saved, on one map', targets: ['project-foodly'] },
   { spread: 5, title: 'Switchyard', line: 'Every coding agent and account behind one endpoint', targets: ['project-switchyard'] },

@@ -189,7 +189,7 @@ export const PROJECTS: ProjectItem[] = [
   {
     id: 'stretch',
     title: 'Stretch',
-    subtitle: 'Free weekly meal planner for students on a budget',
+    subtitle: 'Free weekly meal planner, winner of the Lyra x Product Counsel Builders Hack',
     period: 'Oct 2026 – Present',
     description:
       'An iPhone, Android and web app that plans a student’s week of meals around their budget, diet and the best grocery and eat-out deals near them. Free, so it reaches as many students as possible.',
@@ -198,7 +198,7 @@ export const PROJECTS: ProjectItem[] = [
       'It is not just him: 53% of uni students surveyed were food insecure in 2024, up from 42% in 2022, and 27% often skip meals (University of Tasmania surveys).',
       'Onboarding asks for a home location, a weekly budget, diet, cooking skills and kitchen gear, cuisines, pantry and how often you eat out. Tile, an AI agent and the app’s mascot, deals a deck of meals to swipe, then checks live prices at Coles, Woolies and Aldi and eat-out deals such as EatClub near you, and builds a week: three meals a day with recipes, what to buy and where, inside the budget. Prices come from fetched sources and the arithmetic is done in code, not by the model.',
       'Free, because the students who need it most have the least to spend. The meal plan stays free; a paid tier, if it comes, would cost about a coffee a month. A student usability test led to a shorter onboarding, a redesigned “don’t want” screen, diets that filter every meal, and quicker week rebuilds.',
-      'Selected for the Lyra x Product Counsel Builders Hack showcase, Oct 2026. On iPhone (beta), Android and web at stretch.realsid08.me.',
+      'Won the Lyra x Product Counsel Builders Hack (Oct 2026): built in a weekend against the brief “give someone a new ability”, it was one of the top ten teams out of 90+ sign-ups who presented at Lyra in Sydney on 16 October, and took first place, $1,000 and two mentoring sessions with Rampersand’s Product Counsel. On iPhone (beta), Android and web at stretch.realsid08.me.',
     ],
     tech: ['Expo', 'React Native', 'React', 'Vite', 'Convex', 'AI SDK', 'Claude'],
     type: 'live-demo',

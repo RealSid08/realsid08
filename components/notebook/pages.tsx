@@ -102,7 +102,10 @@ export const PAGES: Page[] = [
           Stretch plans a whole week of meals around your budget, your tastes and the best grocery deals near you. I
           want it in the hands of as many people as possible, so it costs nothing to use.
         </p>
-        <a className="why" href="#p3" data-go={2}><span>Why?</span> Read the story →</a>
+        <div className="why-row">
+          <a className="why" href="#p3" data-go={2}><span>Why?</span> Read the story →</a>
+          <span className="stamp" title="Lyra × Product Counsel Builders Hack, Sydney, 16 Oct 2026">Won · Builders Hack<small>$1,000 · Sydney · Oct 2026</small></span>
+        </div>
         <p className="lab">Client work</p>
         <p className="body" style={{ margin: '0 0 12px', fontSize: 12.5 }}>
           For clients, I design and build systems that scale: a task platform rolling out to about 600 staff at
@@ -147,7 +150,7 @@ export const PAGES: Page[] = [
     content: (
       <>
         <Run left={<><b>01</b> · Stretch</>} right="the why" />
-        <span className="chip">Building now · free on iPhone, Android and web</span>
+        <span className="chip">Won the Lyra × Product Counsel Builders Hack</span>
         <h2 className="t" data-mark>Stretch</h2>
         <p className="pitch">It started with me skipping meals.</p>
         <div className="bubbles" aria-label="Messages from home">
@@ -162,7 +165,7 @@ export const PAGES: Page[] = [
         <div className="loop" aria-label="Hungry, too tired to cook, can't focus, work slips, and round again">
           <b>hungry</b><i>→</i><b>too tired to cook</b><i>→</i><b>can’t focus</b><i>→</i><b>work slips</b><i className="again">↺</i>
         </div>
-        <p className="hw margin-note" style={{ right: 40, bottom: 40, transform: 'rotate(-3deg)', textAlign: 'right', fontSize: 19 }}>so I built the fix,<br />for me first →</p>
+        <p className="hw margin-note" style={{ right: 40, bottom: 40, transform: 'rotate(-3deg)', textAlign: 'right', fontSize: 19 }}>so I built the fix,<br />for me first. it won →</p>
       </>
     ),
   },

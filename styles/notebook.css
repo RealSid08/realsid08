@@ -194,9 +194,12 @@ html[data-theme='dark'] .nb-desk .canvas { filter: brightness(0.9) saturate(0.95
 .infra b.hub { background: color-mix(in srgb, var(--c) 14%, var(--paper)); padding: 10px 11px; }
 
 /* The way into the Stretch story, from the opening page. */
-.about .why { display: inline-flex; align-items: baseline; gap: 8px; margin: 0 0 14px; font-size: 13px; font-weight: 500; text-decoration: none; color: var(--ink); border-bottom: 1.5px solid #e8361d; padding-bottom: 1px; cursor: pointer; }
+.about .why-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 12px; margin: 0 0 14px; }
+.about .why { display: inline-flex; align-items: baseline; gap: 8px; margin: 0; font-size: 13px; font-weight: 500; text-decoration: none; color: var(--ink); border-bottom: 1.5px solid #e8361d; padding-bottom: 1px; cursor: pointer; }
 .about .why span { font: 600 22px/1 var(--hand); color: #e8361d; transform: rotate(-3deg); }
 .about .why:hover, .about .why:focus-visible { color: #e8361d; }
+.stamp { display: inline-block; padding: 5px 9px 4px; border: 2px solid #e8361d; border-radius: 4px; box-shadow: inset 0 0 0 1.5px var(--paper), inset 0 0 0 3px #e8361d; color: #e8361d; font: 700 11px/1.1 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; text-align: center; transform: rotate(-5deg); opacity: 0.9; white-space: nowrap; }
+.stamp small { display: block; margin-top: 2px; font-size: 8.5px; font-weight: 500; letter-spacing: 0.06em; }
 
 /* Stretch ---------------------------------------------------------------- */
 .stL .pitch { max-width: 13em; }

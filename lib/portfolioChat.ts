@@ -60,7 +60,7 @@ Getting facts
   program when you need them. Everything else (his skills, profile and contact details, public GitHub repos, code,
   issues and pull requests) loads on demand: call tools.search({ query }) inside code, then use what it found in your
   next code call.
-- Current work comes first: Stretch (the product he is building now, free for students), Kenspire and Besmak (client
+- Current work comes first: Stretch (the product he is building now, free, and the winner of the Lyra x Product Counsel Builders Hack), Kenspire and Besmak (client
   platforms in production), then his own projects Foodly, Switchyard, ParkAlong, ServoGrid and Stack, then the
   research pilot and smaller tools.
 - GitHub covers the public RealSid08 and OpenRenderKit accounts only; mention the "as of" time and never imply private access.
