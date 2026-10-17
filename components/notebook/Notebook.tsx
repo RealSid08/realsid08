@@ -70,6 +70,24 @@ const readBookmark = (): Bookmark | null => {
   }
 };
 
+/**
+ * The assistant's composer loads after the book. Reserve its room before the first render (the same rule
+ * AgentBar uses), so the book is laid out once, at its final size, instead of shrinking while it rests.
+ */
+if (typeof document !== 'undefined') {
+  const root = document.documentElement.style;
+  if (!root.getPropertyValue('--agent-bottom')) {
+    let closed = false;
+    try { closed = localStorage.getItem('agent-closed') === 'true'; } catch { /* storage off */ }
+    root.setProperty('--agent-bottom', !closed && window.innerWidth >= 640 ? '64px' : '0px');
+  }
+}
+
+/** The arrival: the closed book is set down, rests, its cover lifts, then it opens. */
+const SET_DOWN_MS = 900;
+const REST_MS = 1000;
+const LIFT_MS = 450;
+
 const LampIcon: React.FC<{ on: boolean }> = ({ on }) => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <path d="M8 3h8l3 7H5z" fill={on ? 'currentColor' : 'none'} fillOpacity={on ? 0.25 : 0} />
@@ -93,6 +111,7 @@ export const Notebook: React.FC = () => {
   const engine = useRef<NotebookEngine | null>(null);
   const [state, setState] = useState<NotebookState | null>(null);
   const [bookmark, setBookmark] = useState<Bookmark | null>(null);
+  const [arrived, setArrived] = useState(false);
   const [theme, setTheme] = useTheme();
   const lightbox = useLightbox(refs.book);
 
@@ -112,17 +131,22 @@ export const Notebook: React.FC = () => {
     });
     // A #p<number> link opens the notebook at that page; otherwise it falls open at the first page.
     const match = /^#p(\d+)$/.exec(window.location.hash);
-    let opener = 0;
+    const timers: number[] = [];
+    const after = (ms: number, run: () => void) => timers.push(window.setTimeout(run, ms));
+    // Show the book only once the engine has laid it out, so nothing flashes before it is set down.
+    requestAnimationFrame(() => setArrived(true));
     if (match) {
       const page = Number(match[1]);
-      void instance.go(page % 2 ? (page + 1) / 2 : page / 2, page);
+      after(SET_DOWN_MS * 0.6, () => void instance.go(page % 2 ? (page + 1) / 2 : page / 2, page));
     } else {
-      opener = window.setTimeout(() => {
-        void instance.go(1, 1).then(() => setBookmark(saved));
-      }, 450);
+      after(SET_DOWN_MS + REST_MS, () => refs.book.current?.classList.add('lift'));
+      after(SET_DOWN_MS + REST_MS + LIFT_MS, () => {
+        refs.book.current?.classList.remove('lift');
+        void instance.openCover().then(() => setBookmark(saved));
+      });
     }
     return () => {
-      window.clearTimeout(opener);
+      timers.forEach((timer) => window.clearTimeout(timer));
       unsave();
       unsubscribe();
       setNotebook(null);
@@ -150,7 +174,7 @@ export const Notebook: React.FC = () => {
         <LampIcon on={lampOn} />
       </button>
       <main className="nb-stage" ref={refs.stage} aria-label="Sidhaarth Krishnan’s portfolio notebook">
-        <div className="fit" ref={refs.fit}>
+        <div className={`fit${arrived ? ' arrived' : ''}`} ref={refs.fit}>
           <div className="canvas" ref={refs.canvas}>
             <div className="pencil" aria-hidden="true" />
             <div className="shift" ref={refs.shift}>

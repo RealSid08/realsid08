@@ -295,6 +295,15 @@ export class NotebookEngine {
     return this.go(1, 2);
   }
 
+  /** The first time the book opens: one slow turn of the cover, with the slide across the desk matched to it. */
+  async openCover(ms = 1500) {
+    if (this.s !== 0 || this.riffling) return this.go(1, 1);
+    this.el.shift.style.transitionDuration = `${ms - 150}ms`;
+    this.step(1, ms);
+    await this.settled();
+    this.el.shift.style.transitionDuration = '';
+  }
+
   /* ---------- marks the assistant leaves on the page ---------- */
 
   /** The part of a target worth circling: its title if it marks one. */
