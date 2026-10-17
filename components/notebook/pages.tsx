@@ -112,7 +112,7 @@ export const PAGES: Page[] = [
         </p>
         <div data-target="education">
           <p className="lab">Studying</p>
-          <p className="body" style={{ margin: 0 }} data-mark>Bachelor of Engineering (Honours), Software<br />Swinburne University of Technology<br />Graduating December 2026</p>
+          <p className="body" style={{ margin: 0 }} data-mark>Bachelor of Engineering (Honours), Majoring in Software<br />Swinburne University of Technology<br />Graduating December 2026</p>
         </div>
       </>
     ),
