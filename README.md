@@ -47,6 +47,6 @@ Cloudflare Workers serves the Vite build and the `/api/transcribe` and `/api/git
 
 Other branches automatically get Workers Builds preview uploads with preview URLs (`npm run build`, then `npx wrangler preview`).
 
-The chat assistant runs on Vercel instead (project `realsid08`, `https://realsid08.vercel.app`), because code mode needs Node worker threads, which Workers do not have. The Worker forwards `/api/chat` to `AGENT_ORIGIN` in `wrangler.jsonc`. Deploy the assistant with `vercel deploy --prod`; its `OPENAI_API_KEY` is set on the Vercel project.
+The chat assistant runs on Vercel instead (project `realsid08`, `https://realsid08.vercel.app`), because code mode needs Node worker threads, which Workers do not have. The Worker forwards `/api/chat` to `AGENT_ORIGIN` in `wrangler.jsonc`. Deploy the assistant with `vercel deploy --prod`; its `OPENAI_API_KEY` is set on the Vercel project. Branch previews use the next assistant instead: deploy it with `vercel deploy --prod --skip-domain`, then `vercel alias set <deployment-url> realsid08-next.vercel.app`. Previews reach it through Vercel's protection bypass, stored as the `AGENT_BYPASS` secret on the Worker's Preview base config.
 
 Set `OPENAI_API_KEY` (for dictation) and `GITHUB_TOKEN` as Worker secrets with `npx wrangler secret put <NAME>`. Use a classic GitHub token with no scopes, which only raises the public rate limit.

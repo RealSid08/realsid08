@@ -5,7 +5,9 @@
   "main": "./worker.ts",
   "compatibility_date": "2026-09-27",
   "compatibility_flags": ["nodejs_compat"],
-  "previews": {},
+  // Branch previews talk to the next assistant (deployed with `vercel deploy --prod --skip-domain`, aliased to
+  // realsid08-next.vercel.app). AGENT_BYPASS is a Preview base-config secret: Vercel's automation bypass.
+  "previews": { "vars": { "AGENT_ORIGIN": "https://realsid08-next.vercel.app" } },
   // The chat assistant runs on Vercel's Node runtime (AI SDK code mode needs Node); /api/chat is forwarded there.
   "vars": { "AGENT_ORIGIN": "https://realsid08.vercel.app" },
   "assets": {
