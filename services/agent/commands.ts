@@ -51,7 +51,7 @@ export const SLASH_COMMANDS: SlashCommand[] = [
   { id: 'github', group: 'Ask', hint: 'What he has shipped publicly, with links', prompt: () => 'What has Sidhaarth shipped on GitHub recently? Link the repos.' },
   { id: 'compare', group: 'Ask', hint: 'ParkAlong vs ServoGrid, side by side', prompt: () => 'Compare ParkAlong and ServoGrid: what problem each solves, what was hard, and what each shows about him as an engineer.' },
   { id: 'hire', group: 'Ask', hint: 'The honest case for and against', prompt: () => 'Give me the honest case for and against hiring Sidhaarth.' },
-  { id: 'used', group: 'Ask', arg: 'technology', hint: 'Where he has used it, e.g. /used convex', prompt: (arg) => `Where has Sidhaarth used ${arg} in real work? Show me in the notebook.` },
+  { id: 'tech-stack', group: 'Ask', arg: 'technology', hint: 'Where he has used it, e.g. /tech-stack convex', prompt: (arg) => `Where has Sidhaarth used ${arg} in real work? Show me in the notebook.` },
 ];
 
 /** Splits `/filter convex` into the command text and its argument. */
