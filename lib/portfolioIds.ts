@@ -19,6 +19,8 @@ export const SECTION_TARGETS = {
 export const ROLE_TARGETS = ['kenspire', 'besmak', 'complete-leader', 'mindtek', 'hida'] as const;
 
 export const PROJECT_TARGETS = [
+  'stretch',
+  'pdfstack',
   'foodly',
   'switchyard',
   'parkalong',
@@ -40,7 +42,7 @@ export const CARD_IDS = [
 export const TARGET_IDS = [...CARD_IDS, ...SECTION_IDS] as [string, ...string[]];
 
 /** The order a tour turns through. */
-export const TOUR = ['exp-kenspire', 'exp-besmak', 'project-foodly', 'project-switchyard', 'project-parkalong', 'project-servogrid', 'project-llm-cooperation', 'also', 'experience', 'contact'];
+export const TOUR = ['project-stretch', 'exp-kenspire', 'exp-besmak', 'project-foodly', 'project-switchyard', 'project-parkalong', 'project-servogrid', 'project-pdfstack', 'project-llm-cooperation', 'also', 'experience', 'contact'];
 
 export const isTargetId = (value: string) => (TARGET_IDS as readonly string[]).includes(value.replace(/^#/, ''));
 

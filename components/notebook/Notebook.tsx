@@ -23,6 +23,11 @@ const PageFace: React.FC<{ page: Page; index: number; side: 'front' | 'back' }> 
 );
 
 /** The leaves never re-render: the engine owns every class and style that moves. */
+const TAB_COUNT = PAGES.filter((page) => page.tab).length;
+/** Tabs share the page edge: 75px apart, closer when there are more of them. */
+const TAB_STEP = Math.min(75, Math.floor(620 / TAB_COUNT));
+const TAB_TOP = TAB_STEP < 75 ? 12 : 22;
+
 const Book = React.memo(function Book() {
   let tabs = 0;
   const leaves = [];
@@ -40,7 +45,7 @@ const Book = React.memo(function Book() {
             href={`#p${2 * i}`}
             data-go={i}
             aria-label={`Turn to ${front.tab}`}
-            style={{ top: 22 + tabIndex * 75, '--c': front.color } as React.CSSProperties}
+            style={{ top: TAB_TOP + tabIndex * TAB_STEP, height: TAB_STEP - 5, '--c': front.color } as React.CSSProperties}
           >
             <span>{front.tab}</span>
             <span className="b" aria-hidden="true">{front.tab}</span>
@@ -51,6 +56,37 @@ const Book = React.memo(function Book() {
   }
   return <>{leaves}</>;
 });
+
+/** Where a visitor left off, kept in their browser so a return visit can offer it back. */
+const BOOKMARK_KEY = 'realsid08:notebook:last-page';
+type Bookmark = { page: number; name: string };
+
+const readBookmark = (): Bookmark | null => {
+  try {
+    const saved = JSON.parse(localStorage.getItem(BOOKMARK_KEY) ?? 'null') as Bookmark | null;
+    return saved && Number.isInteger(saved.page) && saved.page > 2 && saved.page < PAGES.length - 1 ? saved : null;
+  } catch {
+    return null;
+  }
+};
+
+/**
+ * The assistant's composer loads after the book. Reserve its room before the first render (the same rule
+ * AgentBar uses), so the book is laid out once, at its final size, instead of shrinking while it rests.
+ */
+if (typeof document !== 'undefined') {
+  const root = document.documentElement.style;
+  if (!root.getPropertyValue('--agent-bottom')) {
+    let closed = false;
+    try { closed = localStorage.getItem('agent-closed') === 'true'; } catch { /* storage off */ }
+    root.setProperty('--agent-bottom', !closed && window.innerWidth >= 640 ? '64px' : '0px');
+  }
+}
+
+/** The arrival: the closed book is set down, rests, its cover lifts, then it opens. */
+const SET_DOWN_MS = 600;
+const REST_MS = 450;
+const LIFT_MS = 300;
 
 const LampIcon: React.FC<{ on: boolean }> = ({ on }) => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -74,6 +110,8 @@ export const Notebook: React.FC = () => {
   };
   const engine = useRef<NotebookEngine | null>(null);
   const [state, setState] = useState<NotebookState | null>(null);
+  const [bookmark, setBookmark] = useState<Bookmark | null>(null);
+  const [arrived, setArrived] = useState(false);
   const [theme, setTheme] = useTheme();
   const lightbox = useLightbox(refs.book);
 
@@ -83,19 +121,44 @@ export const Notebook: React.FC = () => {
     engine.current = instance;
     setNotebook(instance);
     const unsubscribe = instance.subscribe(setState);
-    // A #p<number> link opens the notebook at that page.
+    const saved = readBookmark();
+    // Remember the page in view, past the opening spread, for the next visit.
+    const unsave = instance.subscribe((next) => {
+      const page = next.solo ? next.page : 2 * next.spread - 1;
+      if (page > 2 && page < PAGES.length - 1) {
+        try { localStorage.setItem(BOOKMARK_KEY, JSON.stringify({ page, name: PAGES[page].name })); } catch { /* storage off */ }
+      }
+    });
+    // A #p<number> link opens the notebook at that page; otherwise it falls open at the first page.
     const match = /^#p(\d+)$/.exec(window.location.hash);
+    const timers: number[] = [];
+    const after = (ms: number, run: () => void) => timers.push(window.setTimeout(run, ms));
+    // Show the book only once the engine has laid it out, so nothing flashes before it is set down.
+    requestAnimationFrame(() => setArrived(true));
     if (match) {
       const page = Number(match[1]);
-      void instance.go(page % 2 ? (page + 1) / 2 : page / 2, page);
+      after(SET_DOWN_MS * 0.6, () => void instance.go(page % 2 ? (page + 1) / 2 : page / 2, page));
+    } else {
+      after(SET_DOWN_MS + REST_MS, () => refs.book.current?.classList.add('lift'));
+      after(SET_DOWN_MS + REST_MS + LIFT_MS, () => {
+        refs.book.current?.classList.remove('lift');
+        void instance.openCover(1150).then(() => setBookmark(saved));
+      });
     }
     return () => {
+      timers.forEach((timer) => window.clearTimeout(timer));
+      unsave();
       unsubscribe();
       setNotebook(null);
       instance.destroy();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Once the visitor reaches the bookmarked page by any route, the bookmark has done its job.
+  useEffect(() => {
+    if (bookmark && state && (state.solo ? state.page === bookmark.page : 2 * state.spread - 1 === bookmark.page || 2 * state.spread === bookmark.page)) setBookmark(null);
+  }, [bookmark, state]);
 
   const lampOn = theme === 'light';
 
@@ -111,7 +174,7 @@ export const Notebook: React.FC = () => {
         <LampIcon on={lampOn} />
       </button>
       <main className="nb-stage" ref={refs.stage} aria-label="Sidhaarth Krishnan’s portfolio notebook">
-        <div className="fit" ref={refs.fit}>
+        <div className={`fit${arrived ? ' arrived' : ''}`} ref={refs.fit}>
           <div className="canvas" ref={refs.canvas}>
             <div className="pencil" aria-hidden="true" />
             <div className="shift" ref={refs.shift}>
@@ -123,6 +186,24 @@ export const Notebook: React.FC = () => {
             </div>
           </div>
         </div>
+        {bookmark && (
+          <div className="bookmark" role="status">
+            <button
+              type="button"
+              className="bookmark-go"
+              onClick={() => {
+                const { page } = bookmark;
+                setBookmark(null);
+                void engine.current?.go(page % 2 ? (page + 1) / 2 : page / 2, page);
+              }}
+            >
+              <span className="hw">you left off at</span>
+              <b>{bookmark.name}</b>
+              <small>p. {bookmark.page} →</small>
+            </button>
+            <button type="button" className="bookmark-x" onClick={() => setBookmark(null)} aria-label="Dismiss bookmark">×</button>
+          </div>
+        )}
         <nav className="ctrl" aria-label="Turn pages">
           <button type="button" onClick={() => engine.current?.next(-1)} disabled={!state?.canGoBack} aria-label="Previous page">←</button>
           <span className="where" aria-live="polite">{state?.label ?? 'Cover'}</span>

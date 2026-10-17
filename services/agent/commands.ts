@@ -27,11 +27,13 @@ const goTo = (id: string, target: string, hint: string): SlashCommand => ({ id, 
  * external agents call, so they show up in the activity log and can be undone.
  */
 export const SLASH_COMMANDS: SlashCommand[] = [
+  goTo('stretch', 'project-stretch', 'Won the Builders Hack. Eat well, spend less'),
   goTo('work', 'work', 'Kenspire and Besmak, in production'),
   goTo('foodly', 'project-foodly', 'Every food reel you saved, on one map'),
   goTo('switchyard', 'project-switchyard', 'One gateway for every coding agent'),
   goTo('parkalong', 'project-parkalong', 'Parking, time limits and prices on one map'),
   goTo('servogrid', 'project-servogrid', 'Fuel prices that admit when they are stale'),
+  goTo('stack', 'project-pdfstack', 'Any files in, one PDF out'),
   goTo('research', 'project-llm-cooperation', 'Do coding agents cooperate?'),
   goTo('also', 'also', 'Tools and experiments'),
   goTo('contact', 'contact', 'Email, GitHub, LinkedIn, résumé'),
@@ -44,10 +46,12 @@ export const SLASH_COMMANDS: SlashCommand[] = [
   { id: 'clear', group: 'Page', hint: 'Start a new conversation', local: 'clear' },
 
   { id: 'now', group: 'Ask', hint: 'What he is working on right now', prompt: () => 'What is Sidhaarth working on right now, and what does he own in each?' },
+  { id: 'why', group: 'Ask', hint: 'Why he built Stretch, and why it is free', prompt: () => 'Why did Sidhaarth build Stretch, and why is it free?' },
+  { id: 'hackathon', group: 'Ask', hint: 'How Stretch won the Builders Hack', prompt: () => 'Tell me about the hackathon Stretch won: the brief, what he built and how it placed.' },
   { id: 'github', group: 'Ask', hint: 'What he has shipped publicly, with links', prompt: () => 'What has Sidhaarth shipped on GitHub recently? Link the repos.' },
   { id: 'compare', group: 'Ask', hint: 'ParkAlong vs ServoGrid, side by side', prompt: () => 'Compare ParkAlong and ServoGrid: what problem each solves, what was hard, and what each shows about him as an engineer.' },
   { id: 'hire', group: 'Ask', hint: 'The honest case for and against', prompt: () => 'Give me the honest case for and against hiring Sidhaarth.' },
-  { id: 'stack', group: 'Ask', arg: 'technology', hint: 'Where he has used it, e.g. /stack convex', prompt: (arg) => `Where has Sidhaarth used ${arg} in real work? Show me in the notebook.` },
+  { id: 'used', group: 'Ask', arg: 'technology', hint: 'Where he has used it, e.g. /used convex', prompt: (arg) => `Where has Sidhaarth used ${arg} in real work? Show me in the notebook.` },
 ];
 
 /** Splits `/filter convex` into the command text and its argument. */

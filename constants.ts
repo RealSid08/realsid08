@@ -5,7 +5,7 @@ export const PROFILE: ProfileInfo = {
   familyName: 'KRISHNAN',
   title: 'Software Engineer',
   tagline:
-    'Software engineer in Melbourne. When I run into a real-world problem, or a company brings me one, I build the software that solves it.',
+    'Software engineer in Melbourne. Right now I’m building Stretch, a free meal planner that won the Lyra x Product Counsel Builders Hack, and I want it in the hands of as many people as possible. For clients, I design and build systems that scale.',
   location: 'Melbourne, VIC',
   availability: 'Available for full-time graduate employment from December 2026',
   manifesto:
@@ -21,7 +21,7 @@ export const PROFILE: ProfileInfo = {
 export const EDUCATION: EducationInfo = {
   school: 'Swinburne University of Technology',
   campus: 'Hawthorn, VIC',
-  degree: 'Bachelor of Engineering (Honours), majoring in Software',
+  degree: 'Bachelor of Engineering (Honours), Majoring in Software',
   graduating: 'Dec 2026',
   distinctions: [
     { unit: 'Concurrent Programming', mark: 98 },
@@ -163,7 +163,7 @@ export const EXPERIENCES: ExperienceItem[] = [
     id: 'hida',
     role: 'Founder',
     company: 'HiDa',
-    period: 'Aug 2020 – May 2021',
+    period: '2016 – 2021',
     lane: 'archive',
     description: [
       'Built a real-time video conferencing app on the Enablex and Quickblox APIs, with peer-to-peer streaming, dynamic room creation, screen sharing and synchronised chat.',
@@ -186,6 +186,25 @@ export const EXPERIENCES: ExperienceItem[] = [
 ];
 
 export const PROJECTS: ProjectItem[] = [
+  {
+    id: 'stretch',
+    title: 'Stretch',
+    subtitle: 'Free weekly meal planner, winner of the Lyra x Product Counsel Builders Hack',
+    period: 'Oct 2026 – Present',
+    description:
+      'Stretch your money further, and eat well every week. An iPhone, Android and web app that plans a whole week of meals around your budget, your tastes and the best grocery deals near you. It is free, because Sidhaarth wants it in the hands of as many people as possible.',
+    bullets: [
+      'Started from his own life: he has a habit of skipping meals. Between uni, freelance work and side projects, three meals a day became one meal and a coffee, and by the afternoon he could not focus. Cooking takes planning, and eating well felt like spending money he did not have. In his average week he ate 10 of 21 meals, and three of those were just a coffee.',
+      'It is not just him: 53% of uni students surveyed were food insecure in 2024, up from 42% in 2022, and 27% often skip meals (University of Tasmania surveys).',
+      'Onboarding asks for a home location, a weekly budget, diet, cooking skills and kitchen gear, cuisines, pantry and how often you eat out. Tile, an AI agent and the app’s mascot, deals a deck of meals to swipe, then checks live prices at Coles, Woolies and Aldi and eat-out deals such as EatClub near you, and builds a week: three meals a day with recipes, what to buy and where, inside the budget. Prices come from fetched sources and the arithmetic is done in code, not by the model.',
+      'Free, because the people who need it most have the least to spend: the meal plan is free, right now. A student usability test led to a shorter onboarding, a redesigned “don’t want” screen, diets that filter every meal, and quicker week rebuilds.',
+      'Won the Lyra x Product Counsel Builders Hack (Oct 2026): built in a weekend against the brief “give someone a new ability”, it was one of the top ten teams out of 90+ sign-ups who presented at Lyra in Sydney on 16 October, and took first place, $1,000 and two mentoring sessions with Rampersand’s Product Counsel. On iPhone (beta), Android and web at stretch.realsid08.me.',
+    ],
+    tech: ['Expo', 'React Native', 'React', 'Vite', 'Convex', 'AI SDK', 'Claude'],
+    type: 'live-demo',
+    featured: true,
+    link: 'https://stretch.realsid08.me',
+  },
   {
     id: 'foodly',
     title: 'Foodly',
@@ -253,6 +272,24 @@ export const PROJECTS: ProjectItem[] = [
     tech: ['Swift', 'SwiftUI', 'MapKit', 'Keychain', 'VoiceOver', 'XCTest'],
     type: 'open-source',
     githubUrl: 'https://github.com/RealSid08/ServoGrid',
+  },
+  {
+    id: 'pdfstack',
+    title: 'Stack',
+    subtitle: 'Open-source any-file-to-PDF converter (pdfstack)',
+    period: 'Oct 2026',
+    description:
+      'A mobile and desktop web app that turns any mix of files into one PDF, with no account and nothing stored.',
+    bullets: [
+      'A friend texted Sidhaarth asking for a PDF converter that did not want money or a sign-up and was not full of ads. Rather than find a half-decent one, Sidhaarth built one and sent him the link: no sign-up, no ads, free.',
+      'Images and PDFs are prepared in the browser (HEIC and TIFF decoded on demand). Documents go to a stateless Cloudflare Worker that converts them with Browser Rendering and keeps nothing; the final PDF is merged on the device. Drag or keyboard reordering, rotation, A4, Letter or fit-to-image sizing.',
+      'Converts 56 file types including Word, Excel, PowerPoint, Keynote, Pages, Numbers, EPUB, email and code. Every advertised extension has a fixture test, and a live production run passed 27 of 27 checks including corrupt, oversized and hostile inputs.',
+      'Built and deployed in a day. MIT licensed.',
+    ],
+    tech: ['TypeScript', 'React', 'Vite', 'Cloudflare Workers', 'Browser Rendering', 'pdf-lib'],
+    type: 'open-source',
+    githubUrl: 'https://github.com/RealSid08/pdfstack',
+    link: 'https://stack.realsid08.me',
   },
   {
     id: 'llm-cooperation',

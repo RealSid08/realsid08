@@ -8,6 +8,7 @@ import {
   OUTCOMES,
   REPLAY,
   SERVOGRID_BOARD,
+  STRETCH_WEEK_WAVES,
   SWITCHYARD_LOG,
 } from './data';
 
@@ -231,4 +232,41 @@ export const FreshnessTrack: React.FC = () => (
       <div className="ev net" style={{ left: '90%' }}><i /><b>Last checked</b><span>just now</span></div>
     </div>
   </div>
+);
+
+/** Tile, Stretch's mascot: a price tag with a smile, as on the app icon. */
+export const Tile: React.FC = () => (
+  <svg className="tile" viewBox="0 0 100 100" aria-label="Tile, Stretch’s mascot" role="img">
+    <rect x="13" y="13" width="78" height="80" rx="18" fill="#141310" />
+    <rect x="8" y="8" width="78" height="80" rx="18" fill="#F2361D" stroke="#141310" strokeWidth="3.2" />
+    <circle cx="47" cy="20" r="5.2" fill="#FFE135" stroke="#141310" strokeWidth="2.6" />
+    <ellipse cx="36" cy="44" rx="5.6" ry="5.6" fill="#FFFDF7" />
+    <ellipse cx="58" cy="44" rx="5.6" ry="5.6" fill="#FFFDF7" />
+    <path d="M31 59 Q47 74 63 59" stroke="#FFFDF7" strokeWidth="6" strokeLinecap="round" fill="none" />
+  </svg>
+);
+
+const DAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+const MEALS = ['breakfast', 'lunch', 'dinner'];
+const WEEK_CHANGES = new Map(STRETCH_WEEK_WAVES.flatMap((wave, w) => wave.map(([cell, becomes], k) => [cell, { becomes, delay: 0.5 + w * 0.7 + k * 0.1 }] as const)));
+
+/** Twenty-one meals, then a semester: skipped meals empty out, a few become just a coffee. */
+export const StretchWeek: React.FC = () => (
+  <figure className="sw" data-reveal role="img" aria-label="A week of 21 meals falls to 10: eight skipped, three replaced by just a coffee">
+    <div className="sw-head"><span>My average week</span><b><i>21</i><i>10</i> / 21</b></div>
+    <div className="sw-grid">
+      <span />
+      {DAYS.map((day, i) => <span key={i} className="sw-day">{day}</span>)}
+      {MEALS.map((meal, row) => (
+        <React.Fragment key={meal}>
+          <span className="sw-meal">{meal}</span>
+          {DAYS.map((_, day) => {
+            const change = WEEK_CHANGES.get(row * 7 + day);
+            return <i key={day} className={`sw-dot${change ? ` sw-${change.becomes}` : ''}`} style={change ? ({ '--d': `${change.delay}s` } as React.CSSProperties) : undefined} />;
+          })}
+        </React.Fragment>
+      ))}
+    </div>
+    <p className="sw-key"><i className="sw-dot" /> ate <i className="sw-dot sw-coffee" /> just a coffee <i className="sw-dot sw-skip" /> skipped</p>
+  </figure>
 );

@@ -4,7 +4,8 @@ import { cardIdFor } from '../lib/portfolioIds.js';
 const pageRef = (id: string | null) => (id ? ` · page id ${id}` : ' · not in the notebook');
 
 export function formatRole(id: string): string | null {
-  const role = EXPERIENCES.find((exp) => exp.id === id);
+  const key = id.trim().toLowerCase();
+  const role = EXPERIENCES.find((exp) => exp.id === key) ?? EXPERIENCES.find((exp) => exp.company.toLowerCase() === key);
   if (!role) return null;
   const meta = [role.period, role.location, role.employmentType].filter(Boolean).join(', ');
   return [
@@ -15,7 +16,9 @@ export function formatRole(id: string): string | null {
 }
 
 export function formatProject(id: string): string | null {
-  const project = PROJECTS.find((item) => item.id === id);
+  const key = id.trim().toLowerCase();
+  // Ids first, then titles, so "Stack" finds pdfstack.
+  const project = PROJECTS.find((item) => item.id === key) ?? PROJECTS.find((item) => item.title.toLowerCase() === key);
   if (!project) return null;
   return [
     `**${project.title}**${project.subtitle ? `: ${project.subtitle}` : ''}${project.period ? ` (${project.period})` : ''}${pageRef(cardIdFor('project', project.id))}.`,

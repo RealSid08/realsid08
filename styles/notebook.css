@@ -53,7 +53,18 @@ html[data-theme='dark'] .nb-desk .canvas { filter: brightness(0.9) saturate(0.95
   justify-content: center;
   transition: right 420ms cubic-bezier(0.6, 0.05, 0.3, 1), bottom 300ms ease;
 }
-.fit { position: relative; flex: none; }
+.fit { position: relative; flex: none; opacity: 0; }
+/* Arrival: the closed book is set down on the desk, then rests before it opens. */
+/* The engine's first layout lands instantly; nothing slides into place under the fade. */
+.fit:not(.arrived) .shift, .fit:not(.arrived) .shadow, .fit:not(.arrived) .edge, .fit:not(.arrived) .leaf, .fit:not(.arrived) .ribbon { transition: none !important; }
+.fit.arrived { animation: nb-set-down 600ms cubic-bezier(0.16, 0.84, 0.3, 1) both; }
+@keyframes nb-set-down {
+  from { opacity: 0; transform: translateY(22px) scale(0.975); }
+  55% { opacity: 1; }
+  to { opacity: 1; transform: none; }
+}
+/* Just before it opens, the cover lifts off the pages. */
+.book.lift .leaf:first-child { transform: rotateY(-11deg); --t: 0.05; transition-duration: 300ms; transition-timing-function: cubic-bezier(0.3, 0, 0.2, 1); }
 .canvas { position: absolute; left: 0; top: 0; width: 1100px; height: 730px; transform-origin: 0 0; }
 
 .lamp {
@@ -97,7 +108,7 @@ html[data-theme='dark'] .nb-desk .canvas { filter: brightness(0.9) saturate(0.95
 
 /* Tabs ride on their leaf, so they flip to the left with it. */
 .tab { position: absolute; left: 100%; width: 30px; height: 68px; transform-style: preserve-3d; cursor: pointer; text-decoration: none; }
-.tab span { position: absolute; inset: 0; display: grid; place-items: center; background: var(--c); color: #fff; border-radius: 0 7px 7px 0; font: 600 11px/1 Inter, sans-serif; letter-spacing: 0.04em; writing-mode: vertical-rl; backface-visibility: hidden; -webkit-backface-visibility: hidden; box-shadow: inset 6px 0 6px -4px rgba(0, 0, 0, 0.25); }
+.tab span { position: absolute; inset: 0; display: grid; place-items: center; background: var(--c); color: #fff; border-radius: 0 7px 7px 0; font: 600 10px/1 Inter, sans-serif; letter-spacing: 0.01em; writing-mode: vertical-rl; backface-visibility: hidden; -webkit-backface-visibility: hidden; box-shadow: inset 6px 0 6px -4px rgba(0, 0, 0, 0.25); }
 .tab span.b { transform: rotateY(180deg); }
 .tab:hover span { filter: brightness(1.1); }
 .tab:focus-visible span { outline: 2px solid #ffd27a; }
@@ -160,13 +171,13 @@ html[data-theme='dark'] .nb-desk .canvas { filter: brightness(0.9) saturate(0.95
 .about h1 { font: 400 38px/1 var(--serif); margin: 16px 0 12px; letter-spacing: -0.01em; }
 .about h1 em { color: var(--nb-accent); }
 .about .lede { font-size: 13px; line-height: 1.52; margin: 0 0 14px; color: #3a352e; }
-.toc h2 { font: 400 46px/1 var(--serif); margin: 20px 0 10px; }
-.toc nav a { position: relative; display: grid; grid-template-columns: 26px auto 1fr 22px; align-items: baseline; gap: 0 8px; padding: 7px 0 8px; text-decoration: none; border-bottom: 1px solid var(--line); cursor: pointer; transition: opacity 300ms ease; }
+.toc h2 { font: 400 46px/1 var(--serif); margin: 14px 0 4px; }
+.toc nav a { position: relative; display: grid; grid-template-columns: 26px auto 1fr 22px; align-items: baseline; gap: 0 8px; padding: 3px 0 3px; text-decoration: none; border-bottom: 1px solid var(--line); cursor: pointer; transition: opacity 300ms ease; }
 .toc a .n { font: 11px var(--mono); color: var(--muted); }
 .toc a b { font: 400 22px/1.1 var(--serif); }
 .toc a .dots { border-bottom: 1.5px dotted rgba(28, 25, 21, 0.3); transform: translateY(-5px); }
 .toc a .p { font: 12px var(--mono); text-align: right; }
-.toc a small { grid-column: 2 / -1; font-size: 12px; color: var(--muted); }
+.toc a small { grid-column: 2 / -1; font-size: 11.5px; line-height: 1.35; color: var(--muted); }
 .toc a:hover b, .toc a:focus-visible b { color: var(--c); }
 
 /* A photo taped beside the opening line; the text wraps around it. */
@@ -192,6 +203,46 @@ html[data-theme='dark'] .nb-desk .canvas { filter: brightness(0.9) saturate(0.95
 .infra b { display: block; font: 500 11.5px Inter, sans-serif; padding: 6px 9px; border: 1.5px solid var(--ink); border-radius: 4px; background: var(--paper); }
 .infra b small { display: block; font: 9.5px var(--mono); color: var(--muted); font-weight: 400; }
 .infra b.hub { background: color-mix(in srgb, var(--c) 14%, var(--paper)); padding: 10px 11px; }
+
+/* The way into the Stretch story, from the opening page. */
+.about .why-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 12px; margin: 0 0 14px; }
+.about .why { display: inline-flex; align-items: baseline; gap: 8px; margin: 0; font-size: 13px; font-weight: 500; text-decoration: none; color: var(--ink); border-bottom: 1.5px solid #e8361d; padding-bottom: 1px; cursor: pointer; }
+.about .why span { font: 600 22px/1 var(--hand); color: #e8361d; transform: rotate(-3deg); }
+.about .why:hover, .about .why:focus-visible { color: #e8361d; }
+.stamp { display: inline-block; padding: 5px 9px 4px; border: 2px solid #e8361d; border-radius: 4px; box-shadow: inset 0 0 0 1.5px var(--paper), inset 0 0 0 3px #e8361d; color: #e8361d; font: 700 11px/1.1 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; text-align: center; transform: rotate(-5deg); opacity: 0.9; white-space: nowrap; }
+.stamp small { display: block; margin-top: 2px; font-size: 8.5px; font-weight: 500; letter-spacing: 0.06em; }
+
+/* Stretch ---------------------------------------------------------------- */
+.st-title { display: flex; align-items: center; gap: 14px; }
+.st-title .tile { width: 54px; height: 54px; transform: rotate(-12deg) translateY(2px); flex: none; }
+.links { display: flex; align-items: center; gap: 22px; margin-top: 12px; }
+.links .go { margin-top: 0; }
+.sw { margin: 4px 0 18px; width: 232px; }
+.sw-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; font: 500 10px var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.sw-head b { font-weight: 600; color: var(--ink); }
+.sw-head b i { font-style: normal; transition: opacity 0.4s ease; }
+.sw-head b i + i { display: none; color: var(--c); }
+.sw.is-in .sw-head b i:first-child { display: none; }
+.sw.is-in .sw-head b i + i { display: inline; }
+.sw-grid { display: grid; grid-template-columns: 58px repeat(7, 24px); gap: 7px 0; align-items: center; justify-items: center; }
+.sw-day { font: 9.5px var(--mono); color: var(--muted); }
+.sw-meal { justify-self: start; font: 9.5px var(--mono); color: var(--muted); }
+.sw-dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: var(--ink); transition: background-color 0.35s ease, box-shadow 0.35s ease; transition-delay: var(--d, 0s); }
+.sw.is-in .sw-skip, .sw-key .sw-skip { background: transparent; box-shadow: inset 0 0 0 1.5px rgba(28, 25, 21, 0.3); }
+.sw.is-in .sw-coffee, .sw-key .sw-coffee { background: var(--c); }
+.sw-key { display: flex; align-items: center; gap: 6px; margin-top: 10px; font: 9.5px var(--mono); color: var(--muted); }
+.sw-key .sw-dot { width: 9px; height: 9px; transition: none; }
+.sw-key .sw-dot + .sw-dot, .sw-key .sw-dot:not(:first-child) { margin-left: 8px; }
+.stR .pair figcaption { font-size: 18px; line-height: 1; }
+.why-free { position: absolute; left: 40px; right: 40px; bottom: 50px; display: grid; grid-template-columns: 112px 1fr; gap: 14px; align-items: start; }
+.why-free .hw { transform: rotate(-3deg); margin: 0; }
+.why-free .body { margin: 0; font-size: 12px; }
+.sk-desk { left: 40px; top: 58px; width: 292px; transform: rotate(-2deg); }
+.sk-phone { position: absolute; right: 38px; top: 214px; width: 128px; margin: 0; transform: rotate(3deg); z-index: 6; }
+.sk-note { position: absolute; left: 40px; top: 352px; width: 232px; }
+.sk-note .hw { transform: rotate(-2deg); margin: 0 0 10px; font-size: 20px; }
+.sk-note .body { margin: 0; font-size: 12px; }
+.sk-note .tags { margin-top: 12px; }
 
 /* Foodly ----------------------------------------------------------------- */
 .flow-wrap { margin-top: 34px; }
@@ -366,6 +417,22 @@ html[data-theme='dark'] .sheet { background: #f4eee0; }
 .ways .ic { width: 18px; height: 18px; }
 .ways li:first-child .ic { width: 22px; height: 22px; }
 
+/* Where you left off: a paper bookmark that slips out above the book ------- */
+.bookmark { position: absolute; top: 0; left: 50%; z-index: 45; display: flex; align-items: stretch; transform: translateX(-50%); animation: nb-bookmark 520ms cubic-bezier(0.2, 0.8, 0.2, 1) both; filter: drop-shadow(0 10px 14px rgba(0, 0, 0, 0.35)); }
+.bookmark-go { display: flex; align-items: baseline; gap: 8px; padding: 9px 14px 14px 16px; border: 0; cursor: pointer; color: var(--ink); background: var(--paper); border-radius: 0 0 0 6px; clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); font: 400 20px/1 var(--serif); }
+.bookmark-go .hw { font-size: 18px; }
+.bookmark-go small { font: 500 10.5px var(--mono); color: var(--muted); letter-spacing: 0.04em; }
+.bookmark-go:hover b, .bookmark-go:focus-visible b { color: var(--nb-accent); }
+.bookmark-x { width: 30px; border: 0; cursor: pointer; color: #fff; font: 16px/1 var(--mono); background: linear-gradient(90deg, #8f1d14, #c2321f 50%, #8f1d14); clip-path: polygon(0 0, 100% 0, 100% 100%, 50% calc(100% - 8px), 0 100%); }
+.bookmark-go:focus-visible, .bookmark-x:focus-visible { outline: 2px solid #ffd27a; outline-offset: 2px; }
+@keyframes nb-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes nb-bookmark { from { transform: translate(-50%, -100%); } }
+.solo .bookmark { top: 0; max-width: calc(100% - 16px); }
+.bookmark-go > * { white-space: nowrap; }
+.solo .bookmark-go { gap: 6px; font-size: 16px; padding: 8px 10px 11px 12px; }
+.solo .bookmark-go .hw { font-size: 15px; }
+.solo .bookmark-go small { font-size: 9.5px; }
+
 /* Controls --------------------------------------------------------------- */
 .ctrl { display: flex; align-items: center; justify-content: center; gap: 14px; padding: 8px 0 2px; color: rgba(255, 236, 205, 0.85); font: 500 12px var(--mono); flex: none; }
 .ctrl button { cursor: pointer; width: 32px; height: 32px; display: grid; place-items: center; border-radius: 50%; border: 1px solid rgba(255, 236, 205, 0.25); font-size: 14px; color: inherit; background: transparent; }
@@ -411,7 +478,12 @@ html[data-theme='dark'] .sheet { background: #f4eee0; }
 .solo .qa { grid-template-columns: 58px 1fr; }
 .solo .qa span { font-size: 18px; }
 .solo .qa p { font-size: 13.5px; }
-.solo .chain, .solo .infra { margin-left: 0; flex-wrap: wrap; }
+.solo .chain { margin-left: 0; flex-wrap: wrap; }
+.solo .infra { margin-left: 0; gap: 6px; }
+.solo .infra i { font-size: 18px; }
+.solo .infra b { padding: 5px 7px; font-size: 11px; }
+.solo .infra b small { white-space: nowrap; }
+.solo .infra b.hub { padding: 8px 9px; }
 .solo .chain { gap: 4px; }
 .solo .chain b { padding: 5px 7px; font-size: 11px; }
 .solo .facts { font-size: 13px; }
@@ -428,6 +500,14 @@ html[data-theme='dark'] .sheet { background: #f4eee0; }
 .solo .pin-a { width: 296px; }
 .solo .pin-b { top: 296px; right: 26px; }
 .solo .pin-note { top: 310px; left: 30px; width: 140px; }
+.solo .sk-desk { width: 300px; left: 24px; }
+.solo .sw { margin: 0 0 8px; }
+.solo .st-win { margin-top: 6px !important; }
+.solo .stL-go, .solo [data-page='3'] > .go { margin-top: 8px; }
+.solo .sw-grid { gap: 5px 0; }
+.solo .sw-key { margin-top: 8px; }
+.solo .sk-phone { top: 300px; right: 22px; width: 120px; }
+.solo .sk-note { top: 330px; left: 26px; width: 190px; }
 .solo .shelf p { font-size: 12px; }
 .solo .xp p { font-size: 13px; }
 .solo .cover .label { left: 44px; right: 70px; }
@@ -455,9 +535,12 @@ html[data-theme='dark'] .sheet { background: #f4eee0; }
 
 @media (prefers-reduced-motion: reduce) {
   .leaf, .shift, .nb-stage { transition-duration: 0.01s !important; }
-  .rp-t, .m1-bar, .pk-bar, .ff li, .hm-cell, .fresh { transition: none !important; }
+  .rp-t, .m1-bar, .pk-bar, .ff li, .hm-cell, .fresh, .sw-dot, .sw-head b i { transition: none !important; }
   .sy-packets { display: none; }
   .pen-mark path, .toc a[data-ticked]::after { animation-duration: 0.01s; }
+  .bookmark { animation: none; }
+  .fit.arrived { animation: nb-fade 200ms ease both; }
+  .book.lift .leaf:first-child { transform: none; }
 }
 
 /* Screenshots open in the viewer ------------------------------------------ */

@@ -6,6 +6,8 @@ type Env = {
   OPENAI_API_KEY?: string;
   /** Where the chat assistant runs. Code mode needs Node, so it lives on Vercel rather than in this Worker. */
   AGENT_ORIGIN?: string;
+  /** Previews only: Vercel's automation bypass, so a protected preview assistant answers this Worker. */
+  AGENT_BYPASS?: string;
 };
 
 const json = (body: unknown, status = 200, headers?: HeadersInit) =>
@@ -49,7 +51,10 @@ export default {
         // Stream the assistant's reply straight through.
         const upstream = await fetch(new URL('/api/chat', env.AGENT_ORIGIN), {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            ...(env.AGENT_BYPASS ? { 'x-vercel-protection-bypass': env.AGENT_BYPASS } : {}),
+          },
           body: request.body,
         });
         const headers = new Headers(upstream.headers);

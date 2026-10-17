@@ -76,3 +76,14 @@ export const SERVOGRID_BOARD: Array<[grade: string, price: string, state: string
   ['DSL', '191.8', 'cached', 'last seen 18:00'],
   ['LPG', '---.-', 'unavailable', 'no verified feed'],
 ];
+
+/**
+ * Stretch: the week that went wrong, from the pitch deck. Cell = row * 7 + day
+ * (rows: breakfast, lunch, dinner). Each wave takes more meals away: three days
+ * end with two meals, three with one meal and a coffee, one with a single meal.
+ */
+export const STRETCH_WEEK_WAVES: Array<Array<[cell: number, becomes: 'skip' | 'coffee']>> = [
+  [[0, 'skip'], [2, 'skip'], [4, 'skip'], [1, 'coffee'], [3, 'coffee']],
+  [[8, 'skip'], [10, 'skip'], [5, 'coffee'], [19, 'skip']],
+  [[6, 'skip'], [13, 'skip']],
+];

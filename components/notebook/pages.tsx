@@ -11,7 +11,9 @@ import {
   ParkSpeed,
   Replay,
   ServoBoard,
+  StretchWeek,
   SwitchyardDiagram,
+  Tile,
   SwitchyardTerminal,
 } from './figures';
 import { DocIcon, GitHubIcon, LinkedInIcon, MailIcon, RepoLink } from './icons';
@@ -82,7 +84,7 @@ export const PAGES: Page[] = [
     content: (
       <>
         <Run left="Sidhaarth Krishnan" right="Melbourne" />
-        <p className="hw" style={{ margin: '14px 0 0' }}>hi! this is what I’ve been building ↓</p>
+        <p className="hw" style={{ margin: '14px 0 0' }}>hi! this is what I’m building ↓</p>
         <figure className="me">
           <span className="tape" />
           <img
@@ -93,22 +95,24 @@ export const PAGES: Page[] = [
           />
           <figcaption>me, mid-build</figcaption>
         </figure>
-        <h1 data-mark>I build software people use every day, and the <em>tools</em> I build it with.</h1>
+        <h1 data-mark>Right now, I’m building <em>Stretch</em>, and it’s free.</h1>
         <p className="lede">
-          When I run into a real-world problem, or a company brings me one, I build the software that solves it. For
-          companies, that’s a task platform for about 600 staff at Besmak, and a platform at Kenspire that turns goals
-          and procedures into scheduled work. For me, it’s Foodly, ParkAlong and ServoGrid: food I meant to try, parking
-          in the city, fuel prices I couldn’t trust. I love this work, and I care most that what I build gets used.
+          Stretch plans a whole week of meals around your budget, your tastes and the best grocery deals near you. I
+          want it in the hands of as many people as possible, so it costs nothing to use.
         </p>
-        <p className="lab">How I work</p>
+        <div className="why-row">
+          <a className="why" href="#p3" data-go={2}><span>Why?</span> Read the story →</a>
+          <span className="stamp" title="Lyra × Product Counsel Builders Hack, Sydney, 16 Oct 2026">Won · Builders Hack<small>$1,000 · Sydney · Oct 2026</small></span>
+        </div>
+        <p className="lab">Client work</p>
         <p className="body" style={{ margin: '0 0 12px', fontSize: 12.5 }}>
-          I own the whole job: understanding the problem, designing the system, and shipping something people rely on.
-          Coding agents let me move faster, so I use them heavily, and I hold their work to the same standard as mine:
-          tested, run for real, and read line by line before it ships.
+          For clients, I design and build systems that scale: a task platform rolling out to about 600 staff at
+          Besmak, and a platform at Kenspire that turns goals and procedures into scheduled work for a planned 500
+          organisations. I own the whole job, from the problem to the system to something people rely on every day.
         </p>
         <div data-target="education">
           <p className="lab">Studying</p>
-          <p className="body" style={{ margin: 0 }} data-mark>Bachelor of Engineering (Honours), Software<br />Swinburne University of Technology</p>
+          <p className="body" style={{ margin: 0 }} data-mark>Bachelor of Engineering (Honours), Majoring in Software<br />Swinburne University of Technology<br />Graduating December 2026</p>
         </div>
       </>
     ),
@@ -125,7 +129,7 @@ export const PAGES: Page[] = [
         <nav aria-label="Contents">
           {CONTENTS.map((row, index) => (
             <a key={row.title} href={`#p${row.spread * 2 - 1}`} data-go={row.spread} data-row={row.targets.join(' ')}>
-              <span className="n">0{index + 1}</span>
+              <span className="n">{String(index + 1).padStart(2, '0')}</span>
               <b>{row.title}</b>
               <span className="dots" />
               <span className="p">{row.spread * 2 - 1}</span>
@@ -137,12 +141,59 @@ export const PAGES: Page[] = [
     ),
   },
   {
+    name: 'Stretch',
+    color: '#e8361d',
+    target: 'projects project-stretch',
+    content: (
+      <>
+        <Run left={<><b>01</b> · Stretch</>} right="iPhone · Android · web" />
+        <span className="chip">Won the Lyra × Product Counsel Builders Hack</span>
+        <h2 className="t st-title" data-mark>Stretch <Tile /></h2>
+        <p className="pitch" style={{ maxWidth: '15em' }}>Stretch your money further, and eat well every week.</p>
+        <StretchWeek />
+        <Notes rows={[
+          ['the problem', 'I have a habit of skipping meals. Between uni, freelance work and side projects, three meals a day became one meal and a coffee, and by the afternoon I couldn’t focus. Cooking takes planning, and eating well felt like spending money I didn’t have.'],
+          ['so', 'Tell Stretch your budget and what you like. Tile, its AI agent, checks Coles, Woolies, Aldi and eat-out deals near you, then plans the week: what to cook, what to buy, and where.'],
+        ]} />
+        <a className="go" href="https://stretch.realsid08.me" target="_blank" rel="noopener noreferrer">Start using it today ↗</a>
+        <Sticky wide className="st-win" style={{ right: 34, top: 222, width: 164, transform: 'rotate(3deg)' }}>won the Builders Hack, <b>$1,000</b> out of 90+ sign-ups</Sticky>
+      </>
+    ),
+  },
+  {
+    name: 'Stretch',
+    color: '#e8361d',
+    tab: 'Stretch',
+    className: 'pkR stR',
+    content: (
+      <>
+        <Run left="Screens" right={<b>Stretch</b>} />
+        <div className="pair">
+          <figure>
+            <span className="tape" style={{ '--tape': 'rgba(255, 214, 60, 0.75)' } as React.CSSProperties} />
+            <div className="phone"><img src="/work/notebook/stretch-deck.jpg" alt="Stretch swipe deck: red lentil dal, about 22 cents a serve" loading="lazy" decoding="async" {...zoomable('stretch', '/work/notebook/full/stretch-deck.jpg', 'Stretch · swipe a deck with Tile', 'iPhone')} /></div>
+            <figcaption>swipe, so Tile learns your taste</figcaption>
+          </figure>
+          <figure>
+            <span className="tape" style={{ '--tape': 'rgba(232, 54, 29, 0.45)' } as React.CSSProperties} />
+            <div className="phone"><img src="/work/notebook/stretch-week.jpg" alt="Stretch weekly plan: $29.72 of a $60 budget" loading="lazy" decoding="async" {...zoomable('stretch', '/work/notebook/full/stretch-week.jpg', 'Stretch · a real week, $29.72 of $60', 'iPhone')} /></div>
+            <figcaption>a real week, $29.72 of $60</figcaption>
+          </figure>
+        </div>
+        <div className="why-free">
+          <p className="hw">why it’s free →</p>
+          <p className="body">More than half of uni students surveyed in 2024 were food insecure. The people who need this most have the least to spend, so the meal plan is free, right now.</p>
+        </div>
+      </>
+    ),
+  },
+  {
     name: 'Kenspire',
     color: '#7a5c3e',
     target: 'work exp-kenspire',
     content: (
       <>
-        <Run left={<><b>01</b> · Client work</>} right="Contract · since Apr 2026" />
+        <Run left={<><b>02</b> · Client work</>} right="Contract · since Apr 2026" />
         <span className="chip">Kenspire Advisors · web and mobile</span>
         <h2 className="t" data-mark>Kenspire</h2>
         <p className="pitch" style={{ maxWidth: '15em' }}>Turns a company’s goals and procedures into scheduled, checked work. Planned rollout to 500 organisations.</p>
@@ -186,10 +237,10 @@ export const PAGES: Page[] = [
   {
     name: 'Foodly',
     color: '#3f8f4f',
-    target: 'projects project-foodly',
+    target: 'project-foodly',
     content: (
       <>
-        <Run left={<><b>02</b> · Foodly</>} right="iOS · Android · web" />
+        <Run left={<><b>03</b> · Foodly</>} right="iOS · Android · web" />
         <span className="chip">Honours project · iOS, Android, web</span>
         <h2 className="t" data-mark>Foodly</h2>
         <p className="pitch">Every food reel you saved, finally on a map.</p>
@@ -220,7 +271,7 @@ export const PAGES: Page[] = [
     target: 'project-switchyard',
     content: (
       <>
-        <Run left={<><b>03</b> · Switchyard</>} right="Rust · open source" />
+        <Run left={<><b>04</b> · Switchyard</>} right="Rust · open source" />
         <span className="chip">Open source · Rust gateway</span>
         <h2 className="t" data-mark>Switchyard</h2>
         <p className="pitch">Every coding agent, every account, one local endpoint.</p>
@@ -258,7 +309,7 @@ export const PAGES: Page[] = [
     target: 'project-parkalong',
     content: (
       <>
-        <Run left={<><b>04</b> · ParkAlong</>} right="Swift · iOS" />
+        <Run left={<><b>05</b> · ParkAlong</>} right="Swift · iOS" />
         <span className="chip">Native iOS · SwiftUI + MapKit</span>
         <h2 className="t" data-mark>ParkAlong</h2>
         <p className="pitch">Is there parking, how long can I stay, and what will it cost? One map for Victoria.</p>
@@ -304,7 +355,7 @@ export const PAGES: Page[] = [
     target: 'project-servogrid',
     content: (
       <>
-        <Run left={<><b>05</b> · ServoGrid</>} right="Swift · iOS" />
+        <Run left={<><b>06</b> · ServoGrid</>} right="Swift · iOS" />
         <span className="chip">Native iOS · Australian fuel prices</span>
         <h2 className="t" data-mark>ServoGrid</h2>
         <p className="pitch">A fuel map that tells you when a price might be stale.</p>
@@ -339,12 +390,64 @@ export const PAGES: Page[] = [
     ),
   },
   {
+    name: 'Stack',
+    color: '#9c3a6b',
+    target: 'project-pdfstack',
+    content: (
+      <>
+        <Run left={<><b>07</b> · Stack</>} right="TypeScript · Cloudflare" />
+        <span className="chip">Open source · free, no sign-up</span>
+        <h2 className="t" data-mark>Stack</h2>
+        <p className="pitch">Any files in, one PDF out. No sign-up, no ads.</p>
+        <Notes rows={[
+          ['the problem', 'A friend texted me: did I know a PDF converter that didn’t ask for money or a sign-up, and wasn’t buried in ads? I hadn’t realised how common that was until he asked.'],
+          ['so', 'Instead of finding a half-decent one, I built one and sent him the link. Photos and PDFs are prepared on your device, documents convert on a Cloudflare Worker that keeps nothing, and the PDF is merged in your browser.'],
+        ]} />
+        <div className="facts">
+          <div><small>Reads</small>56 file types</div>
+          <div><small>Keeps</small>nothing</div>
+          <div><small>Asks for</small>no account, no money</div>
+          <div><small>Runs on</small>Cloudflare Workers</div>
+        </div>
+        <div className="links">
+          <a className="go" href="https://stack.realsid08.me" target="_blank" rel="noopener noreferrer">Open Stack ↗</a>
+          <RepoLink href="https://github.com/RealSid08/pdfstack">Source</RepoLink>
+        </div>
+        <Sticky style={{ right: 34, bottom: 60, width: 118, transform: 'rotate(-3deg)' }}>text to link<b>1 day</b>built and shipped</Sticky>
+      </>
+    ),
+  },
+  {
+    name: 'Stack',
+    color: '#9c3a6b',
+    tab: 'Stack',
+    className: 'skR',
+    content: (
+      <>
+        <Run left="The link I sent" right={<b>Stack</b>} />
+        <figure className="pin sk-desk">
+          <span className="tape" style={{ '--tape': 'rgba(156, 58, 107, 0.35)' } as React.CSSProperties} />
+          <img src="/work/notebook/stack-desktop.jpg" alt="Stack on a laptop: two files in the stack, A4, Download PDF" loading="lazy" decoding="async" {...zoomable('stack', '/work/notebook/full/stack-desktop.jpg', 'Stack · on a laptop', 'Desktop web')} />
+          <figcaption>on a laptop</figcaption>
+        </figure>
+        <figure className="sk-phone">
+          <div className="phone"><img src="/work/notebook/stack-mobile.jpg" alt="Stack on a phone: two files ready to download as one PDF" loading="lazy" decoding="async" {...zoomable('stack', '/work/notebook/full/stack-mobile.jpg', 'Stack · on a phone', 'Mobile web')} /></div>
+        </figure>
+        <div className="sk-note">
+          <p className="hw">drop files in, drag to reorder, download ↓</p>
+          <p className="body">Word, Excel, Keynote, Pages, EPUB, email and code files all convert, and iPhone photos decode on the device. Every format has a test, and a live run against production passed 27 of 27 checks.</p>
+          <div className="tags">{['docx', 'xlsx', 'pptx', 'key', 'pages', 'epub', 'heic', 'md'].map((ext) => <span key={ext}>.{ext}</span>)}</div>
+        </div>
+      </>
+    ),
+  },
+  {
     name: 'Research',
     color: '#4f46e5',
     target: 'project-llm-cooperation',
     content: (
       <>
-        <Run left={<><b>06</b> · Research</>} right="Python" />
+        <Run left={<><b>08</b> · Research</>} right="Python" />
         <div className="sheet">
           <p className="lab" style={{ margin: 0 }}>
             Pilot · Oct 2026 · <a href="https://github.com/RealSid08/llm-cooperation-pilot" target="_blank" rel="noopener noreferrer"><GitHubIcon /> llm-cooperation-pilot</a>
@@ -389,7 +492,7 @@ export const PAGES: Page[] = [
     target: 'also',
     content: (
       <>
-        <Run left={<><b>07</b> · Also</>} right="tools and experiments" />
+        <Run left={<><b>09</b> · Also</>} right="tools and experiments" />
         <h2 className="t" style={{ fontSize: 44, marginTop: 16 }} data-mark>Also in here</h2>
         <div className="shelf">
           {SHELF.map((item) => (
@@ -431,7 +534,7 @@ export const PAGES: Page[] = [
     target: 'experience',
     content: (
       <>
-        <Run left={<><b>08</b> · More client work</>} right="since 2025" />
+        <Run left={<><b>10</b> · More client work</>} right="since 2025" />
         <h2 className="t" style={{ fontSize: 44, marginTop: 16 }} data-mark>Before and alongside</h2>
         <div className="xp">
           <div data-target="exp-complete-leader">
@@ -445,7 +548,7 @@ export const PAGES: Page[] = [
             <div className="tags"><span>Next.js</span><span>Supabase</span><span>RAG</span><span>Gemini Live</span></div>
           </div>
           <div data-target="exp-hida">
-            <div className="top"><b data-mark>HiDa</b><em>founder · 2020 to 2021</em></div>
+            <div className="top"><b data-mark>HiDa</b><em>founder · 2016 to 2021</em></div>
             <p>A video-calling app with screen sharing and synced chat, built on WebRTC.</p>
           </div>
         </div>
