@@ -84,9 +84,9 @@ if (typeof document !== 'undefined') {
 }
 
 /** The arrival: the closed book is set down, rests, its cover lifts, then it opens. */
-const SET_DOWN_MS = 900;
-const REST_MS = 1000;
-const LIFT_MS = 450;
+const SET_DOWN_MS = 600;
+const REST_MS = 450;
+const LIFT_MS = 300;
 
 const LampIcon: React.FC<{ on: boolean }> = ({ on }) => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -142,7 +142,7 @@ export const Notebook: React.FC = () => {
       after(SET_DOWN_MS + REST_MS, () => refs.book.current?.classList.add('lift'));
       after(SET_DOWN_MS + REST_MS + LIFT_MS, () => {
         refs.book.current?.classList.remove('lift');
-        void instance.openCover().then(() => setBookmark(saved));
+        void instance.openCover(1150).then(() => setBookmark(saved));
       });
     }
     return () => {
