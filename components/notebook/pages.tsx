@@ -4,6 +4,7 @@ import { CONTENTS } from './contents';
 import {
   zoomable,
   AfterOutcome,
+  Bars,
   CoopHeatmap,
   FoodlyFlow,
   FoodlyScreens,
@@ -53,12 +54,12 @@ const Notes: React.FC<{ rows: Array<[string, React.ReactNode]> }> = ({ rows }) =
 );
 
 const SHELF = [
-  { id: 'codex-shared-memory', kind: 'MCP server', title: 'Codex Shared Memory', line: 'Self-hosted MCP server that shares agent memory snapshots across machines over SSH, with an offline cache.', url: 'https://github.com/RealSid08/codex-shared-memory' },
-  { id: 't3-wall', kind: 'Ambient dashboard', title: 't3-wall', line: 'Read-only portrait kiosk for T3 Code: running agents, subscription limits and usage across machines.', url: 'https://github.com/RealSid08/t3-wall' },
+  { id: 'pptx-react-renderer', kind: 'npm · 1,485 downloads', title: 'pptx-react-renderer', line: 'Renders PowerPoint files as semantic HTML in the browser, checked by pixel-diff tests. About 300 downloads a month.', url: 'https://www.npmjs.com/package/pptx-react-renderer' },
+  { id: 'openclaw', kind: 'Co-author', title: 'OpenClaw', line: 'My OpenCode integration became “Agents: add pluggable CLIs” on main, with me as co-author.', url: 'https://github.com/openclaw/openclaw/commit/f31e89d5af' },
+  { id: 'codex-shared-memory', kind: 'MCP server', title: 'Codex Shared Memory', line: 'Self-hosted MCP server that shares agent memory across machines over SSH, with an offline cache.', url: 'https://github.com/RealSid08/codex-shared-memory' },
+  { id: 'p3stack', kind: 'T3 Code skills', title: 'p3stack', line: 'Lauren Tan’s pstack, ported to T3 Code’s orchestrator: 23 playbooks for planning, delegating and review.', url: 'https://github.com/RealSid08/p3stack' },
+  { id: 't3-wall', kind: 'Ambient dashboard', title: 't3-wall', line: 'Read-only kiosk for T3 Code: running agents, subscription limits and usage across machines.', url: 'https://github.com/RealSid08/t3-wall' },
   { id: 'hs-heist', kind: 'WebMCP game', title: 'HS: Heist', line: 'A first-person heist where a WebMCP agent plays your partner through ten tools and remembers its failures.', url: 'https://github.com/RealSid08/openai-webmcp-challenge' },
-  { id: 'cursor-subagents', kind: 'Codex plugin', title: 'Cursor Subagents', line: 'One skill that lets Codex hand a bounded task to Cursor CLI, then review and verify the diff.', url: 'https://github.com/RealSid08/cursor-subagents' },
-  { id: 'pptx-react-renderer', kind: 'npm package', title: 'pptx-react-renderer', line: 'Renders PowerPoint files as HTML in the browser, with pixel-diff regression tests.', url: 'https://github.com/OpenRenderKit/pptx-react-renderer' },
-  { id: 'tbrgs', kind: 'ML coursework', title: 'Traffic route guidance', line: 'LSTM and GRU forecasts from SCATS sensor data feeding an A* route search.', url: 'https://github.com/RealSid08/IntroToAISquad/tree/2B' },
 ];
 
 export const PAGES: Page[] = [
@@ -95,24 +96,24 @@ export const PAGES: Page[] = [
           />
           <figcaption>me, mid-build</figcaption>
         </figure>
-        <h1 data-mark>Right now, I’m building <em>Stretch</em>, and it’s free.</h1>
+        <h1 data-mark>I’m building <em>Stretch</em>, a personal food agent.</h1>
         <p className="lede">
-          Stretch plans a whole week of meals around your budget, your tastes and the best grocery deals near you. I
-          want it in the hands of as many people as possible, so it costs nothing to use.
+          It plans your week of meals around your budget and taste, and learns from the taps you already make. About
+          360 devices found it in its first five weeks.
         </p>
         <div className="why-row">
           <a className="why" href="#p3" data-go={2}><span>Why?</span> Read the story →</a>
-          <span className="stamp" title="Lyra × Product Counsel Builders Hack, Sydney, 16 Oct 2026">Won · Builders Hack<small>$1,000 · Sydney · Oct 2026</small></span>
+          <span className="stamp" title="Builders Hack: Unlocked, run by Lyra and Product Counsel, Sydney, 16 Oct 2026">Won · Builders Hack<small>Lyra × Product Counsel · Oct 2026</small></span>
         </div>
         <p className="lab">Client work</p>
         <p className="body" style={{ margin: '0 0 12px', fontSize: 12.5 }}>
-          For clients, I design and build systems that scale: a task platform rolling out to about 600 staff at
-          Besmak, and a platform at Kenspire that turns goals and procedures into scheduled work for a planned 500
-          organisations. I own the whole job, from the problem to the system to something people rely on every day.
+          I also run production software for three businesses. I learn how each team works, then replace its slow manual
+          steps with software and AI agents: Kenspire’s consulting platform, now at 22 client companies, and Besmak’s task
+          platform, with 220+ staff accounts in its first two weeks.
         </p>
         <div data-target="education">
           <p className="lab">Studying</p>
-          <p className="body" style={{ margin: 0 }} data-mark>Bachelor of Engineering (Honours), Majoring in Software<br />Swinburne University of Technology<br />Graduating December 2026</p>
+          <p className="body" style={{ margin: 0 }} data-mark>Bachelor of Engineering (Honours), Software<br />Swinburne University of Technology<br />Graduating December 2026</p>
         </div>
       </>
     ),
@@ -127,9 +128,8 @@ export const PAGES: Page[] = [
         <Run left="Contents" />
         <h2 data-mark>Contents</h2>
         <nav aria-label="Contents">
-          {CONTENTS.map((row, index) => (
+          {CONTENTS.map((row) => (
             <a key={row.title} href={`#p${row.spread * 2 - 1}`} data-go={row.spread} data-row={row.targets.join(' ')}>
-              <span className="n">{String(index + 1).padStart(2, '0')}</span>
               <b>{row.title}</b>
               <span className="dots" />
               <span className="p">{row.spread * 2 - 1}</span>
@@ -143,20 +143,20 @@ export const PAGES: Page[] = [
   {
     name: 'Stretch',
     color: '#e8361d',
-    target: 'projects project-stretch',
+    target: 'projects project-stretch exp-stretch',
     content: (
       <>
-        <Run left={<><b>01</b> · Stretch</>} right="iPhone · Android · web" />
-        <span className="chip">Won the Lyra × Product Counsel Builders Hack</span>
+        <Run left={<b>Stretch</b>} right="Founder · since Oct 2026" />
+        <span className="chip">Won Builders Hack: Unlocked</span>
         <h2 className="t st-title" data-mark>Stretch <Tile /></h2>
-        <p className="pitch" style={{ maxWidth: '15em' }}>Stretch your money further, and eat well every week.</p>
+        <p className="pitch" style={{ maxWidth: '15em' }}>A personal food agent that plans your week around your budget and taste.</p>
         <StretchWeek />
         <Notes rows={[
-          ['the problem', 'I have a habit of skipping meals. Between uni, freelance work and side projects, three meals a day became one meal and a coffee, and by the afternoon I couldn’t focus. Cooking takes planning, and eating well felt like spending money I didn’t have.'],
-          ['so', 'Tell Stretch your budget and what you like. Tile, its AI agent, checks Coles, Woolies, Aldi and eat-out deals near you, then plans the week: what to cook, what to buy, and where.'],
+          ['the problem', 'After I moved to Melbourne, between uni, client work and side projects, some days were one meal and a coffee. By the afternoon I couldn’t focus. Cooking takes planning, and eating well felt like money I didn’t have.'],
+          ['so', 'Tile, Stretch’s agent, plans breakfast, lunch and dinner with one shopping list priced at shops near you. There’s no chat box: it learns from yum or nah, how dinner went, and what the shop really cost.'],
         ]} />
-        <a className="go" href="https://stretch.realsid08.me" target="_blank" rel="noopener noreferrer">Start using it today ↗</a>
-        <Sticky wide className="st-win" style={{ right: 34, top: 222, width: 164, transform: 'rotate(3deg)' }}>won the Builders Hack, <b>$1,000</b> out of 90+ sign-ups</Sticky>
+        <a className="go" href="https://getstretch.app" target="_blank" rel="noopener noreferrer">Try Stretch ↗</a>
+        <Sticky wide className="st-win wide-only" style={{ right: 34, top: 222, width: 164, transform: 'rotate(3deg)' }}>about <b>360</b> devices in its first five weeks</Sticky>
       </>
     ),
   },
@@ -181,56 +181,151 @@ export const PAGES: Page[] = [
           </figure>
         </div>
         <div className="why-free">
-          <p className="hw">why it’s free →</p>
-          <p className="body">More than half of uni students surveyed in 2024 were food insecure. The people who need this most have the least to spend, so the meal plan is free, right now.</p>
+          <p className="hw">evals decide what ships →</p>
+          <p className="body">Blind judges from other model families preferred weeks that used people’s own notes 64 of 78 times. A pricing tool that found real prices for 84% of groceries stayed out: 18 times the research, and less variety.</p>
         </div>
       </>
     ),
   },
   {
-    name: 'Kenspire',
+    name: 'Kenspire Argo',
     color: '#7a5c3e',
     target: 'work exp-kenspire',
     content: (
       <>
-        <Run left={<><b>02</b> · Client work</>} right="Contract · since Apr 2026" />
-        <span className="chip">Kenspire Advisors · web and mobile</span>
-        <h2 className="t" data-mark>Kenspire</h2>
-        <p className="pitch" style={{ maxWidth: '15em' }}>Turns a company’s goals and procedures into scheduled, checked work. Planned rollout to 500 organisations.</p>
+        <Run left={<b>Client work</b>} right="Contract · since Oct 2025" />
+        <span className="chip">Kenspire Advisors · its only engineer</span>
+        <h2 className="t" data-mark>Kenspire Argo</h2>
+        <p className="pitch" style={{ maxWidth: '16em' }}>The platform a consultancy runs its consulting on, at 22 client companies.</p>
         <Notes rows={[
-          ['my job', 'I own the architecture and delivery: a TanStack Start web app and an Expo mobile app on one Convex backend.'],
-          ['inside', 'Recurring schedules, timesheets, passkey sign-in, iOS Live Activities, and a Gemini agent that edits procedure drafts through tool calls.'],
+          ['the job', 'Kenspire’s method lived in Excel. I ran a 500+ question spec review where the owner settled 160+ decisions, then built the edge cases as explicit states.'],
+          ['hard part', 'Database I/O. Over two redesigns I cut it by about 90% while client companies grew from 9 to 22, with zero downtime.'],
         ]} />
-        <div className="chain"><b>Goal</b><i>→</i><b>Procedure</b><i>→</i><b>Schedule</b><i>→</i><b>Task</b></div>
-        <div className="chain sub"><span>maker ✓</span><span>checker ✓</span><span>reviewer ✓</span></div>
-        <Sticky wide style={{ right: 34, bottom: 46, width: 262, transform: 'rotate(-2deg)' }}>
-          62 aggregates were <b>70%</b> of billed database I/O. Now exact counters, zero drift.
-        </Sticky>
+        <div className="chain"><b>maker</b><i>→</i><b>checker</b><i>→</i><b>sign-off</b><i>↺</i><b>send back, 7 days</b></div>
+        <p className="lab" style={{ marginTop: 20 }}>Database I/O, GB a day</p>
+        <div style={{ maxWidth: 252 }}>
+          <Bars label="Database I/O per day" best={1} rows={[['before', 1, '7.6'], ['after', 0.8 / 7.6, '0.8']]} />
+        </div>
+        <p className="cap4" style={{ maxWidth: '16em' }}>62 aggregates became exact transactional counters, and each fact is stored once.</p>
+        <Sticky wide style={{ right: 32, bottom: 46, width: 150, transform: 'rotate(-3deg)' }}>client companies went <b>9 → 22</b> in the same months</Sticky>
+      </>
+    ),
+  },
+  {
+    name: 'Kenspire Connect',
+    color: '#7a5c3e',
+    tab: 'Work',
+    content: (
+      <>
+        <Run left="Client work" right={<b>Kenspire</b>} />
+        <span className="chip">iOS and Android · on the App Store</span>
+        <h2 className="t" style={{ fontSize: 46 }}>Kenspire Connect</h2>
+        <p className="pitch" style={{ maxWidth: '16em' }}>Tasks and timesheets for Kenspire’s 30-person team.</p>
+        <p className="body" style={{ maxWidth: '27em' }}>It replaced Excel planning sheets, WhatsApp follow-ups and manual monthly timesheets. I moved it onto a new backend without changing its mobile UI: 3,634 tasks and 13,560 timesheet entries, zero mismatches.</p>
+        <p className="lab" style={{ marginTop: 18 }}>In-app agent, first-call prompt</p>
+        <Bars label="In-app agent first-call prompt" best={1} labelWidth={80} rows={[['all tools', 1, '15.5k'], ['lazy tools', 4.3 / 15.5, '4.3k']]} />
+        <p className="cap4" style={{ maxWidth: '21em' }}>Every change the agent makes is a direct call through the user’s own permission checks.</p>
+        <div className="note-agent">
+          <p className="hw">an agent on the team →</p>
+          <p className="body">I built an agent that picks up the business team’s issues. It closed 39 in its first three days, 25 through merged fixes with screenshot evidence. Simple fixes ship without me; bigger ones wait for my review.</p>
+        </div>
       </>
     ),
   },
   {
     name: 'Besmak',
     color: '#7a5c3e',
-    tab: 'Work',
     target: 'exp-besmak',
     content: (
       <>
-        <Run left="Client work" right={<b>Contract · since Jul 2026</b>} />
-        <span className="chip">Besmak Components · web and mobile</span>
+        <Run left={<b>Client work</b>} right="Contract · since Jul 2026" />
+        <span className="chip">Besmak Components · web, iOS, Android</span>
         <h2 className="t" data-mark>Besmak</h2>
-        <p className="pitch" style={{ maxWidth: '16em' }}>One task platform for about 600 staff, across every department.</p>
+        <p className="pitch" style={{ maxWidth: '16em' }}>One task platform for every department of a manufacturer in India.</p>
         <Notes rows={[
-          ['my job', 'I lead development, web and mobile, with end-to-end tests for both apps.'],
-          ['hard part', 'Recurring tasks with subtasks run as a resumable background job: checkpoints, retries that never duplicate, and dates that survive daylight saving. Tested at 600 subtasks for 600 users.'],
+          ['my job', 'I scoped it with their IT head, built web, iOS and Android, offered SaaS or a perpetual licence (they chose SaaS), and hired a UI/UX developer for three weeks.'],
+          ['hard part', 'Their data stays in India and in their hands: it runs in Besmak’s own AWS account in Mumbai. IT asked for a VPN; staff use the load balancer and admins use SSM instead, with no long-lived keys.'],
         ]} />
-        <div className="infra" role="img" aria-label="Web and mobile apps talk to Convex on EC2, backed by Multi-AZ PostgreSQL and encrypted S3">
+        <div className="infra" role="img" aria-label="Web and mobile apps talk to Convex on EC2, backed by Multi-AZ PostgreSQL and encrypted S3, in AWS Mumbai">
           <div className="col"><b>Web</b><b>Mobile</b></div><i>→</i>
           <div className="col"><b className="hub">Convex<small>self-hosted on EC2</small></b></div><i>→</i>
           <div className="col"><b>Postgres<small>Multi-AZ</small></b><b>S3<small>encrypted</small></b></div>
         </div>
-        <p className="hw" style={{ margin: '8px 0 0', fontSize: 19 }}>all of it in OpenTofu, on AWS</p>
-        <Sticky style={{ right: 34, bottom: 60, width: 124, transform: 'rotate(-3deg)' }}>database failover, tested<b>40s</b></Sticky>
+        <p className="hw" style={{ margin: '8px 0 0', fontSize: 19 }}>all of it in OpenTofu, in AWS Mumbai</p>
+        <Sticky wide style={{ right: 36, bottom: 20, width: 196, transform: 'rotate(-2deg)' }}>launched in October, <b>220+</b> accounts in two weeks</Sticky>
+      </>
+    ),
+  },
+  {
+    name: 'More client work',
+    color: '#7a5c3e',
+    target: 'experience',
+    content: (
+      <>
+        <Run left="Client work" right={<b>Before and alongside</b>} />
+        <h2 className="t" style={{ fontSize: 44, marginTop: 16 }} data-mark>Before and alongside</h2>
+        <div className="xp">
+          <div data-target="exp-complete-leader">
+            <div className="top"><b data-mark>Complete Leader</b><em>casual · since Dec 2025</em></div>
+            <p>Paper questionnaires and hand-written reports became online psychometric assessments with scoring and AI-drafted reports. When summaries went missing in production, I moved them server-side and backfilled 93 in about four hours.</p>
+            <div className="tags"><span>Next.js</span><span>Supabase</span></div>
+          </div>
+          <div data-target="exp-mindtek">
+            <div className="top"><b data-mark>Mindtek AI</b><em>May to Oct 2025</em></div>
+            <p>In a team of four, a platform where businesses build chatbots grounded in their own documents, live on four companies’ websites, and a Gemini Live voice receptionist that books appointments through tool calls.</p>
+            <div className="tags"><span>Next.js</span><span>Supabase</span><span>RAG</span><span>Gemini Live</span></div>
+          </div>
+          <div data-target="exp-hida">
+            <div className="top"><b data-mark>HiDa</b><em>founder · 2016 to 2021</em></div>
+            <p>A video-calling app with screen sharing and synced chat, built on WebRTC when I was 16.</p>
+          </div>
+        </div>
+      </>
+    ),
+  },
+  {
+    name: 'Runaway',
+    color: '#c2410c',
+    target: 'project-runaway',
+    content: (
+      <>
+        <Run left={<b>Runaway</b>} right="Unity · C# · PyTorch" />
+        <span className="chip">Agentic AI for emergency decisions</span>
+        <h2 className="t" data-mark>Runaway</h2>
+        <p className="pitch" style={{ maxWidth: '16em' }}>A battery fire at night, and an AI advisor that tests its plan before it speaks.</p>
+        <Notes rows={[
+          ['the problem', 'Water won’t put out a battery in thermal runaway. You keep its neighbours cool and the toxic smoke off the homes and the school, while some sensors lie. When should a commander trust an agent’s call?'],
+          ['so', 'A Unity incident simulator. A graph network forecasts which enclosure catches next. A Codex agent reads the fire through five MCP tools, runs each plan 16 times in the simulation, then hands the human a plan to accept, edit or dismiss.'],
+        ]} />
+        <p className="lab" style={{ marginTop: 14 }}>Forecasting spread 10 minutes ahead, AUC</p>
+        <Bars label="Forecast accuracy, AUC" best={0} labelWidth={100} rows={[['graph network', 0.994, '0.994'], ['heuristic', 0.949, '0.949']]} />
+        <p className="cap4">400 held-out fires. Trained in PyTorch on 4,000 simulated ones, run inside Unity.</p>
+        <RepoLink href="https://github.com/RealSid08/runaway">Source and 3-minute demo</RepoLink>
+      </>
+    ),
+  },
+  {
+    name: 'Runaway',
+    color: '#c2410c',
+    tab: 'Runaway',
+    className: 'rwR',
+    content: (
+      <>
+        <Run left="The advisor’s card" right={<b>Runaway</b>} />
+        <figure className="pin rw-shot">
+          <span className="tape" style={{ '--tape': 'rgba(194, 65, 12, 0.35)' } as React.CSSProperties} />
+          <img src="/work/notebook/runaway-card.jpg" alt="Runaway: the advisor proposes cooling B3 and B4 and sheltering Glenvale homes, with its reasons and expected effect" loading="lazy" decoding="async" {...zoomable('runaway', '/work/notebook/full/runaway-card.jpg', 'Runaway · the advisor’s plan, waiting for the commander', 'Unity app')} />
+          <figcaption>its plan, waiting for the commander</figcaption>
+        </figure>
+        <figure className="pin rw-smoke">
+          <span className="tape" />
+          <img src="/work/notebook/runaway-smoke.jpg" alt="Runaway: estimated toxic smoke drifting toward the primary school" loading="lazy" decoding="async" {...zoomable('runaway', '/work/notebook/full/runaway-smoke.jpg', 'Runaway · toxic smoke drifting toward the school', 'Unity app')} />
+        </figure>
+        <div className="rw-note">
+          <p className="lab">Same five fires, enclosures lost</p>
+          <Bars label="Enclosures lost on the same five fires" best={2} labelWidth={92} rows={[['no response', 1, '9.0'], ['rule of thumb', 2.2 / 9, '2.2'], ['Codex planner', 1 / 9, '1.0']]} />
+          <p className="hw" style={{ marginTop: 10, fontSize: 18, lineHeight: 1.05 }}>two sensors freeze on purpose. it has to catch them from the thermal camera.</p>
+        </div>
       </>
     ),
   },
@@ -240,7 +335,7 @@ export const PAGES: Page[] = [
     target: 'project-foodly',
     content: (
       <>
-        <Run left={<><b>03</b> · Foodly</>} right="iOS · Android · web" />
+        <Run left={<b>Foodly</b>} right="iOS · Android · web" />
         <span className="chip">Honours project · iOS, Android, web</span>
         <h2 className="t" data-mark>Foodly</h2>
         <p className="pitch">Every food reel you saved, finally on a map.</p>
@@ -271,7 +366,7 @@ export const PAGES: Page[] = [
     target: 'project-switchyard',
     content: (
       <>
-        <Run left={<><b>04</b> · Switchyard</>} right="Rust · open source" />
+        <Run left={<b>Switchyard</b>} right="Rust · open source" />
         <span className="chip">Open source · Rust gateway</span>
         <h2 className="t" data-mark>Switchyard</h2>
         <p className="pitch">Every coding agent, every account, one local endpoint.</p>
@@ -309,7 +404,7 @@ export const PAGES: Page[] = [
     target: 'project-parkalong',
     content: (
       <>
-        <Run left={<><b>05</b> · ParkAlong</>} right="Swift · iOS" />
+        <Run left={<b>ParkAlong</b>} right="Swift · iOS" />
         <span className="chip">Native iOS · SwiftUI + MapKit</span>
         <h2 className="t" data-mark>ParkAlong</h2>
         <p className="pitch">Is there parking, how long can I stay, and what will it cost? One map for Victoria.</p>
@@ -355,7 +450,7 @@ export const PAGES: Page[] = [
     target: 'project-servogrid',
     content: (
       <>
-        <Run left={<><b>06</b> · ServoGrid</>} right="Swift · iOS" />
+        <Run left={<b>ServoGrid</b>} right="Swift · iOS" />
         <span className="chip">Native iOS · Australian fuel prices</span>
         <h2 className="t" data-mark>ServoGrid</h2>
         <p className="pitch">A fuel map that tells you when a price might be stale.</p>
@@ -395,7 +490,7 @@ export const PAGES: Page[] = [
     target: 'project-pdfstack',
     content: (
       <>
-        <Run left={<><b>07</b> · Stack</>} right="TypeScript · Cloudflare" />
+        <Run left={<b>Stack</b>} right="TypeScript · Cloudflare" />
         <span className="chip">Open source · free, no sign-up</span>
         <h2 className="t" data-mark>Stack</h2>
         <p className="pitch">Any files in, one PDF out. No sign-up, no ads.</p>
@@ -447,7 +542,7 @@ export const PAGES: Page[] = [
     target: 'project-llm-cooperation',
     content: (
       <>
-        <Run left={<><b>08</b> · Research</>} right="Python" />
+        <Run left={<b>Research</b>} right="Python" />
         <div className="sheet">
           <p className="lab" style={{ margin: 0 }}>
             Pilot · Oct 2026 · <a href="https://github.com/RealSid08/llm-cooperation-pilot" target="_blank" rel="noopener noreferrer"><GitHubIcon /> llm-cooperation-pilot</a>
@@ -487,13 +582,13 @@ export const PAGES: Page[] = [
     ),
   },
   {
-    name: 'Also',
+    name: 'Open source',
     color: '#8a8175',
     target: 'also',
     content: (
       <>
-        <Run left={<><b>09</b> · Also</>} right="tools and experiments" />
-        <h2 className="t" style={{ fontSize: 44, marginTop: 16 }} data-mark>Also in here</h2>
+        <Run left={<b>Open source</b>} right="packages, tools, experiments" />
+        <h2 className="t" style={{ fontSize: 44, marginTop: 14 }} data-mark>Open source</h2>
         <div className="shelf">
           {SHELF.map((item) => (
             <a key={item.id} href={item.url} target="_blank" rel="noopener noreferrer" data-target={`project-${item.id}`}>
@@ -507,13 +602,13 @@ export const PAGES: Page[] = [
     ),
   },
   {
-    name: 'Also',
+    name: 'Open source',
     color: '#8a8175',
-    tab: 'Also',
+    tab: 'Code',
     className: 'alsoR',
     content: (
       <>
-        <Run left="Pinned" right={<b>Also</b>} />
+        <Run left="Pinned" right={<b>Open source</b>} />
         <figure className="pin pin-a">
           <span className="tape" />
           <img src="/work/notebook/heist-chase.jpg" alt="HS: Heist, a first-person chase" loading="lazy" decoding="async" {...zoomable('also', '/work/notebook/full/heist-chase.jpg', 'HS: Heist · the agent plays your partner', 'WebMCP game')} />
@@ -529,29 +624,20 @@ export const PAGES: Page[] = [
     ),
   },
   {
-    name: 'More work',
-    color: '#7a5c3e',
-    target: 'experience',
+    name: 'Writing',
+    color: 'var(--nb-accent)',
+    target: 'writing',
     content: (
       <>
-        <Run left={<><b>10</b> · More client work</>} right="since 2025" />
-        <h2 className="t" style={{ fontSize: 44, marginTop: 16 }} data-mark>Before and alongside</h2>
-        <div className="xp">
-          <div data-target="exp-complete-leader">
-            <div className="top"><b data-mark>Complete Leader</b><em>casual · since Dec 2025</em></div>
-            <p>Paper questionnaires and hand-written reports became online psychometric assessments, automatic scoring and streamed AI reports, with a staff dashboard to invite clients and export results.</p>
-            <div className="tags"><span>Next.js</span><span>Supabase</span></div>
-          </div>
-          <div data-target="exp-mindtek">
-            <div className="top"><b data-mark>Mindtek AI</b><em>May to Oct 2025</em></div>
-            <p>A platform where businesses build chatbots grounded in their own documents and embed them on their sites. I also built a Gemini Live voice agent that answers spoken questions and takes booking requests through tool calls.</p>
-            <div className="tags"><span>Next.js</span><span>Supabase</span><span>RAG</span><span>Gemini Live</span></div>
-          </div>
-          <div data-target="exp-hida">
-            <div className="top"><b data-mark>HiDa</b><em>founder · 2016 to 2021</em></div>
-            <p>A video-calling app with screen sharing and synced chat, built on WebRTC.</p>
-          </div>
-        </div>
+        <Run left={<b>Writing</b>} right="blog.realsid08.me" />
+        <h2 className="t" style={{ fontSize: 52, marginTop: 18 }} data-mark>Writing</h2>
+        <p className="body" style={{ maxWidth: '24em' }}>Notes on what I build and how. Every post can be read, or heard in my voice or one of two others.</p>
+        <a className="post" href="https://blog.realsid08.me/agents-at-home" target="_blank" rel="noopener noreferrer">
+          <small>Nov 2026 · 12 min read</small>
+          <b>Your agents should live at home</b>
+          <span>Why I run every coding agent on a Mac that never leaves my desk, and how to set one up with T3 Code.</span>
+        </a>
+        <a className="go" href="https://blog.realsid08.me" target="_blank" rel="noopener noreferrer">All writing ↗</a>
       </>
     ),
   },
@@ -566,7 +652,7 @@ export const PAGES: Page[] = [
         <Run left="Contact" right={<b>Hello</b>} />
         <p className="hw" style={{ margin: '40px 0 0', fontSize: 28 }}>say hello →</p>
         <h2 className="t" style={{ fontSize: 52 }} data-mark>Let’s build something.</h2>
-        <p className="body" style={{ maxWidth: '26em' }}>I’m in Melbourne. If you’re hiring, or have a product that needs building, write to me.</p>
+        <p className="body" style={{ maxWidth: '26em' }}>I’m in Melbourne and graduate in December 2026. If you’re hiring, or have a product that needs building, write to me.</p>
         <ul className="ways">
           <li><a href={`mailto:${PROFILE.email}`}><MailIcon />{PROFILE.email}</a></li>
           <li><a href={PROFILE.github} target="_blank" rel="noopener noreferrer"><GitHubIcon />github.com/RealSid08</a></li>

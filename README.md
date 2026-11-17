@@ -2,26 +2,35 @@
 
 Software engineer in Melbourne. When I run into a real-world problem, or a company brings me one, I build the software that solves it.
 
-**[realsid08.me](https://realsid08.me)** · [GitHub](https://github.com/RealSid08) · [LinkedIn](https://www.linkedin.com/in/sidhaarth-krishnan) · [Email](mailto:krishnansidhaarth@gmail.com)
+**[realsid08.me](https://realsid08.me)** · [Blog](https://blog.realsid08.me) · [GitHub](https://github.com/RealSid08) · [LinkedIn](https://www.linkedin.com/in/sidhaarth-krishnan) · [Email](mailto:krishnansidhaarth@gmail.com)
 
 ## Now
 
-- **Kenspire Advisors**, contract. A multi-tenant platform that turns clients' goals and procedures into scheduled work, on TanStack Start, Expo and Convex. Planned rollout to 500 organisations.
-- **Besmak Components**, contract. A web and mobile task platform for about 600 staff, with Convex self-hosted on AWS and provisioned with OpenTofu.
-- **Complete Leader**, casual. Psychometric assessments, scoring and AI-generated reports in Next.js and Supabase.
+- **[Stretch](https://getstretch.app)**, founder. A personal food agent that plans your week around your budget and taste. Won Builders Hack: Unlocked (Lyra x Product Counsel), October 2026.
+- **Kenspire Advisors**, contract. Its only engineer: Kenspire Argo, the platform it runs its consulting on (22 client companies), and Kenspire Connect, its team's task and timesheet app, on TanStack Start, Expo and Convex.
+- **Besmak Components**, contract. A web, iOS and Android task platform, launched to all staff in October 2026, hosted in Besmak's own AWS account with OpenTofu.
+- **Complete Leader**, casual. Psychometric assessments and AI-drafted reports in Next.js and Supabase.
 
 ## Building
 
-- **[Foodly](https://foodly-app-mauve.vercel.app)**: honours project. Instagram and TikTok food reels become saved places on a personal map.
+- **[Runaway](https://github.com/RealSid08/runaway)**: a Unity battery-fire simulator where a graph neural network forecasts spread and a Codex agent tests each plan before advising a human commander.
 - **[Switchyard](https://github.com/RealSid08/switchyard)**: an open-source Rust gateway that puts every coding agent and account behind one local endpoint.
+- **[Stack](https://stack.realsid08.me)**: any files in, one PDF out. No sign-up, no ads.
+- **[Foodly](https://foodly-app-mauve.vercel.app)**: honours project. Instagram and TikTok food reels become saved places on a personal map.
 - **[ParkAlong](https://github.com/OpenRenderKit/ParkAlong)**: is there parking, how long can I stay, and what will it cost, on one map for Victoria.
 - **[ServoGrid](https://github.com/RealSid08/ServoGrid)**: a native iOS fuel map that tells you when a price might be stale.
 - **[Do coding agents cooperate?](https://github.com/RealSid08/llm-cooperation-pilot)**: a pilot study of coding agents in the repeated prisoner's dilemma.
 
 ## Open source
 
+- **[pptx-react-renderer](https://www.npmjs.com/package/pptx-react-renderer)**: an npm package that renders PowerPoint files as HTML. 1,400+ downloads.
 - **[Codex Shared Memory](https://github.com/RealSid08/codex-shared-memory)**: a self-hosted MCP server that shares agent memory across machines.
-- **[pptx-react-renderer](https://github.com/OpenRenderKit/pptx-react-renderer)**: an npm package that renders PowerPoint files as HTML.
+- **[p3stack](https://github.com/RealSid08/p3stack)**: pstack, ported to T3 Code.
+- Co-author on [pluggable agent CLIs](https://github.com/openclaw/openclaw/commit/f31e89d5af) in OpenClaw.
+
+## Writing
+
+- **[blog.realsid08.me](https://blog.realsid08.me)**: notes on what I build and how, each one readable or listenable.
 
 This repository is the source for the portfolio site.
 
