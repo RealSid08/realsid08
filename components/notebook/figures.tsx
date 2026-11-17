@@ -270,3 +270,19 @@ export const StretchWeek: React.FC = () => (
     <p className="sw-key"><i className="sw-dot" /> ate <i className="sw-dot sw-coffee" /> just a coffee <i className="sw-dot sw-skip" /> skipped</p>
   </figure>
 );
+
+/**
+ * Before-and-after bars drawn to scale. `best` is the row to draw in the section colour;
+ * shares are of the longest bar.
+ */
+export const Bars: React.FC<{ label: string; rows: Array<[name: string, share: number, value: string]>; best: number; labelWidth?: number }> = ({ label, rows, best, labelWidth = 52 }) => (
+  <div className="pk" data-reveal role="img" aria-label={`${label}: ${rows.map(([name, , value]) => `${name} ${value}`).join(', ')}`} style={{ '--lw': `${labelWidth}px` } as React.CSSProperties}>
+    {rows.map(([name, share, value], index) => (
+      <div key={name} className="pk-row">
+        <span>{name}</span>
+        <div className={`pk-bar${index === best ? ' pk-after' : ''}`} style={{ '--w': `${Math.max(share * 100, 2)}%` } as React.CSSProperties} />
+        <b>{value}</b>
+      </div>
+    ))}
+  </div>
+);
