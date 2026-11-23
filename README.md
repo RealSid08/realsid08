@@ -1,36 +1,36 @@
 # Sidhaarth Krishnan
 
-Software engineer in Melbourne. When I run into a real-world problem, or a company brings me one, I build the software that solves it.
+Full-stack and AI software engineer in Melbourne. I work directly with founders and business teams to uncover what is actually broken, obsess over performance and quality, and ship production software people rely on every day.
 
 **[realsid08.me](https://realsid08.me)** · [Blog](https://blog.realsid08.me) · [GitHub](https://github.com/RealSid08) · [LinkedIn](https://www.linkedin.com/in/sidhaarth-krishnan) · [Email](mailto:krishnansidhaarth@gmail.com)
 
 ## Now
 
-- **[Stretch](https://getstretch.app)**, founder. A personal food agent that plans your week around your budget and taste. Won Builders Hack: Unlocked (Lyra x Product Counsel), October 2026.
-- **Kenspire Advisors**, contract. Its only engineer: Kenspire Argo, the platform it runs its consulting on (22 client companies), and Kenspire Connect, its team's task and timesheet app, on TanStack Start, Expo and Convex.
-- **Besmak Components**, contract. A web, iOS and Android task platform, launched to all staff in October 2026, hosted in Besmak's own AWS account with OpenTofu.
-- **Complete Leader**, casual. Psychometric assessments and AI-drafted reports in Next.js and Supabase.
+- **[Stretch](https://getstretch.app)**, founder. Personal food agent planning weekly meals around your budget and taste (490+ devices in six weeks). Won Builders Hack: Unlocked (Lyra x Product Counsel, 90+ teams), October 2026.
+- **Kenspire Advisors**, contract. Sole engineer (1,000+ PRs across web, iOS, Android and backend): Kenspire Argo runs client consulting across 20+ companies (90% DB I/O cut), and Kenspire Connect is its team's task and timesheet app on TanStack Start, Expo and Convex.
+- **Besmak Components**, contract. Led commercial and technical scoping with IT and plant leadership, closed an annual SaaS licence, and launched a web, iOS and Android task platform to 220+ staff in two weeks, self-hosted in Besmak's Mumbai AWS account via OpenTofu.
+- **Complete Leader**, casual. Psychometric assessments and reliable server-side AI summaries across five client teams in Next.js and Supabase.
 
 ## Building
 
 - **[Runaway](https://github.com/RealSid08/runaway)**: a Unity battery-fire simulator where a graph neural network forecasts spread and a Codex agent tests each plan before advising a human commander.
 - **[Switchyard](https://github.com/RealSid08/switchyard)**: an open-source Rust gateway that puts every coding agent and account behind one local endpoint.
-- **[Stack](https://stack.realsid08.me)**: any files in, one PDF out. No sign-up, no ads.
-- **[Foodly](https://foodly-app-mauve.vercel.app)**: honours project. Instagram and TikTok food reels become saved places on a personal map.
+- **[Stack](https://stack.realsid08.me)**: any 56 file types in, one PDF out. No sign-up, no ads.
+- **[Foodly](https://foodly-app-mauve.vercel.app)**: final-year capstone for a real client. Instagram and TikTok food reels become saved places on a personal map (9s to 1.1s load).
 - **[ParkAlong](https://github.com/OpenRenderKit/ParkAlong)**: is there parking, how long can I stay, and what will it cost, on one map for Victoria.
-- **[ServoGrid](https://github.com/RealSid08/ServoGrid)**: a native iOS fuel map that tells you when a price might be stale.
+- **[ServoGrid](https://github.com/RealSid08/ServoGrid)**: a native iOS fuel map that refuses to fake a fresh price.
 - **[Do coding agents cooperate?](https://github.com/RealSid08/llm-cooperation-pilot)**: a pilot study of coding agents in the repeated prisoner's dilemma.
 
 ## Open source
 
-- **[pptx-react-renderer](https://www.npmjs.com/package/pptx-react-renderer)**: an npm package that renders PowerPoint files as HTML. 1,400+ downloads.
-- **[Codex Shared Memory](https://github.com/RealSid08/codex-shared-memory)**: a self-hosted MCP server that shares agent memory across machines.
+- **[pptx-react-renderer](https://www.npmjs.com/package/pptx-react-renderer)**: an npm package that renders PowerPoint files as HTML. 1,780+ downloads.
+- **[shared-memory-mcp](https://github.com/RealSid08/shared-memory-mcp)**: a self-hosted MCP server that syncs agent memory across machines over SSH.
 - **[p3stack](https://github.com/RealSid08/p3stack)**: pstack, ported to T3 Code.
 - Co-author on [pluggable agent CLIs](https://github.com/openclaw/openclaw/commit/f31e89d5af) in OpenClaw.
 
 ## Writing
 
-- **[blog.realsid08.me](https://blog.realsid08.me)**: notes on what I build and how, each one readable or listenable.
+- **[blog.realsid08.me](https://blog.realsid08.me)**: field notes from what I build and what I cut, each post readable or listenable in three voices.
 
 This repository is the source for the portfolio site.
 
