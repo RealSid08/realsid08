@@ -231,7 +231,7 @@ export const PAGES: Page[] = [
         <p className="cap4" style={{ maxWidth: '22em' }}>Every action the agent takes runs straight through the user’s own permission checks.</p>
         <div className="k-metrics" aria-label="Performance hardening results">
           <div><b>−3.0s</b><span>iOS cold open<br />to Today targets</span></div>
-          <div><b>77s → 14s</b><span>330-step SOP<br />republish hold</span></div>
+          <div><b>77s → 15s</b><span>330-step SOP<br />publish wait</span></div>
           <div><b>1,000+</b><span>PRs merged<br />across both apps</span></div>
         </div>
         <div className="note-agent">

@@ -509,22 +509,28 @@ html[data-theme='dark'] .sheet { background: #f4eee0; }
 .solo .face.back .pg:not([data-page='1']) .folio { left: 46px; }
 .solo .face.front .pg:not(.cover) .folio { right: 46px; }
 .solo .rp figcaption { padding-left: 0; }
-.solo .pg h2.t { font-size: 52px; }
-.solo .pitch { font-size: 23px; max-width: none !important; }
-.solo .body, .solo .about .lede { font-size: 14px; max-width: none !important; }
-.solo .qa { grid-template-columns: 58px 1fr; }
-.solo .qa span { font-size: 18px; }
-.solo .qa p { font-size: 13.5px; }
-.solo .chain { margin-left: 0; margin-top: 12px; flex-wrap: wrap; }
+.solo .pg h2.t { font-size: 46px; margin: 10px 0 8px; }
+.solo .pitch { font-size: 21px; line-height: 1.15; margin: 0 0 12px; max-width: none !important; }
+.solo .body, .solo .about .lede { font-size: 13px; line-height: 1.48; max-width: none !important; }
+.solo .qa { grid-template-columns: 56px 1fr; gap: 7px 9px; }
+.solo .qa span { font-size: 17.5px; }
+.solo .qa p { font-size: 12.5px; line-height: 1.45; }
+.solo .chain { margin-left: 0; margin-top: 12px; flex-wrap: wrap; gap: 4px; }
+.solo .chain b { padding: 5px 7px; font-size: 11px; }
 .solo .infra { margin-left: 0; gap: 6px; }
 .solo .infra i { font-size: 18px; }
 .solo .infra b { padding: 5px 7px; font-size: 11px; }
 .solo .infra b small { white-space: nowrap; }
 .solo .infra b.hub { padding: 8px 9px; }
-.solo .chain { gap: 4px; }
-.solo .chain b { padding: 5px 7px; font-size: 11px; }
-.solo .facts { font-size: 13px; }
-.solo .about h1 { font-size: 35px; }
+.solo .facts { font-size: 12.5px; }
+.solo .about h1 { font-size: 34px; margin: 10px 0 8px; }
+.solo .about .lede { font-size: 12.5px; margin-bottom: 10px; }
+.solo .about .why-row { flex-wrap: nowrap; gap: 8px; margin: 0 0 12px; }
+.solo .about .why { font-size: 12px; gap: 6px; white-space: nowrap; }
+.solo .about .why span { font-size: 20px; }
+.solo .stamp { padding: 4px 7px 3px; font-size: 9.5px; letter-spacing: 0.06em; }
+.solo .stamp small { font-size: 7.5px; }
+.solo .about .body { font-size: 12.5px; line-height: 1.45; }
 .solo .proof-strip { gap: 6px; padding: 8px 0; margin-bottom: 10px; }
 .solo .proof-strip b { font-size: 23px; }
 .solo .proof-strip span { font-size: 9px; }
@@ -532,37 +538,53 @@ html[data-theme='dark'] .sheet { background: #f4eee0; }
 .solo .toc a small { font-size: 10.5px; }
 .solo .nb-four { grid-template-columns: 112px 132px; gap: 34px 40px; margin-top: 30px; }
 .solo .term { font-size: 9.5px; }
-.solo .sv { left: 22px; width: 336px; }
+.solo .sv { left: 22px; top: 42px; width: 336px; }
 .solo .rw-shot { left: 22px; width: 300px; }
 .solo .rw-smoke { top: 268px; right: 22px; width: 150px; }
 .solo .rw-note { top: 450px; left: 26px; width: 300px; }
 .solo .k-metrics { gap: 6px; margin-top: 12px; padding: 8px 0; }
 .solo .k-metrics b { font-size: 19px; }
-.solo .note-agent { left: 26px; right: 26px; bottom: 42px; grid-template-columns: 88px 1fr; }
+.solo .note-agent { position: static; margin-top: 14px; grid-template-columns: 84px 1fr; gap: 10px; }
+.solo .note-agent .hw { font-size: 19px; }
+.solo .note-agent .body { font-size: 12px; line-height: 1.46; }
 .solo .post.post-featured { padding: 10px 12px 12px; }
 .solo .post-cover { height: 150px; }
 .solo .post.post-featured b { font-size: 27px; }
 .solo .post.post-featured span { font-size: 13px; }
 .solo .contact-note { left: 26px; right: 26px; bottom: 48px; font-size: 19px; }
 .solo .xp-foot { margin-top: 16px; font-size: 18px; }
-.solo .sgR .note-l { top: 340px; left: 26px; width: 178px; }
-.solo .pkR .pair { gap: 14px; margin-top: 60px; margin-bottom: 52px; }
+.solo .sgR .note-l { top: 346px; left: 26px; width: 184px; }
+.solo .sgR .note-l .hw { font-size: 19px; margin-bottom: 8px; }
+.solo .sgR .note-l .body { font-size: 12px; line-height: 1.46; }
+.solo .sgR .shot { right: 20px; bottom: 52px; width: 120px; }
+.solo .ev.net { left: 87% !important; }
+.solo .pkR .pair { gap: 14px; margin-top: 52px; margin-bottom: 44px; }
 .solo .pkR .pair figure { width: 150px; }
-.solo .sheet { inset: 32px 12px 38px 14px; padding: 18px 14px; }
-.solo .sheet .abs { font-size: 12px; }
-.solo .pin-a { width: 296px; }
-.solo .pin-b { top: 296px; right: 26px; }
-.solo .pin-note { top: 310px; left: 30px; width: 140px; }
-.solo .sk-desk { width: 300px; left: 24px; }
+.solo .stR .pair { gap: 16px; margin-top: 26px; margin-bottom: 0; }
+.solo .stR .pair figure { width: 138px; }
+.solo .stR .pair figure:last-child { transform: rotate(2deg) translateY(16px); }
+.solo .stR .pair figcaption { font-size: 16.5px; line-height: 1.05; margin-top: 6px; }
+.solo .why-free { position: static; margin-top: 32px; grid-template-columns: 88px 1fr; gap: 10px; }
+.solo .why-free .hw { font-size: 19px; }
+.solo .why-free .body { font-size: 12px; line-height: 1.48; }
+.solo .sheet { inset: 34px 12px 44px 12px; padding: 16px 12px; }
+.solo .sheet .abs { font-size: 11.5px; }
+.solo .hm { font-size: 8.5px; }
+.solo .pin-a { left: 26px; top: 48px; width: 280px; }
+.solo .pin-b { top: 264px; right: 24px; width: 160px; }
+.solo .pin-note { top: 288px; left: 26px; width: 142px; font-size: 20px; }
+.solo .sk-desk { width: 294px; left: 24px; top: 52px; }
 .solo .sw { margin: 0 0 8px; }
 .solo .st-win { margin-top: 6px !important; }
 .solo .stL-go, .solo [data-page='3'] > .go { margin-top: 8px; }
 .solo .sw-grid { gap: 5px 0; }
 .solo .sw-key { margin-top: 8px; }
-.solo .sk-phone { top: 300px; right: 22px; width: 120px; }
-.solo .sk-note { top: 330px; left: 26px; width: 190px; }
+.solo .sk-phone { top: 284px; right: 20px; width: 118px; }
+.solo .sk-note { top: 324px; left: 24px; width: 192px; }
+.solo .sk-note .hw { font-size: 19px; margin-bottom: 8px; }
+.solo .sk-note .body { font-size: 12px; line-height: 1.46; }
 .solo .shelf p { font-size: 12px; }
-.solo .xp p { font-size: 13px; }
+.solo .xp p { font-size: 12.5px; }
 .solo .cover .label { left: 44px; right: 70px; }
 .solo .flow-wrap { margin-top: 16px; }
 .solo .foodly-body { margin-top: 12px; }
@@ -574,8 +596,8 @@ html[data-theme='dark'] .sheet { background: #f4eee0; }
 .solo .ff span { font-size: 12.5px; margin: 0; }
 .solo .margin-note { position: static !important; transform: rotate(-2deg) !important; text-align: left !important; margin-top: 16px !important; }
 /* Sticky notes join the flow on a phone, so they never cover text. */
-.solo .sticky { position: relative; display: block; left: auto !important; right: auto !important; top: auto !important; bottom: auto !important; margin: 16px 6px 0 auto; width: auto !important; max-width: 250px; padding: 9px 13px 11px; font-size: 17px; line-height: 1.15; }
-.solo .sticky b { display: inline; font-size: 25px; margin: 0 3px; }
+.solo .sticky { position: relative; display: block; left: auto !important; right: auto !important; top: auto !important; bottom: auto !important; margin: 14px 6px 0 auto; width: auto !important; max-width: 256px; padding: 9px 13px 11px; font-size: 17px; line-height: 1.15; }
+.solo .sticky b { display: inline; font-size: 24px; margin: 0 5px; }
 /* The bars already show the 43×, and the page is narrower here. */
 .solo .wide-only { display: none; }
 .solo .margin-note { max-width: 100%; }
